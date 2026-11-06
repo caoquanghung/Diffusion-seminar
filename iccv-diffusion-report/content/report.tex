@@ -1,65 +1,58 @@
 \begin{abstract}
-Diffusion models generate images by learning to reverse a gradual corruption
-process. This report connects that intuition to Gaussian forward transitions,
-noise-prediction training, and iterative sampling. A scalar calculation and an
-original five-level image sequence make the mechanism concrete. The main focus
-is latent diffusion: a variational autoencoder compresses images, a conditional
-denoiser models the compressed representation, and a decoder returns it to
-pixels. Cross-attention and classifier-free guidance explain how prompts
-influence generation. A published pixel-versus-latent inpainting comparison
-supports a conditional efficiency advantage, while our analysis separates
-spatial compression from faster sampling. Reconstruction error, imperfect
-semantic control, data dependence, bias, and copyright concerns limit what
-efficiency and visual realism alone establish.
+write again
+% Diffusion models generate images by learning to reverse a gradual corruption
+% process. This report connects that intuition to Gaussian forward transitions,
+% noise-prediction training, and iterative sampling. A scalar calculation and an
+% original five-level image sequence make the mechanism concrete. The main focus
+% is latent diffusion: a variational autoencoder compresses images, a conditional
+% denoiser models the compressed representation, and a decoder returns it to
+% pixels. Cross-attention and classifier-free guidance explain how prompts
+% influence generation. A published pixel-versus-latent inpainting comparison
+% supports a conditional efficiency advantage, while our analysis separates
+% spatial compression from faster sampling. Reconstruction error, imperfect
+% semantic control, data dependence, bias, and copyright concerns limit what
+% efficiency and visual realism alone establish.
 \end{abstract}
 
 \section{Introduction}\label{sec:intro}
-How can learning to remove noise enable a model to generate new images?
-A denoiser trained on many images learns which structures are plausible at
-different noise levels. Starting from random noise, repeated learned updates
-can therefore produce a new sample from an approximation to the training
-distribution. It need not recover a particular image that was previously
-corrupted.
+placeholder
+% How can learning to remove noise enable a model to generate new images?
+% A denoiser trained on many images learns which structures are plausible at
+% different noise levels. Starting from random noise, repeated learned updates
+% can therefore produce a new sample from an approximation to the training
+% distribution. It need not recover a particular image that was previously
+% corrupted.
 
-Pixel-space diffusion makes these updates over an entire image.
-Latent diffusion instead separates \emph{representation learning} from
-\emph{generative modeling}. The guiding question of this report is:
-\emph{when does compression reduce the cost of diffusion while retaining
-useful visual detail and conditional control?} We review DDPM
-\cite{ho2020ddpm} and LDM \cite{rombach2022ldm}, then connect their mechanisms
-to an evidence-supported comparison.
+% Pixel-space diffusion makes these updates over an entire image.
+% Latent diffusion instead separates \emph{representation learning} from
+% \emph{generative modeling}. The guiding question of this report is:
+% \emph{when does compression reduce the cost of diffusion while retaining
+% useful visual detail and conditional control?} We review DDPM
+% \cite{ho2020ddpm} and LDM \cite{rombach2022ldm}, then connect their mechanisms
+% to an evidence-supported comparison.
 
-Our scope is explanatory and analytical. We compute a forward process locally;
-we do not train a denoiser or claim to have run a pretrained image generator.
-Results from the literature are explicitly identified in Section~\ref{sec:results}.
+% Our scope is explanatory and analytical. We compute a forward process locally;
+% we do not train a denoiser or claim to have run a pretrained image generator.
+% Results from the literature are explicitly identified in Section~\ref{sec:results}.
 
 \section{Background and Paper Review}\label{sec:background}
+% \subsection{Generative versus discriminative models}\label{sec:families}
+% A discriminative model estimates a label from an observation, for example
+% $p_\omega(y\mid x)$ for classifying an image $x$ as a cat.
+% Here $y$ is a label and $\omega$ denotes learned parameters.
+% A generative model represents a distribution such as $p_\theta(x)$ or
+% $p_\theta(x\mid y)$, allowing it to sample images, possibly conditioned on
+% a label or text. A classifier's confidence alone does not provide an image
+% sampling procedure.
+
 \subsection{Generative versus discriminative models}\label{sec:families}
-A discriminative model estimates a label from an observation, for example
-$p_\omega(y\mid x)$ for classifying an image $x$ as a cat.
-Here $y$ is a label and $\omega$ denotes learned parameters.
-A generative model represents a distribution such as $p_\theta(x)$ or
-$p_\theta(x\mid y)$, allowing it to sample images, possibly conditioned on
-a label or text. A classifier's confidence alone does not provide an image
-sampling procedure.
-
-\begin{table*}[t]
-\centering\small
-\caption{Qualitative comparison of representative image generators.
-Synthesis from \cite{goodfellow2014gan,oord2016pixelrnn,ho2020ddpm};
-these are architectural tendencies, not universal performance rankings.}
-\label{tab:families}
-\begin{tabularx}{\linewidth}{@{}p{2.45cm}YYY@{}}
-\toprule
-Family & Learning idea & Sampling & Main trade-off\\
-\midrule
-GAN & Generator competes with a discriminator & Typically one generator pass & Fast synthesis; balancing the adversarial game can be difficult\\
-Autoregressive & Predict each variable from earlier variables & Sequential pixel/token prediction & Explicit factorization; sequential generation can be costly\\
-Diffusion & Predict corruption across noise levels & Repeated denoising of a whole state & Flexible conditioning; multiple network evaluations\\
-\bottomrule
-\end{tabularx}
-\end{table*}
-
+The fundamental distinction between discriminative and generative models lies in what they aim to learn from data. 
+A discriminative model learns to predict a target $y$ given an observation $x$, typically by estimating $p_\omega(y\mid x)$ or learning a decision boundary between classes. 
+For instance, a cat classifier only needs to identify features that distinguish cats from other objects, without explicitly modeling the distribution of natural images.
+In contrast, a generative model aims to capture the underlying data distribution, 
+such as $p_\theta(x)$ or the conditional distribution $p_\theta(x\mid y)$. 
+Rather than merely distinguishing categories, it must model the statistical structure and variability of the data, including factors such as shape, texture, lighting, and spatial relationships. This enables the model to generate new samples that resemble the training data, potentially conditioned on labels or text descriptions.
+Consequently, generative modeling generally requires capturing richer information about the data than is necessary for classification.
 
 \subsection{DDPM: forward corruption and learned reversal}\label{sec:ddpm}
 Intuitively, the forward process slowly replaces structure with Gaussian
@@ -446,6 +439,42 @@ and number of evaluations. These ideas can be combined. The original LDM
 paper should also be distinguished from any particular later Stable
 Diffusion checkpoint, dataset, text encoder, or user interface.
 
+
+\section{Qualitative Comparison of Generative Models}\label{sec:generator-comparison}
+Having examined diffusion and latent diffusion, we now compare their
+generative mechanism with GANs and autoregressive models.
+A \emph{GAN} trains a generator to transform random noise into images while
+a discriminator learns to distinguish generated images from real ones
+\cite{goodfellow2014gan}. Sampling typically takes one generator pass,
+but training requires balancing the two competing networks.
+An \emph{autoregressive model} generates an image one pixel or token at a
+time, predicting each from the previously generated values
+\cite{oord2016pixelrnn}. This gives an explicit factorization of the image
+distribution, although sequential generation can be costly.
+A \emph{diffusion model} learns to reverse gradual noise corruption and
+generates an image by repeatedly denoising an initially random state
+\cite{ho2020ddpm}. It refines the whole state across multiple steps,
+requiring repeated network evaluations during sampling.
+Table~\ref{tab:families} summarizes these learning ideas, sampling procedures,
+and qualitative trade-offs.
+
+
+\begin{table*}[t]
+\centering\small
+\caption{Qualitative comparison of representative image generators.
+According to \cite{goodfellow2014gan,oord2016pixelrnn,ho2020ddpm};
+these are architectural tendencies, not universal performance rankings.}
+\label{tab:families}
+\begin{tabularx}{\linewidth}{@{}p{2.45cm}YYY@{}}
+\toprule
+Family & Learning idea & Sampling & Main trade-off\\
+\midrule
+GAN & Generator competes with a discriminator & Typically one generator pass & Fast synthesis; balancing the adversarial game can be difficult\\
+Autoregressive & Predict each variable from earlier variables & Sequential pixel/token prediction & Explicit factorization; sequential generation can be costly\\
+Diffusion & Predict corruption across noise levels & Repeated denoising of a whole state & Flexible conditioning; multiple network evaluations\\
+\bottomrule
+\end{tabularx}
+\end{table*}
 
 \section{Results and Discussion}\label{sec:results}
 \subsection{Evidence provenance and observed corruption}
