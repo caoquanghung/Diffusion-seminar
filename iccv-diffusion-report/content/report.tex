@@ -1,0 +1,637 @@
+\begin{abstract}
+Diffusion models generate images by learning to reverse a gradual corruption
+process. This report connects that intuition to Gaussian forward transitions,
+noise-prediction training, and iterative sampling. A scalar calculation and an
+original five-level image sequence make the mechanism concrete. The main focus
+is latent diffusion: a variational autoencoder compresses images, a conditional
+denoiser models the compressed representation, and a decoder returns it to
+pixels. Cross-attention and classifier-free guidance explain how prompts
+influence generation. A published pixel-versus-latent inpainting comparison
+supports a conditional efficiency advantage, while our analysis separates
+spatial compression from faster sampling. Reconstruction error, imperfect
+semantic control, data dependence, bias, and copyright concerns limit what
+efficiency and visual realism alone establish.
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+How can learning to remove noise enable a model to generate new images?
+A denoiser trained on many images learns which structures are plausible at
+different noise levels. Starting from random noise, repeated learned updates
+can therefore produce a new sample from an approximation to the training
+distribution. It need not recover a particular image that was previously
+corrupted.
+
+Pixel-space diffusion makes these updates over an entire image.
+Latent diffusion instead separates \emph{representation learning} from
+\emph{generative modeling}. The guiding question of this report is:
+\emph{when does compression reduce the cost of diffusion while retaining
+useful visual detail and conditional control?} We review DDPM
+\cite{ho2020ddpm} and LDM \cite{rombach2022ldm}, then connect their mechanisms
+to an evidence-supported comparison.
+
+Our scope is explanatory and analytical. We compute a forward process locally;
+we do not train a denoiser or claim to have run a pretrained image generator.
+Results from the literature are explicitly identified in Section~\ref{sec:results}.
+
+\section{Background and Paper Review}\label{sec:background}
+\subsection{Generative versus discriminative models}\label{sec:families}
+A discriminative model estimates a label from an observation, for example
+$p_\omega(y\mid x)$ for classifying an image $x$ as a cat.
+Here $y$ is a label and $\omega$ denotes learned parameters.
+A generative model represents a distribution such as $p_\theta(x)$ or
+$p_\theta(x\mid y)$, allowing it to sample images, possibly conditioned on
+a label or text. A classifier's confidence alone does not provide an image
+sampling procedure.
+
+\begin{table*}[t]
+\centering\small
+\caption{Qualitative comparison of representative image generators.
+Synthesis from \cite{goodfellow2014gan,oord2016pixelrnn,ho2020ddpm};
+these are architectural tendencies, not universal performance rankings.}
+\label{tab:families}
+\begin{tabularx}{\linewidth}{@{}p{2.45cm}YYY@{}}
+\toprule
+Family & Learning idea & Sampling & Main trade-off\\
+\midrule
+GAN & Generator competes with a discriminator & Typically one generator pass & Fast synthesis; balancing the adversarial game can be difficult\\
+Autoregressive & Predict each variable from earlier variables & Sequential pixel/token prediction & Explicit factorization; sequential generation can be costly\\
+Diffusion & Predict corruption across noise levels & Repeated denoising of a whole state & Flexible conditioning; multiple network evaluations\\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+
+\subsection{DDPM: forward corruption and learned reversal}\label{sec:ddpm}
+Intuitively, the forward process slowly replaces structure with Gaussian
+noise. The reverse model learns plausible transitions in the opposite
+direction; it is not given the actual noise used to corrupt a test image.
+For a vectorized image with $D$ scalar coordinates, DDPM specifies
+\cite[Sec.~2]{ho2020ddpm}
+\begin{align}
+q(x_t\mid x_{t-1})
+ &=\Normal\!\left(\sqrt{1-\beta_t}\,x_{t-1},\,\beta_t\Id\right),\label{eq:forward}\\
+x_t&=\sqrt{\ab_t}\,x_0+\sqrt{1-\ab_t}\,\eps,
+\quad \eps\sim\Normal(0,\Id),\label{eq:closed}\\
+\alpha_t&=1-\beta_t,\qquad
+\ab_t=\prod_{j=1}^{t}\alpha_j,\quad \ab_0=1.\nonumber
+\end{align}
+$x_0$ is a clean image sampled from the empirical data distribution
+$p_{\rm data}$; $x_t\in\R^D$ is its noisy version. The integer
+$t\in\{1,\ldots,T\}$ indexes noise level, not seconds.
+$\beta_t\in(0,1)$ is a dimensionless per-step variance; $\Id$ is the
+$D$-dimensional identity matrix. The \emph{schedule} is the sequence
+$(\beta_1,\ldots,\beta_T)$, which controls how quickly signal disappears.
+Equation~\eqref{eq:closed} samples a marginal directly, using one fresh
+standard-normal vector $\eps$; it need not simulate every preceding step.
+
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[>=Stealth, node distance=2.5cm,
+  state/.style={draw=hcmusblue,rounded corners,fill=lightblue,
+  minimum width=1.6cm,minimum height=.85cm,align=center,font=\small}]
+\node[state] (a) {$x_0$\\clean};
+\node[state,right=of a] (b) {$x_t$\\partly noisy};
+\node[state,right=of b] (c) {$x_T$\\nearly noise};
+\draw[->,thick] (a.north east) to[bend left=22] node[above,font=\small] {fixed $q$: add noise} (b.north west);
+\draw[->,thick] (b.north east) to[bend left=22] node[above,font=\small] {repeat} (c.north west);
+\draw[->,thick,hcmusblue] (c.south west) to[bend left=22] node[below,font=\small] {learned $p_\theta$} (b.south east);
+\draw[->,thick,hcmusblue] (b.south west) to[bend left=22] node[below,font=\small] {denoise and sample} (a.south east);
+\end{tikzpicture}
+\caption{Original schematic of DDPM's two directions, based on
+\cite{ho2020ddpm}. Reverse arrows represent a learned distribution,
+not exact inversion of an individual forward trajectory.}\label{fig:ddpm}
+\end{figure*}
+
+The noise predictor $\eps_\theta(x_t,t)\in\R^D$, with trainable parameters
+$\theta$, minimizes the required simplified objective
+\cite[Eq.~14]{ho2020ddpm}:
+\begin{equation}
+L_{\rm simple}=\E_{t,x_0,\eps}
+\left[\|\eps-\eps_\theta(x_t,t)\|_2^2\right].\label{eq:loss}
+\end{equation}
+The expectation averages uniformly sampled timesteps, training images, and
+independent Gaussian noise; $\|\cdot\|_2^2$ sums squared coordinate errors.
+Training predicts the \emph{aggregate} noise in Eq.~\eqref{eq:closed}.
+An epsilon-parameterized DDPM sampling update is
+\begin{equation}
+x_{t-1}=\frac{1}{\sqrt{\alpha_t}}
+\left(x_t-\frac{\beta_t}{\sqrt{1-\ab_t}}\eps_\theta(x_t,t)\right)
++\sigma_t u.\label{eq:reverse}
+\end{equation}
+Here $u\sim\Normal(0,\Id)$ and $\sigma_t\ge0$ is the chosen reverse standard deviation (e.g.,
+$\sigma_t^2=\beta_t$ for $t>1$); the final step uses no added noise.
+Sampling starts at $x_T\sim\Normal(0,\Id)$ when $\ab_T$ is sufficiently
+small. DDPM's key contribution is effective noise-prediction training and
+its connection to denoising score matching, not the invention of all
+diffusion-based generative models.
+
+
+\section{Method and Worked Example}\label{sec:method}
+\subsection{A complete one-dimensional calculation}\label{sec:scalar}
+For one step $t=1$, choose normalized $x_0=0.8$, variance $\beta_1=0.1$,
+and Gaussian realization $\eps=-0.5$. This larger variance makes the
+arithmetic visible; the image schedule below uses smaller steps.
+Equation~\eqref{eq:forward} gives
+\begin{align*}
+\alpha_1&=1-0.1=0.9,\\
+\sqrt{\alpha_1}\,x_0&=\sqrt{0.9}\,(0.8)=0.758947,\\
+\sqrt{\beta_1}\,\eps&=\sqrt{0.1}\,(-0.5)=-0.158114,\\
+x_1&=0.758947-0.158114=\boxed{0.600833}.
+\end{align*}
+Thus $q(x_1\mid x_0=0.8)=\Normal(0.758947,0.1)$: its mean is $0.758947$,
+variance $0.1$, and standard deviation $\sqrt{0.1}=0.316228$.
+Across independent draws, $\E[x_1\mid x_0]=\sqrt{0.9}\,x_0$ since
+$\E[\eps]=0$. The realization $0.600833$ differs from that expectation;
+the conditional variance is $\beta_1$.
+
+\subsection{Five noise levels on an original small image}\label{sec:noise}
+Our original $28\times28$ geometric house has foreground $+1$ and
+background $-1$, without an external dataset.
+The script \texttt{code/make\_figures.py} simulates one Markov trajectory
+using Eq.~\eqref{eq:forward} with independent noise at every step.
+It uses NumPy's default generator, seed $420$, $T=1000$, and
+the linear schedule $\beta_t=10^{-4}+(t-1)(0.02-10^{-4})/999$,
+following DDPM's schedule choice \cite[Sec.~4]{ho2020ddpm}.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/noise_sequence.pdf}
+\caption{Original forward-noising illustration at five timesteps.
+The same trajectory is shown throughout. Values are clipped to $[-1,1]$
+only for display; stored arrays and calculations remain unclipped.
+The equation and schedule follow \cite{ho2020ddpm}.}\label{fig:noise}
+\end{figure*}
+
+\begin{table*}[t]
+\centering\small
+\caption{Coefficients computed by the supplied script. Signal and noise
+columns refer to Eq.~\eqref{eq:closed}, not measured image quality.}
+\label{tab:noise}
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+$t$ & $\ab_t$ & Signal $\sqrt{\ab_t}$ & Noise SD $\sqrt{1-\ab_t}$ &
+$\ab_t/(1-\ab_t)$\\
+\midrule
+0 & 1.000000 & 1.000000 & 0.000000 & $\infty$\\
+50 & 0.971016 & 0.985401 & 0.170248 & 33.5015\\
+200 & 0.659039 & 0.811812 & 0.583919 & 1.9329\\
+500 & 0.078587 & 0.280334 & 0.959902 & 0.0853\\
+1000 & 0.000040 & 0.006353 & 0.999980 & 0.000040\\
+\bottomrule
+\end{tabular}
+\end{table*}
+The last column is a schedule-based signal-to-noise coefficient ratio,
+also a per-coordinate variance ratio for unit-variance data.
+This illustrates corruption, not learned denoising or generation.
+
+
+\section{Latent Diffusion: Representation, Generation, and Control}\label{sec:ldm}
+\subsection{Intuition: learn a useful compressed image space}\label{sec:vae}
+An image contains both perceptually important structure and costly pixel
+detail. LDM first learns an image representation, then models its distribution
+with diffusion \cite[Secs.~3.1--3.2]{rombach2022ldm}.
+The encoder is a learned analysis transform; it does not produce a smaller
+JPEG or a text description. Its spatial tensor retains features that a
+decoder can turn back into a plausible image.
+
+For an RGB image $x_0\in\R^{H\times W\times3}$, a VAE encoder with parameters
+$\phi$ predicts an approximate posterior \cite{kingma2014vae}:
+\begin{align}
+q_\phi(\tilde z\mid x_0)
+ &=\Normal\!\left(\mu_\phi(x_0),\diag(\sigma_\phi^2(x_0))\right),\\
+\tilde z&=\mu_\phi(x_0)+\sigma_\phi(x_0)\odot\xi,\quad
+\xi\sim\Normal(0,\Id),\nonumber\\
+\hat x_0&=D_\psi(\tilde z).\label{eq:vae}
+\end{align}
+$\mu_\phi$ and $\sigma_\phi>0$ are elementwise latent means and standard
+deviations; $\diag$ forms a diagonal covariance, and $\odot$ is elementwise
+multiplication. $\xi$ is \emph{encoder} noise, distinct from diffusion noise
+$\eps$. $D_\psi$ is the decoder with parameters $\psi$; $\hat x_0$
+is a reconstruction, not necessarily the original $x_0$.
+Reparameterization moves randomness into $\xi$, allowing gradients to pass
+through the encoder's outputs.
+
+The tensor $\tilde z\in\R^{h\times w\times c}$ has $h=H/f$, $w=W/f$,
+latent channels $c$, and spatial downsampling factor $f$.
+For example, $256\times256\times3$ becomes $64\times64\times3$ for
+$f=4,c=3$, a configuration in LDM's autoencoder study
+\cite[Table~8]{rombach2022ldm}. The number of spatial positions falls
+by $f^2=16$; channel count must also be considered when comparing storage.
+
+\subsubsection*{What the autoencoder objective preserves}
+For a textbook VAE, minimizing the negative evidence lower bound gives
+\cite{kingma2014vae}
+\begin{equation}
+\begin{aligned}
+\mathcal J_{\rm VAE}&=
+\E_{q_\phi(\tilde z\mid x_0)}
+[-\log p_\psi(x_0\mid\tilde z)]\\
+&+\KL\!\left(q_\phi(\tilde z\mid x_0)\,\|\,\Normal(0,\Id)\right).
+\end{aligned}
+\label{eq:elbo}
+\end{equation}
+$p_\psi(x_0\mid\tilde z)$ is the decoder likelihood; its first term penalizes
+poor reconstruction. $\KL$ is the nonnegative Kullback--Leibler divergence
+in nats, encouraging a regular latent space. LDM's
+\emph{KL-regularized} autoencoder is VAE-like but uses perceptual and
+patch-adversarial reconstruction objectives with a weak KL penalty
+\cite[Sec.~3.1]{rombach2022ldm}, rather than only a textbook pixel likelihood.
+The perceptual term compares learned visual features; the adversarial term
+encourages locally realistic texture. These can preserve perceptual quality
+without guaranteeing exact pixel recovery.
+
+The original LDM paper also studies \emph{VQ-regularized} autoencoders.
+Consequently, LDM is broader than VAE plus diffusion. We focus on
+the KL/VAE variant to satisfy Requirement 5. Crucially, the diffusion prior
+learns the encoded data distribution: weak KL regularization does not make
+that distribution exactly standard normal.
+
+
+\subsection{Diffusion in latent space and the complete pipeline}\label{sec:pipeline}
+After autoencoder training, its parameters are fixed for diffusion training.
+Let $z_0=a\tilde z$, where $a>0$ is an optional fixed scale chosen to keep
+latent magnitudes suitable for the noise schedule. Take $a=1$ when no
+rescaling is used; decoding must undo the same scale.
+The Gaussian construction of Section~\ref{sec:ddpm} now acts on
+$d_z=hwc$ latent coordinates, not RGB pixels:
+\begin{align}
+z_t&=\sqrt{\ab_t}\,z_0+\sqrt{1-\ab_t}\,\eps_z,\quad
+\eps_z\sim\Normal(0,\Id_{d_z}),\label{eq:latentnoise}\\
+L_{\rm LDM}&=\E_{x_0,y,t,\xi,\eps_z}
+\left[\|\eps_z-\eps_\theta(z_t,t,\tau_\eta(y))\|_2^2\right].
+\label{eq:ldmloss}
+\end{align}
+$y$ is the condition (here a prompt), and $\tau_\eta$ is its encoder with
+parameters $\eta$. $\eps_\theta$ is a time-conditioned U-Net that returns
+a tensor of the same shape as $z_t$. Its down/up paths and skip connections
+combine context with spatial detail. Equation~\eqref{eq:ldmloss} is the
+conditional noise-prediction objective of LDM \cite[Eq.~3]{rombach2022ldm},
+written to show stochastic VAE encoding explicitly. A deterministic encoder
+or posterior-mean encoding omits $\xi$.
+
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[>=Stealth,x=1.15cm,
+box/.style={draw=hcmusblue,rounded corners,fill=lightblue,
+  align=center,font=\small,minimum height=1cm},
+note/.style={font=\small,align=center}]
+\node[note,anchor=west,font=\small\bfseries] at (0,3.8) {Training: encode a real image and learn noise prediction};
+\node[box,minimum width=1.25cm] (x) at (.65,2.7) {$x_0$\\image};
+\node[box,minimum width=1.9cm,fill=lightgreen] (e) at (2.65,2.7) {VAE encoder\\$q_\phi$, scale $a$};
+\node[box,minimum width=1.2cm] (z) at (4.65,2.7) {$z_0$\\latent};
+\node[box,minimum width=1.9cm,fill=lightorange] (q) at (6.65,2.7) {Add noise\\$q(z_t\mid z_0)$};
+\node[box,minimum width=2.6cm] (u) at (9.65,2.7) {Conditional U-Net\\predict $\eps_z$};
+\draw[->,thick] (x)--(e);
+\draw[->,thick] (e)--(z);
+\draw[->,thick] (z)--(q);
+\draw[->,thick] (q)--node[midway,above=2pt,font=\small] {$z_t,t$}(u);
+\node[box,fill=lightgreen,minimum width=2.6cm] (text) at (7.35,1) {Prompt $y\to\tau_\eta(y)$\\text tokens};
+\draw[->,thick] (text.north) -| node[pos=.75,right,font=\small] {cross-attention}(u.south);
+\node[note,anchor=west,font=\small\bfseries] at (0,-.1) {Generation: sample a latent, repeatedly denoise, then decode once};
+\node[box,minimum width=1.5cm,fill=lightorange] (n) at (.8,-1.35) {$z_T$\\Gaussian noise};
+\node[box,minimum width=3.3cm] (den) at (4,-1.35) {U-Net + sampler\\$z_T\to\cdots\to z_0$};
+\node[box,minimum width=2cm,fill=lightgreen] (dec) at (7.45,-1.35) {VAE decoder\\$D_\psi(z_0/a)$};
+\node[box,minimum width=1.4cm] (out) at (10,-1.35) {$\hat x_0$\\image};
+\draw[->,thick] (n)--(den);
+\draw[->,thick] (den)--(dec);
+\draw[->,thick] (dec)--(out);
+\node[box,fill=lightgreen,minimum width=2.6cm] (gentext) at (4,-2.9) {Same prompt tokens\\$\tau_\eta(y)$};
+\draw[->,thick] (gentext.north)--(den.south);
+\end{tikzpicture}
+\caption{Original latent diffusion pipeline, based on
+\cite[Fig.~3 and Sec.~3]{rombach2022ldm}. The VAE is learned first and
+frozen for diffusion training; its decoder runs after the denoising loop.
+Pure text-to-image generation does not require a real input image or the
+image encoder.}\label{fig:ldm}
+\end{figure*}
+
+For generation, replace $x$ by $z$ in Eq.~\eqref{eq:reverse} and use the
+conditional predictor, or use a compatible sampler such as DDIM
+\cite{song2021ddim}. Starting with latent Gaussian noise, the sampler
+produces an approximate draw from the learned $p_\theta(z_0\mid y)$;
+the final image is $\hat x_0=D_\psi(z_0/a)$.
+This is why the decoder is not a diffusion denoiser: it maps a completed
+latent into pixels, while the U-Net repeatedly predicts noise.
+
+\textbf{One training update.} Encode a paired image and prompt; sample a
+uniform timestep and Gaussian latent noise; construct $z_t$; predict that
+noise and backpropagate Eq.~\eqref{eq:ldmloss} into the denoiser (and condition
+encoder when trainable). No full reverse chain is needed for this update.
+At inference, parameters stay fixed while the sampler repeatedly updates
+the latent state. This distinction separates learning from generation.
+
+
+\subsection{Cross-attention: how language reaches the denoiser}\label{sec:attention}
+The prompt does not directly overwrite pixels. Instead, every spatial
+feature can retrieve relevant information from prompt tokens.
+For a prompt such as \emph{a red cube beside a blue sphere}, the text encoder
+produces contextual token embeddings; the denoiser learns which embeddings
+help its current spatial features. This interaction can occur at several
+U-Net resolutions and timesteps \cite[Sec.~3.3]{rombach2022ldm}.
+
+Use a \emph{row-vector} convention. At one U-Net layer, flatten its feature
+map into $F\in\R^{n\times d_u}$, where $n$ is the number of spatial
+positions and $d_u$ is its channel width. Let
+$C=\tau_\eta(y)\in\R^{m\times d_y}$ contain $m$ token embeddings of
+width $d_y$. One cross-attention head computes
+\cite{vaswani2017attention,rombach2022ldm}
+\begin{align}
+Q&=FW_Q,\quad K=CW_K,\quad V=CW_V,\label{eq:qkv}\\
+A&=\softmax\!\left(\frac{QK^\top}{\sqrt{d_a}}\right),\qquad O=AV.
+\label{eq:attention}
+\end{align}
+The learned projections have shapes
+$W_Q\in\R^{d_u\times d_a}$,
+$W_K\in\R^{d_y\times d_a}$, and
+$W_V\in\R^{d_y\times d_v}$.
+Thus $Q\in\R^{n\times d_a}$ contains \emph{queries from image features},
+$K\in\R^{m\times d_a}$ contains \emph{keys from text}, and
+$V\in\R^{m\times d_v}$ contains text values.
+$d_a,d_v$ are positive integer head widths. A superscript $\top$ denotes
+transposition. Softmax acts across the $m$ tokens for each spatial row,
+making $A\in\R^{n\times m}$ nonnegative with row sums of one.
+$O\in\R^{n\times d_v}$ supplies text-dependent features that are projected
+back into the U-Net's residual stream.
+
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small,
+box/.style={draw=hcmusblue,rounded corners,fill=lightblue,align=center,
+minimum height=.8cm}]
+\node[box] (f) at (0,1.15) {Image features $F$\\queries $Q$};
+\node[box,fill=lightgreen] (c) at (0,-.35) {Text tokens $C$\\keys $K$, values $V$};
+\node[box] (a) at (4,.65) {$A=\softmax(QK^\top/\sqrt{d_a})$};
+\node[box] (o) at (8,.65) {$O=AV$\\conditioned features};
+\draw[->,thick] (f.east)--(a.north west);
+\draw[->,thick] (c.east)--node[midway,below left,fill=white,inner sep=1pt] {$K$}(a.south west);
+\draw[->,thick] (a)--(o);
+\draw[->,thick] (c.south)--(0,-1.15)--(8,-1.15)--(o.south);
+\node[fill=white,inner sep=1pt] at (4,-1.15) {$V$};
+\end{tikzpicture}
+\caption{Original single-head cross-attention schematic, based on
+\cite{vaswani2017attention,rombach2022ldm}. Multi-head attention learns
+several such projections and combines their outputs.}\label{fig:attention}
+\end{figure*}
+
+\subsubsection*{A numerical attention example}
+Take one spatial query $Q=(1,0)$, two keys
+$K_1=(\sqrt2,0)$, $K_2=(0,0)$, and $d_a=d_v=2$.
+The scaled logits are $(1,0)$, so
+$A=(e/(e+1),1/(e+1))\approx(0.7311,0.2689)$, where $e$ is Euler's number.
+For $V_1=(1,0)$ and $V_2=(0,1)$, the output is
+$O\approx(0.7311,0.2689)$. This original toy example shows weighted retrieval,
+not an observed attention map from an actual model.
+
+Cross-attention differs from self-attention because queries and keys come
+from different representations. It also differs from concatenating an image
+condition channel-wise. Its weights express learned associations, not a
+guaranteed object mask or proof that a prompt relation has been satisfied.
+
+
+\subsection{Prompt control and classifier-free guidance}\label{sec:cfg}
+Cross-attention supplies the condition; \emph{classifier-free guidance}
+(CFG) adjusts how strongly a conditional prediction influences sampling
+\cite{ho2022cfg}. Train the same network with the condition replaced by
+a null condition $\varnothing$ with probability $p_{\rm drop}\in(0,1)$.
+At inference define
+\begin{equation}
+\begin{aligned}
+\eps_u&=\eps_\theta(z_t,t,\tau_\eta(\varnothing)),\\
+\eps_c&=\eps_\theta(z_t,t,\tau_\eta(y)),\\
+\eps_{\rm cfg}&=\eps_u+s(\eps_c-\eps_u).
+\end{aligned}\label{eq:cfg}
+\end{equation}
+$s\ge0$ is a dimensionless guidance scale. Here $s=0$ uses the unconditional
+prediction, $s=1$ gives ordinary conditional sampling, and $s>1$
+extrapolates in the conditional direction. The CFG paper writes the
+equivalent expression $(1+w)\eps_c-w\eps_u$; its parameter is
+$w=s-1$. Stating the convention prevents confusing two scales with
+different numerical baselines.
+
+For an original scalar illustration, $\eps_u=0.2$, $\eps_c=0.1$ and
+$s=3$ give $\eps_{\rm cfg}=-0.1$. Guidance is therefore an extrapolation,
+not a convex average. Substituting it into the reverse update changes the
+generation trajectory. Greater guidance can improve conditional fidelity
+while reducing diversity; it does not ensure monotonically better quality
+\cite{ho2022cfg}. Standard CFG requires two denoiser evaluations per step,
+often batched together, adding compute and potentially peak memory.
+
+\textbf{Practical control.} To inspect a prompt change, hold the checkpoint,
+initial noise seed, sampler, step count, resolution, and $s$ fixed.
+Change one attribute or relation at a time, such as \emph{red cube} to
+\emph{green cube}. Evaluate whether the specified attribute changed and
+whether unrelated content remained stable. A fixed seed improves
+comparability, but changing text can still reorganize the entire image.
+Counting, spatial relations, and binding attributes to the correct objects
+require explicit checks; a plausible-looking result is insufficient.
+Appendix~\ref{app:repro} gives a future protocol, not claimed prompt results.
+
+\subsection{LDM paper: method, contributions, and differences}\label{sec:synthesis}
+Rombach et al.\ \cite{rombach2022ldm} make three connected methodological
+contributions relevant here. First, a reusable perceptual autoencoder
+separates image compression from training a generative prior. Second,
+diffusion on a moderately compressed spatial grid reduces repeated
+high-resolution computation. Third, cross-attention provides a general
+interface for conditions such as text or layouts. Their compression study
+also shows why more compression is not automatically better: overly small
+grids discard detail that the generative model cannot faithfully recover.
+
+Compared with DDPM, LDM changes the \emph{representation} on which the
+noise-prediction objective operates and introduces an autoencoding boundary;
+it retains the central denoising principle. Compared with earlier
+autoregressive latent generators, it uses iterative spatial denoising rather
+than a chosen sequential token ordering. Compared with DDIM, it addresses
+the cost of each state evaluation; DDIM addresses the sampling trajectory
+and number of evaluations. These ideas can be combined. The original LDM
+paper should also be distinguished from any particular later Stable
+Diffusion checkpoint, dataset, text encoder, or user interface.
+
+
+\section{Results and Discussion}\label{sec:results}
+\subsection{Evidence provenance and observed corruption}
+This section combines two kinds of evidence: \textbf{original calculations}
+from Section~\ref{sec:method}, and \textbf{published model results} below.
+No denoising, text-to-image, GPU latency, or peak-memory benchmark was
+executed for this report.
+
+Figure~\ref{fig:noise} shows the house becoming difficult to recognize as
+the signal multiplier falls from $1$ to $0.00635$.
+Table~\ref{tab:noise} explains that behavior through the schedule rather
+than visual inspection alone. A single trajectory does not establish a
+population-level quality trend, and display clipping can hide changes in
+extreme values. These results validate the forward construction; the learned
+reverse process requires independent model evidence.
+
+\subsection{A published pixel-versus-latent setting}\label{sec:benchmark}
+We select the \emph{Places inpainting} comparison in
+Rombach et al.\ \cite[Sec.~4.5, Table~6]{rombach2022ldm}:
+pixel-space LDM-1 versus LDM-4 with a KL-regularized first stage and
+attention. Their denoisers have a matched parameter count. The published
+protocol trains on $256\times256$ crops; the supplementary protocol
+specifies fixed validation masks and a 2,000-image validation set.
+We preserve the table's two sampling resolutions and six-epoch endpoint.
+
+\begin{table*}[t]
+\centering\small
+\caption{Published inpainting comparison, transcribed from
+\cite[Table~6]{rombach2022ldm}. These are the paper's measurements,
+not a benchmark run by our team. Higher throughput and lower FID are better.}
+\label{tab:benchmark}
+\begin{tabularx}{\linewidth}{@{}Yrr@{}}
+\toprule
+Criterion & Pixel LDM-1 & LDM-4 (KL, with attention)\\
+\midrule
+Training throughput (samples/s) & 0.11 & 0.32\\
+Sampling throughput at $256^2$ (samples/s) & 0.26 & 0.97\\
+Sampling throughput at $512^2$ (samples/s) & 0.07 & 0.34\\
+Training + validation (hours/epoch) & 20.66 & 7.66\\
+Validation FID after epoch 6 (2k samples) & 24.74 & 15.21\\
+Peak memory (GB) & \multicolumn{2}{c}{Not reported in this table}\\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+Our arithmetic gives sampling-throughput ratios
+$0.97/0.26=3.73$ at $256^2$ and $0.34/0.07=4.86$ at $512^2$.
+The epoch-time ratio is $20.66/7.66=2.70$ and training-throughput ratio
+$0.32/0.11=2.91$. The reported FID is $9.53$ points lower, a relative
+decrease of $38.5\%$; this percentage is \emph{not} a percentage increase
+in perceptual quality.
+
+FID (Fr\'echet Inception Distance) compares feature-distribution statistics
+between generated and reference images \cite{heusel2017fid}. It does not
+directly measure prompt adherence, fairness, factual correctness, or the
+quality of every individual image.
+The result supports an efficiency--quality advantage for this configuration
+and training endpoint. Six equal epochs do not imply equal wall-clock
+training budgets or equal convergence. Moreover, the table flags
+GPU-setting/batch-size differences from the paper's Figure~7; its ratios
+should not be universalized. Separate autoencoder pretraining is an
+additional cost not isolated by this table. Inpainting uses spatial conditions, so this
+experiment does not itself establish a text-prompt-control advantage.
+
+
+\subsection{Speed, quality, memory, and control: explicit criteria}\label{sec:tradeoffs}
+Table~\ref{tab:comparison} connects the benchmark to the mechanisms developed
+in Section~\ref{sec:ldm}. Its memory and control entries are analytical
+comparisons, not unreported empirical measurements.
+
+\begin{table*}[t]
+\centering\small
+\caption{Pixel versus latent diffusion. The concrete latent setting is
+LDM-4 with KL regularization. Architecture-based analysis is informed by
+\cite{ho2020ddpm,rombach2022ldm,ho2022cfg}; measured values are confined
+to Table~\ref{tab:benchmark}.}
+\label{tab:comparison}
+\begin{tabularx}{\linewidth}{@{}p{1.55cm}YY@{}}
+\toprule
+Criterion & Pixel diffusion & Latent diffusion (KL, $f=4$)\\
+\midrule
+Speed & Repeatedly processes a pixel-resolution state &
+Smaller repeated states; one final decode. The published inpainting
+throughput is higher in the selected setting\\
+Quality & No separate autoencoder bottleneck; still limited by denoiser,
+data, and sampling & Compression can retain useful structure but lose
+detail or introduce reconstruction artifacts\\
+Memory & Larger spatial states and potentially larger feature maps &
+Fewer latent positions; autoencoder/text-encoder weights and decoder
+activations add memory. End-to-end peak memory needs measurement\\
+Control & Can support text conditioning and guidance when trained for it &
+Cross-attention and guidance support flexible prompts; compression itself
+does not guarantee better semantic control\\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\textbf{Where speed comes from.}
+An analytical latency decomposition is
+\begin{equation}
+\mathcal T_{\rm gen}\approx
+\mathcal T_{\rm text}
++K\,r\,\mathcal T_{\rm U\text{-}Net}
++\mathcal T_{\rm decode},\label{eq:cost}
+\end{equation}
+where every $\mathcal T$ is measured in seconds, $K$ is the number of
+sampling updates, and $r$ is the effective number of denoiser evaluations
+per update ($1$ without standard CFG, $2$ with it, before batching effects).
+The final term is absent in pixel diffusion. Latent compression mainly
+reduces the cost of a U-Net evaluation; DDIM can reduce $K$
+\cite{song2021ddim}. Fewer updates, higher guidance, and greater compression
+are separate design choices with different quality consequences.
+
+\textbf{Why a smaller state is not a guaranteed memory ratio.}
+At $256^2$, RGB has $196{,}608$ coordinates; the illustrative
+$64\times64\times3$ latent has $12{,}288$, giving a $16{:}1$ state-element
+ratio. Generally it is $3f^2/c$.
+At fixed feature width, spatial activation storage also benefits from fewer
+positions, but model weights, attention, batching, and the full-resolution
+decoder affect the peak. Therefore neither a $16\times$ runtime speedup nor
+a $16\times$ total-memory reduction follows from this arithmetic.
+
+\textbf{Quality and applicability.}
+Moderate compression can make iterative generation practical at larger
+resolutions. Tasks needing exact text, tiny structures, or pixel-faithful
+reconstruction must also inspect autoencoder error. Stronger guidance and
+lower FID cannot substitute for checking requested object attributes and
+relations. These distinctions explain why the favorable inpainting result
+is useful evidence without settling every application.
+
+
+\subsection{Training data, bias, copyright, and limitations}\label{sec:ethics}
+\textbf{Data dependence.}
+The VAE learns what can be represented, the denoiser learns what is likely,
+and the text encoder learns which language features connect to imagery.
+Errors or underrepresentation at any stage can propagate to outputs.
+Large image--text corpora such as LAION-5B illustrate the scale of this
+dependency \cite{schuhmann2022laion}; they are not interchangeable with the
+specific datasets used in every original LDM experiment.
+Caption noise, duplicate images, language imbalance, and missing
+provenance are distinct concerns. Our analytical recommendation is to
+document dataset versions, sources, filters, and evaluation splits, and
+audit duplicates and underrepresented concepts.
+
+\textbf{Bias and prompt control.}
+Bianchi et al.\ \cite{bianchi2023bias} report demographic stereotype
+amplification in text-to-image systems, including prompts that do not
+explicitly name demographic groups. Latent compression does not remove
+these associations. Because guidance amplifies conditional preferences
+and can reduce diversity, stronger prompt adherence should not be assumed
+to imply fairer representation. Evaluation should compare distributions
+across multiple prompts, groups, and seeds; prompt rewriting alone is
+insufficient evidence of mitigation.
+
+\textbf{Memorization and copyright.}
+Carlini et al.\ \cite{carlini2023extract} demonstrate extraction of memorized
+training examples from diffusion models. This establishes a possible
+failure mode, not that every output is copied.
+Dataset availability, permission to use underlying works, memorization
+risk, and rights in an output are separate questions.
+The U.S. Copyright Office's 2025 pre-publication analysis distinguishes
+data collection, training, outputs, and licensing
+\cite{usco2025training}; it is a U.S. policy source, not Vietnamese law.
+Compression is no technical guarantee against reproduction.
+Our recommendations are documented provenance, appropriate permissions,
+deduplication, and similarity checks for sensitive use cases; none alone
+certifies legal compliance.
+
+\textbf{Limits of this report.}
+Our original evidence covers a scalar calculation and one synthetic
+forward trajectory. The model comparison is a published inpainting
+experiment, not our own matched text-to-image benchmark. We have no
+measured peak-memory values or prompt-adherence scores.
+A future study should hold hardware, precision, batch size, sampler, step
+count, guidance, resolution, and dataset fixed, report both autoencoder
+and denoiser costs, and evaluate quality and control separately.
+
+\section{Conclusion}\label{sec:conclusion}
+Learning noise removal across corruption levels supplies a generative
+sampling rule. Latent diffusion retains this principle while moving its
+repeated computation into a learned spatial representation. The VAE
+determines the balance between compression and reconstruction; the denoiser learns
+the latent distribution; cross-attention and guidance connect prompts to
+sampling. Published inpainting evidence supports a substantial efficiency
+benefit for a concrete KL-regularized LDM-4 setting, with lower FID at the
+reported endpoint. The broader conclusion is conditional: useful
+compression can improve practicality, while reconstruction fidelity,
+semantic control, data quality, bias, and rights concerns still require
+their own evaluation.

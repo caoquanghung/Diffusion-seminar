@@ -1,0 +1,59 @@
+% Based on the official ICCV 2025 Author Kit requested by the user.
+\documentclass[10pt,twocolumn,letterpaper]{article}
+\usepackage[pagenumbers]{iccv}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{mathtools,tabularx,array,multirow,float,listings}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,fit}
+\usepackage{microtype,placeins,xurl,balance}
+\definecolor{iccvblue}{rgb}{0.21,0.49,0.74}
+\usepackage[breaklinks,colorlinks,allcolors=iccvblue]{hyperref}
+\urlstyle{same}
+% Check horizontal overflow; allow small column-balancing roundoff.
+\hfuzz=0pt \vfuzz=3pt
+\setlength{\emergencystretch}{1em}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\definecolor{hcmusblue}{HTML}{154A78}
+\definecolor{lightblue}{HTML}{EDF4FA}
+\definecolor{lightgreen}{HTML}{EDF5F0}
+\definecolor{lightorange}{HTML}{FFF3E7}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Normal}{\mathcal{N}}
+\newcommand{\Id}{\mathbf{I}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\ab}{\bar{\alpha}}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\softmax}{softmax}
+\DeclareMathOperator{\KL}{D_{KL}}
+\newcommand{\pagecut}{\FloatBarrier\clearpage}
+\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true,columns=fullflexible,
+  frame=single,showstringspaces=false}
+\def\paperID{}
+\def\confName{ICCV}
+\def\confYear{2025}
+\title{Diffusion Models: From Adding Noise to Generating Images\\
+  \large A Detailed Study of Latent Diffusion and Conditional Control}
+\author{\mbox{[Full name 1]} -- [Student ID 1]\quad
+        \mbox{[Full name 2]} -- [Student ID 2]\\
+        \mbox{[Full name 3]} -- [Student ID 3]\\
+        University of Science (HCMUS), VNU-HCM\\
+        CS420 -- Artificial Intelligence}
+\hypersetup{pdftitle={Diffusion Models: From Adding Noise to Generating Images},
+  pdfauthor={HCMUS CS420 Seminar Team}}
+\begin{document}
+\maketitle
+\input{content/report}
+\FloatBarrier
+\label{LastBodyPage}
+\clearpage
+{\small
+\balance
+\bibliographystyle{ieeenat_fullname}
+\bibliography{references}
+}
+\clearpage
+\appendix
+\input{content/appendices}
+\end{document}

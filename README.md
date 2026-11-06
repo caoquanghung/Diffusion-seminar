@@ -1,1 +1,1 @@
-# Diffusion-seminar
+# IR-seminiar

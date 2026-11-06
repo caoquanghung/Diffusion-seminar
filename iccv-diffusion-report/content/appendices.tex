@@ -1,0 +1,237 @@
+\twocolumn[{
+\section{Requirement-to-Evidence Map}\label{app:map}
+This map concerns the written report. The assignment's separate slide,
+oral-presentation, balanced-participation, and Q\&A requirements require
+presentation deliverables and cannot be fulfilled by a report alone.
+The main text occupies pages 1--\pageref{LastBodyPage};
+references and appendices are separate.
+
+\begin{center}
+\begin{minipage}{\textwidth}
+\centering\small
+\captionsetup{hypcap=false}
+\captionof{table}{Coverage of the supplied CS420 S06 seminar brief.}
+\begin{tabularx}{\linewidth}{@{}p{1.1cm}YY@{}}
+\toprule
+Task & Required content & Location / evidence\\
+\midrule
+1 & Generative versus discriminative; GAN, autoregressive, diffusion &
+Section~\ref{sec:families}; Table~\ref{tab:families}\\
+2 & Forward process, beta schedule, Gaussian noise, noise predictor,
+reverse sampling; both-direction diagram &
+Section~\ref{sec:ddpm}; Eqs.~\eqref{eq:forward}--\eqref{eq:reverse};
+Figure~\ref{fig:ddpm}\\
+3 & Manual 1D forward step, symbols, stochastic expectation &
+Section~\ref{sec:scalar}; $x_1=0.600833$; conditional mean and variance\\
+4 & Small image at five noise levels; optional pretrained demonstration &
+Section~\ref{sec:noise}; Figure~\ref{fig:noise}; Table~\ref{tab:noise};
+executable code and arrays. Pretrained generation was not performed\\
+5 & VAE encoder/decoder, latent operations, cross-attention, pipeline &
+Sections~\ref{sec:vae}--\ref{sec:attention};
+Eqs.~\eqref{eq:vae}--\eqref{eq:attention};
+Figures~\ref{fig:ldm}--\ref{fig:attention}\\
+6 & Speed, quality, prompt control, data, copyright, bias;
+explicit pixel/latent comparison &
+Sections~\ref{sec:cfg}, \ref{sec:benchmark}--\ref{sec:ethics};
+Tables~\ref{tab:benchmark}--\ref{tab:comparison}\\
+\bottomrule
+\end{tabularx}
+\end{minipage}
+\end{center}
+\vspace{8pt}
+}]
+
+
+\textbf{Required representations.}
+Equation~\eqref{eq:forward} is the Gaussian forward transition;
+Eq.~\eqref{eq:loss} is the simplified noise-prediction objective.
+The worked example gives a complete substitution, result, and interpretation.
+Appendix~\ref{app:notation} records ranges, units, and modeling assumptions.
+
+\textbf{Paper reading and synthesis.}
+DDPM's forward/reverse method and contribution are reviewed in
+Section~\ref{sec:ddpm}. LDM's representation, method, conditioning,
+contributions, and differences are developed in
+Sections~\ref{sec:ldm}--\ref{sec:synthesis}.
+Section~\ref{sec:benchmark} identifies the exact source table for performance
+claims. The report includes Abstract, Introduction, Background/Paper Review,
+Method/Worked Example, Results and Discussion, Conclusion, and References.
+English is used according to the commissioning instruction, which overrides
+the brief's Vietnamese-language request.
+
+\pagecut
+\section{Reproducibility, Evaluation Protocol, and Attribution}\label{app:repro}
+\subsection{Reproduce the original illustration}
+The Overleaf project already contains the generated figure; Python is not
+needed to compile the report. To regenerate it locally:
+\begin{lstlisting}[language=bash]
+python -m pip install -r code/requirements.txt
+python code/make_figures.py
+latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
+\end{lstlisting}
+The figure uses a synthetic geometric image, not MNIST or another dataset.
+The script records the seed, schedule coefficients, library versions,
+scalar example, and benchmark-ratio arithmetic in
+\texttt{figures/analysis.json}. It saves unclipped frames, timesteps, the
+schedule, and cumulative coefficients in \texttt{noise\_arrays.npz},
+and summary coefficients in \texttt{noise\_levels.csv}.
+The delivered run used NumPy 2.3.5 and ReportLab 4.4.9.
+The sequence is one sampled Markov path; identical seeds and library
+versions reproduce it. No image-generation checkpoint is involved.
+
+\subsection{A future prompt and runtime study (not executed)}
+Select and record exact checkpoint identifiers, revisions, dataset licenses,
+hardware, software versions, numerical precision, resolution, and batch
+size. Keep each fixed within a comparison and record warm-up policy.
+For latent models, measure text encoding, denoising, decoding, and
+end-to-end latency separately, and record peak allocated memory over the
+entire pipeline.
+
+Use paired prompts such as \emph{a red cube to the left of a blue sphere}
+and \emph{a green cube to the left of a blue sphere}; separately swap the
+spatial relation. Predefine at least 20 seeds per condition and inspect
+all samples. Vary sampling steps and guidance in separate sweeps.
+Report object presence, color binding, relation correctness, and diversity;
+do not select only attractive examples. This is a proposed evaluation
+design, not empirical evidence of a model's prompt capability.
+
+\subsection{Provenance and AI assistance}
+Figures~\ref{fig:ddpm}, \ref{fig:ldm}, and \ref{fig:attention} are original
+TikZ schematics explaining cited methods; no paper figure is reproduced.
+Figure~\ref{fig:noise} and Table~\ref{tab:noise} are generated by the supplied
+code. Table~\ref{tab:benchmark} is transcribed from LDM Table~6; ratios are
+our arithmetic. The two qualitative comparison tables are analytical
+syntheses with sources in their captions.
+
+The document uses the requested ICCV 2025 author kit
+\cite{template}, with its official style and bibliography files.
+It uses 10-point type, two columns, and US Letter paper, following the
+new template request. The author block retains HCMUS and CS420 information
+and three name/ID placeholders. Template provenance is included in the project.
+
+OpenAI Codex \cite{codex} assisted with drafting, equations, code,
+diagram construction, source checking, and LaTeX preparation.
+Preparation checks included consulting the original DDPM/LDM equations and
+LDM Table~6, recalculating the numerical examples and ratios, and compiling
+and visually reviewing the PDF. The named student authors should review
+and accept the final manuscript and replace the author placeholders before
+submission. No human study, new trained model, or pretrained generation
+benchmark is claimed.
+
+\pagecut
+\twocolumn[{
+\section{Notation, Assumptions, and Additional Derivation}\label{app:notation}
+\subsection{Ranges and units}
+Images are normalized and dimensionless. Clean pixels in the illustration
+lie in $[-1,1]$; noisy states, latent values, and predicted noise are
+real-valued and need not stay within that interval.
+There is no physical time unit in the diffusion index.
+
+\begin{center}
+\begin{minipage}{\textwidth}
+\centering\small
+\captionsetup{hypcap=false}
+\captionof{table}{Notation used in the equations; meanings are also introduced
+beside the corresponding equations in the main text.}
+\begin{tabularx}{\linewidth}{@{}p{3.3cm}Y@{}}
+\toprule
+Symbols & Meaning, range, and units\\
+\midrule
+$x_0,x_t,\hat x_0$ & Clean/noisy/reconstructed image; vector in $\R^D$ or
+an equivalent image tensor; normalized intensity units\\
+$D,H,W,h,w,c,d_z$ & Positive integer dimensions. $D=3HW$ for RGB,
+$d_z=hwc$; $H,W$ count pixels, $h,w$ count latent positions\\
+$t,T,j$ & Integer timestep, terminal step, and product index;
+$1\le t\le T$, $1\le j\le t$\\
+$\beta_t,\alpha_t,\ab_t$ & Dimensionless schedule coefficients;
+$0<\beta_t<1$, $\alpha_t=1-\beta_t$, $0<\ab_t\le1$\\
+$q,p_\theta,p_{\rm data}$ & Fixed forward transition, learned reverse/generative
+distribution, and data distribution, respectively\\
+$\Normal(\mu,\Sigma),\Id$ & Gaussian with mean $\mu$ and covariance $\Sigma$;
+identity covariance of the relevant dimension\\
+$\eps,\eps_z,u,\xi$ & Independent standard-normal draws in their respective
+sampling operations; each coordinate has mean $0$ and variance $1$\\
+$\sigma_t,\mu_\phi,\sigma_\phi$ & Reverse noise standard deviation
+$\sigma_t\ge0$; VAE posterior mean and positive standard deviations\\
+$\theta,\phi,\psi,\eta,\omega$ & Trainable parameter arrays of denoiser,
+VAE encoder, decoder, condition encoder, and illustrative classifier\\
+$\tilde z,z_0,z_t,f,a$ & Raw/clean-scaled/noisy latent;
+spatial factor $f\ge1$, with $H,W$ divisible by $f$;
+fixed dimensionless scale $a>0$\\
+$y,\tau_\eta(y),F,C$ & Condition, encoded condition, U-Net features, and token
+embedding matrix. Continuous embeddings are real-valued\\
+$n,m,d_u,d_y,d_a,d_v$ & Positive integer counts and widths for cross-attention;
+see Section~\ref{sec:attention} for all matrix shapes\\
+$Q,K,V,A,O$ & Query, key, value, attention-weight, and output matrices;
+$A_{ij}\in[0,1]$ and $\sum_j A_{ij}=1$\\
+$s,w,p_{\rm drop},\varnothing$ & CFG scale $s\ge0$, alternative scale $w=s-1$,
+dropout probability in $(0,1)$, and null condition\\
+$K,r,\mathcal T$ & In the cost model only, $K$ counts updates (not attention
+keys), $r$ counts evaluations/update, and $\mathcal T$ is seconds\\
+$L_{\rm simple},L_{\rm LDM}$ & Expected summed squared noise-prediction
+errors; dimensionless squared normalized-coordinate units\\
+$\E,\|\cdot\|_2,\KL$ & Expectation, Euclidean norm, and KL divergence;
+natural logarithms make KL and negative log likelihood use nats\\
+\bottomrule
+\end{tabularx}
+\end{minipage}
+\end{center}
+\vspace{8pt}
+}]
+
+
+\pagecut
+\subsection{Why the forward marginal is available in closed form}
+Assume independent standard-normal innovations
+$\eps^{(1)},\eps^{(2)}$ and let $x_0$ be fixed. Applying
+Eq.~\eqref{eq:forward} twice gives
+\begin{align*}
+x_1&=\sqrt{\alpha_1}x_0+\sqrt{\beta_1}\eps^{(1)},\\
+x_2&=\sqrt{\alpha_2\alpha_1}x_0
++\sqrt{\alpha_2\beta_1}\eps^{(1)}
++\sqrt{\beta_2}\eps^{(2)}.
+\end{align*}
+The two independent noise terms have total variance
+$\alpha_2\beta_1+\beta_2
+=\alpha_2(1-\alpha_1)+(1-\alpha_2)=1-\alpha_2\alpha_1$.
+A sum of independent Gaussians is Gaussian. Repeating this argument yields
+Eq.~\eqref{eq:closed}, with mean $\sqrt{\ab_t}x_0$ and covariance
+$(1-\ab_t)\Id$ \cite{ho2020ddpm}.
+
+Gaussian innovations are independent across coordinates and steps, but
+the noisy images themselves have correlations inherited from $x_0$.
+When $\ab_T$ is close to zero, dependence on the starting image is weak
+and a standard-normal starting prior is a useful approximation.
+A finite schedule need not make it exactly equal to that prior.
+The learned Gaussian reverse transition is a modeling approximation
+motivated by small forward steps; no finite network is assumed to know
+the exact reverse conditional.
+
+\subsection{Why noise prediction is useful without knowing the true noise}
+For a fixed $x_t$ and $t$, the vector minimizing expected squared prediction
+error is $\E[\eps\mid x_t,t]$ (and, in a conditional model,
+$\E[\eps\mid x_t,t,y]$). Thus a trained predictor estimates a statistical
+direction shared by plausible clean examples, not an oracle that recovers
+every random draw. Its corresponding clean-state estimate is
+\begin{equation}
+\hat x_0(x_t,t)=
+\frac{x_t-\sqrt{1-\ab_t}\eps_\theta(x_t,t)}{\sqrt{\ab_t}}.
+\end{equation}
+This follows by rearranging Eq.~\eqref{eq:closed}; prediction errors remain
+and can be magnified at small $\ab_t$. The reverse sampler uses predictions
+over many levels rather than treating one estimate as guaranteed recovery.
+The same argument applies in latent space, followed by the learned decoder.
+
+\subsection{Two training stages and their different roles}
+Stage one updates encoder $\phi$ and decoder $\psi$ to preserve useful
+image information in a regularized representation. Stage two fixes them
+and trains denoiser $\theta$ with Eq.~\eqref{eq:ldmloss}. The original LDM
+conditional formulation jointly optimizes the condition encoder and
+denoiser \cite[Sec.~3.3]{rombach2022ldm}; particular later implementations
+may instead keep the text encoder fixed.
+
+The distinction matters: improving the denoiser cannot guarantee exact
+recovery of details that the first stage systematically discards.
+Conversely, a high-quality autoencoder does not itself provide the
+conditional latent distribution needed for generation. The VAE prior
+regularizer and the learned diffusion prior play different roles.
