@@ -12,13 +12,13 @@
 The requested template is https://www.overleaf.com/latex/templates/iccv2025-author-kit/nwnvrwcqwcsh.
 This edition uses the official ICCV 2025 style and bibliography files, 10-point text, two columns, and US Letter paper. The new template request supersedes the previous HCMUS cover and A4 layout. The manuscript is a CS420 seminar report, not a claim of ICCV acceptance or a conference submission. Author names remain visible; page numbers are enabled.
 
-The main report occupies **7 pages**, followed by **1 page of references** and **4 pages of appendices** (12 pages total). Wide figures/tables span the two-column grid for readability. Long equations are split across lines rather than reduced to tiny text. The appendix requirement and notation tables are full-width, with accompanying prose in two columns.
+The main report occupies **8 pages**, followed by **1 page of references** and **6 pages of appendices** (15 pages total). Wide figures/tables span the two-column grid for readability. Long equations are split across lines rather than reduced to tiny text. The appendix requirement and notation tables are full-width, with accompanying prose in two columns.
 
-Edit scientific content in **content/report.tex**, appendices in **content/appendices.tex**, and references in **references.bib**. The report retains all six written task requirements and the detailed latent-diffusion discussion. Standalone slides/oral presentation requirements remain outside this package.
+Edit scientific content in **content/report.tex**, appendices in **content/appendices.tex**, and references in **references.bib**. The report retains all six written task requirements and reviews DDPM and LDM around the guiding question: how can learning to remove noise enable a model to generate new images? The learning objective also explicitly covers why latent diffusion reduces computational demands. Standalone slides/oral presentation requirements remain outside this package.
 
 ## Evidence and reproducibility
 
-Results distinguish original numerical/noising illustrations from published LDM inpainting measurements. No pretrained-generation, GPU-time, peak-memory, or prompt-control benchmark was run. The representation and guidance explanations, numerical values, citations, figure data, and reproducibility code are retained from the previous edition.
+Results distinguish original numerical/noising illustrations from published DDPM objective-ablation results and LDM inpainting measurements. No pretrained-generation, GPU-time, peak-memory, or prompt-control benchmark was run. The main text explains the score-to-noise-prediction connection, DDPM training/sampling and the role of the simplified loss, then emphasizes LDM latent space and VAE encoder/decoder roles. Cross-attention and guidance receive brief treatment. DSM, variational-bound and reverse-mean derivations are in Appendix C; detailed VAE/attention/guidance material is in Appendix D. The original figure data and reproducibility code are retained.
 
 Compile locally with:
 

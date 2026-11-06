@@ -1,4 +1,4 @@
-\begin{thebibliography}{15}
+\begin{thebibliography}{18}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -62,10 +62,20 @@ Christoph Schuhmann, Romain Beaumont, Richard Vencu, Cade Gordon, Ross Wightman,
 \newblock {LAION-5B}: An open large-scale dataset for training next generation image-text models.
 \newblock In \emph{Advances in Neural Information Processing Systems}, 2022.
 
+\bibitem[Sohl-Dickstein et~al.(2015)Sohl-Dickstein, Weiss, Maheswaranathan, and Ganguli]{sohl2015diffusion}
+Jascha Sohl-Dickstein, Eric Weiss, Niru Maheswaranathan, and Surya Ganguli.
+\newblock Deep unsupervised learning using nonequilibrium thermodynamics.
+\newblock In \emph{Proceedings of the 32nd International Conference on Machine Learning}, pages 2256--2265, 2015.
+
 \bibitem[Song et~al.(2021)Song, Meng, and Ermon]{song2021ddim}
 Jiaming Song, Chenlin Meng, and Stefano Ermon.
 \newblock Denoising diffusion implicit models.
 \newblock In \emph{International Conference on Learning Representations}, 2021.
+
+\bibitem[Song and Ermon(2019)]{song2019score}
+Yang Song and Stefano Ermon.
+\newblock Generative modeling by estimating gradients of the data distribution.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2019.
 
 \bibitem[{U.S. Copyright Office}(2025)]{usco2025training}
 {U.S. Copyright Office}.
@@ -82,5 +92,10 @@ A{\"a}ron van~den Oord, Nal Kalchbrenner, and Koray Kavukcuoglu.
 Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan~N. Gomez, {\L}ukasz Kaiser, and Illia Polosukhin.
 \newblock Attention is all you need.
 \newblock In \emph{Advances in Neural Information Processing Systems}, 2017.
+
+\bibitem[Vincent(2011)]{vincent2011dsm}
+Pascal Vincent.
+\newblock A connection between score matching and denoising autoencoders.
+\newblock \emph{Neural Computation}, 23\penalty0 (7):\penalty0 1661--1674, 2011.
 
 \end{thebibliography}

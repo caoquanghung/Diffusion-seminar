@@ -1,10 +1,10 @@
 # Repository memory and agent handoff
 
-Last updated: 2026-11-06 (Asia/Ho_Chi_Minh).
+Last updated: 2026-11-07 (Asia/Ho_Chi_Minh).
 
 ## Purpose and current state
 
-This repository contains an English CS420 seminar report about **Diffusion Models: From Adding Noise to Generating Images**, with particular emphasis on latent diffusion. The report and its Overleaf package have been completed. Continue from the **ICCV edition** when the user requests changes; do not restart from the older HCMUS layout.
+This repository contains an English CS420 seminar report about **Diffusion Models: From Adding Noise to Generating Images**, organized around denoising-based generation through both DDPM and LDM. The report and its Overleaf package have been completed. Continue from the **ICCV edition** when the user requests changes; do not restart from the older HCMUS layout.
 
 The user communicates in Vietnamese. Explain progress/results in Vietnamese, but keep the report in English. This file is persistent context, not a new request to revise or rerun the report. Follow the user's latest instructions if they supersede these recorded decisions.
 
@@ -31,6 +31,16 @@ Current deliverables:
 - `CS420_Diffusion_Report_ICCV2025_Overleaf.zip`
 - `pdf/CS420_Diffusion_Report_ICCV2025.pdf`
 
+
+## Latest narrative revision (November 7, 2026)
+
+The user approved a broader DDPM/LDM flow. The guiding question is **How can learning to remove noise enable a model to generate new images?** The Introduction also states the learning objective: **Explain forward noising and reverse denoising, including why latent diffusion reduces computational demands.**
+
+Current main sections: (1) Introduction; (2) Background and Paper Review, with qualitative GAN/autoregressive/diffusion comparison still at 2.2 and historical context at 2.3; (3) Method: From Denoising to Generation, a concise score/noise conceptual bridge; (4) DDPM: Formulation and Worked Examples, including why L_simple is used and what its reported quality benefit means; (5) LDM: Latent Space and Efficient Generation, emphasizing VAE encoder/decoder and latent representation; (6) Results and Discussion; (7) Conclusion. The subtitle now covers DDPM and LDM.
+
+Heavy DSM, MSE-optimum, variational-bound, and reverse-mean derivations are in Appendix C. Supporting VAE, attention matrix/toy example, and CFG details are in Appendix D; main-text attention is brief. The current PDF has **8 main-text pages + 1 reference page + 6 appendix pages = 15 pages**. The body must remain at most 10 pages, excluding references/appendices. The ZIP clean-build check must be refreshed after edits.
+
+A new **published** DDPM comparison (original Table 1; objective ablation also in Table 2) is included: unconditional CIFAR-10, epsilon prediction and fixed isotropic variance, variational bound L versus L_simple. FID: 13.51 vs 3.17; NLL upper bound: 3.70 vs 3.75 bits/dimension. FID uses training-reference images; the simplified model's test-reference FID is 5.24. This is not a new experiment or a direct quality comparison against LDM's inpainting task. Do not attribute fewer sampling steps or latent compression savings to changing the loss alone.
 
 ## Assignment and template sources
 Written requirements:
