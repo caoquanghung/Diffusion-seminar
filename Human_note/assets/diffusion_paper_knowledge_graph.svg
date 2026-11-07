@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="760" viewBox="0 0 1600 760" role="img" aria-labelledby="title desc">
+  <title id="title">Knowledge graph of four foundational diffusion papers</title>
+  <desc id="desc">DPM 2015 provides the probabilistic reverse-chain and variational framework to DDPM 2020. NCSN 2019 connects through multiscale score matching. DDPM provides a noise-prediction prior which LDM 2021/2022 applies in latent space. Solid lines represent direct model inheritance. The dashed line denotes the score-matching connection.</desc>
+  <rect width="1600" height="760" fill="#f8fafc" />
+  <text x="55" y="55" font-size="29" font-weight="700" font-family="Arial, Helvetica, sans-serif" fill="#1e293b">Four papers, two branches, one meeting point</text>
+  <text x="55" y="89" font-family="Arial, Helvetica, sans-serif" fill="#475569" font-size="19">A focused graph of method inheritance and conceptual connections</text>
+  <rect x="55" y="135" width="390" height="190" rx="15" fill="#eaf2fb" stroke="#8bb1da" stroke-width="2" />
+  <text x="80" y="170" fill="#315d8a" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" letter-spacing="1.5">DPM · 2015</text>
+  <text x="80" y="210" font-family="Arial, Helvetica, sans-serif" fill="#1e293b" font-size="27" font-weight="700">Sohl-Dickstein et al.</text>
+  <text x="80" y="247" font-family="Arial, Helvetica, sans-serif" fill="#1e293b" font-size="21">Learn probabilistic reversal</text>
+  <text x="80" y="278" font-family="Arial, Helvetica, sans-serif" fill="#475569" font-size="19">Reverse mean and covariance</text>
+  <text x="80" y="305" font-family="Arial, Helvetica, sans-serif" fill="#475569" font-size="19">Variational learning framework</text>
+  <rect x="55" y="440" width="390" height="190" rx="15" fill="#f2edf8" stroke="#b69dcd" stroke-width="2" />
+  <text x="80" y="475" fill="#704a91" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" letter-spacing="1.5">NCSN · 2019</text>
+  <text x="80" y="515" font-family="Arial, Helvetica, sans-serif" fill="#1e293b" font-size="27" font-weight="700">Song &amp; Ermon</text>
+  <text x="80" y="552" font-family="Arial, Helvetica, sans-serif" fill="#1e293b" font-size="21">Learn scores at many scales</text>
+  <text x="80" y="583" font-family="Arial, Helvetica, sans-serif" fill="#475569" font-size="19">Noise-conditional score matching</text>
+  <text x="80" y="610" font-family="Arial, Helvetica, sans-serif" fill="#475569" font-size="19">Annealed Langevin sampling</text>
+  <rect x="675" y="285" width="370" height="210" rx="15" fill="#e8f5f1" stroke="#7bb5a3" stroke-width="2" />
+  <text x="700" y="323" fill="#2f6d59" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" letter-spacing="1.5">DDPM · 2020</text>
+  <text x="700" y="366" font-family="Arial, Helvetica, sans-serif" fill="#1e293b" font-size="27" font-weight="700">Ho, Jain &amp; Abbeel</text>
+  <text x="700" y="405" font-family="Arial, Helvetica, sans-serif" fill="#1e293b" font-size="21">Predict noise to denoise</text>
+  <text x="700" y="439" font-family="Arial, Helvetica, sans-serif" fill="#475569" font-size="19">Noise-based reverse mean</text>
+  <text x="700" y="468" font-family="Arial, Helvetica, sans-serif" fill="#475569" font-size="19">Simplified training objective</text>
+  <rect x="1195" y="285" width="350" height="210" rx="15" fill="#fff3df" stroke="#d7b37b" stroke-width="2" />
+  <text x="1220" y="323" fill="#8b632b" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" letter-spacing="1.5">LDM · 2021 / 2022</text>
+  <text x="1220" y="366" font-family="Arial, Helvetica, sans-serif" fill="#1e293b" font-size="27" font-weight="700">Rombach et al.</text>
+  <text x="1220" y="405" font-family="Arial, Helvetica, sans-serif" fill="#1e293b" font-size="21">Denoise in latent space</text>
+  <text x="1220" y="439" font-family="Arial, Helvetica, sans-serif" fill="#475569" font-size="19">Perceptual autoencoder</text>
+  <text x="1220" y="468" font-family="Arial, Helvetica, sans-serif" fill="#475569" font-size="19">Flexible conditioning</text>
+  <path d="M 445 230 C 555 230 555 340 670 340" fill="none" stroke="#34495e" stroke-width="3" />
+  <text x="483" y="185" font-family="Arial, Helvetica, sans-serif" fill="#1e293b" font-size="19" font-weight="600">Reverse chain</text>
+  <text x="483" y="212" font-family="Arial, Helvetica, sans-serif" fill="#475569" font-size="19">Variational framework</text>
+  <text x="483" y="586" fill="#704a91" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="600">Multiscale DSM</text>
+  <text x="483" y="613" font-family="Arial, Helvetica, sans-serif" fill="#475569" font-size="19">Score connection</text>
+  <path d="M 1045 390 L 1189 390" fill="none" stroke="#34495e" stroke-width="3" />
+  <text x="1067" y="335" font-family="Arial, Helvetica, sans-serif" fill="#1e293b" font-size="19" font-weight="600">Noise prior</text>
+  <text x="1067" y="362" font-family="Arial, Helvetica, sans-serif" fill="#475569" font-size="19">Latent transfer</text>
+  <line x1="55" y1="690" x2="115" y2="690" stroke="#34495e" stroke-width="3" />
+  <text x="130" y="697" font-family="Arial, Helvetica, sans-serif" fill="#475569" font-size="19">Direct model inheritance</text>
+  <text x="555" y="697" font-family="Arial, Helvetica, sans-serif" fill="#475569" font-size="19">Score-matching connection, not identical samplers</text>
+  <text x="55" y="735" font-size="17" fill="#64748b" font-family="Arial, Helvetica, sans-serif">Four paper nodes only. Additional foundations and later developments are discussed in the accompanying Markdown note.</text>
+  <polygon points="670,340 653,332 653,348" fill="#34495e" />
+  <polygon points="670,445 653,437 653,453" fill="#7a529c" />
+  <polygon points="1189,390 1172,382 1172,398" fill="#34495e" />
+  <path d="M 445.00 535.00 L 445.66 535.00 L 446.31 535.00 L 446.97 534.99 L 447.62 534.98 L 448.27 534.97 L 448.91 534.96 L 449.56 534.95 L 450.20 534.93 L 450.83 534.91 L 451.47 534.89 L 452.10 534.87 L 452.73 534.85 L 453.36 534.82 L 453.99 534.79 L 454.61 534.76" fill="none" stroke="#7a529c" stroke-width="3" />
+  <path d="M 461.89 534.24 L 462.48 534.18 L 463.07 534.13 L 463.66 534.07 L 464.25 534.01 L 464.83 533.94 L 465.41 533.88 L 465.98 533.81 L 466.56 533.74 L 467.13 533.67 L 467.70 533.59 L 468.27 533.52 L 468.84 533.44 L 469.40 533.36 L 469.97 533.28 L 470.52 533.20 L 471.08 533.12 L 471.64 533.03" fill="none" stroke="#7a529c" stroke-width="3" />
+  <path d="M 478.66 531.76 L 479.19 531.65 L 479.71 531.54 L 480.24 531.42 L 480.76 531.31 L 481.27 531.19 L 481.79 531.07 L 482.31 530.95 L 482.82 530.83 L 483.33 530.71 L 483.84 530.58 L 484.34 530.46 L 484.85 530.33 L 485.35 530.20 L 485.85 530.07 L 486.35 529.94 L 486.85 529.80 L 487.34 529.67 L 487.83 529.53 L 488.33 529.39" fill="none" stroke="#7a529c" stroke-width="3" />
+  <path d="M 495.02 527.30 L 495.49 527.14 L 495.95 526.98 L 496.41 526.82 L 496.87 526.65 L 497.33 526.49 L 497.79 526.32 L 498.24 526.15 L 498.70 525.98 L 499.15 525.81 L 499.60 525.64 L 500.05 525.47 L 500.50 525.29 L 500.94 525.12 L 501.39 524.94 L 501.83 524.76 L 502.27 524.58 L 502.71 524.40 L 503.15 524.22 L 503.59 524.03 L 504.02 523.85 L 504.46 523.66" fill="none" stroke="#7a529c" stroke-width="3" />
+  <path d="M 510.80 520.73 L 511.22 520.53 L 511.63 520.33 L 512.04 520.12 L 512.45 519.91 L 512.85 519.70 L 513.26 519.49 L 513.67 519.28 L 514.07 519.07 L 514.47 518.86 L 514.87 518.65 L 515.27 518.43 L 515.67 518.22 L 516.07 518.00 L 516.47 517.78 L 516.86 517.57 L 517.26 517.35 L 517.65 517.13 L 518.04 516.90 L 518.43 516.68 L 518.82 516.46 L 519.21 516.24 L 519.60 516.01" fill="none" stroke="#7a529c" stroke-width="3" />
+  <path d="M 525.30 512.54 L 525.68 512.30 L 526.05 512.07 L 526.42 511.83 L 526.79 511.59 L 527.16 511.35 L 527.53 511.10 L 527.90 510.86 L 528.26 510.62 L 528.63 510.38 L 528.99 510.13 L 529.36 509.89 L 529.72 509.64 L 530.08 509.40 L 530.45 509.15 L 530.81 508.90 L 531.17 508.65 L 531.53 508.41 L 531.89 508.16 L 532.25 507.91 L 532.61 507.66 L 532.96 507.41 L 533.32 507.15 L 533.68 506.90" fill="none" stroke="#7a529c" stroke-width="3" />
+  <path d="M 539.30 502.80 L 539.64 502.54 L 539.99 502.28 L 540.33 502.02 L 540.68 501.76 L 541.02 501.50 L 541.37 501.23 L 541.71 500.97 L 542.06 500.71 L 542.40 500.44 L 542.74 500.18 L 543.09 499.92 L 543.43 499.65 L 543.77 499.39 L 544.11 499.12 L 544.46 498.86 L 544.80 498.59 L 545.14 498.33 L 545.48 498.06 L 545.82 497.79 L 546.16 497.53 L 546.50 497.26 L 546.84 496.99 L 547.18 496.73" fill="none" stroke="#7a529c" stroke-width="3" />
+  <path d="M 552.93 492.16 L 553.26 491.89 L 553.60 491.62 L 553.94 491.35 L 554.28 491.08 L 554.61 490.81 L 554.95 490.54 L 555.29 490.27 L 555.62 490.00 L 555.96 489.73 L 556.30 489.46 L 556.64 489.19 L 556.98 488.92 L 557.31 488.65 L 557.65 488.38 L 557.99 488.11 L 558.33 487.84 L 558.67 487.57 L 559.00 487.30 L 559.34 487.03 L 559.68 486.76 L 560.02 486.49 L 560.36 486.22 L 560.70 485.95" fill="none" stroke="#7a529c" stroke-width="3" />
+  <path d="M 566.17 481.67 L 566.51 481.41 L 566.86 481.14 L 567.21 480.88 L 567.55 480.61 L 567.90 480.35 L 568.24 480.08 L 568.59 479.82 L 568.94 479.56 L 569.29 479.29 L 569.64 479.03 L 569.99 478.77 L 570.34 478.50 L 570.69 478.24 L 571.04 477.98 L 571.39 477.72 L 571.74 477.46 L 572.09 477.20 L 572.45 476.94 L 572.80 476.68 L 573.15 476.42 L 573.51 476.16 L 573.86 475.90 L 574.22 475.65" fill="none" stroke="#7a529c" stroke-width="3" />
+  <path d="M 580.01 471.59 L 580.38 471.35 L 580.75 471.10 L 581.12 470.85 L 581.49 470.60 L 581.87 470.36 L 582.24 470.11 L 582.61 469.87 L 582.99 469.62 L 583.36 469.38 L 583.74 469.14 L 584.12 468.90 L 584.49 468.65 L 584.87 468.41 L 585.25 468.17 L 585.63 467.93 L 586.02 467.70 L 586.40 467.46 L 586.78 467.22 L 587.17 466.99 L 587.56 466.75 L 587.94 466.52 L 588.33 466.28" fill="none" stroke="#7a529c" stroke-width="3" />
+  <path d="M 594.29 462.87 L 594.69 462.65 L 595.10 462.43 L 595.51 462.22 L 595.92 462.00 L 596.33 461.78 L 596.74 461.57 L 597.16 461.35 L 597.57 461.14 L 597.99 460.93 L 598.41 460.72 L 598.83 460.51 L 599.25 460.30 L 599.67 460.09 L 600.09 459.88 L 600.52 459.67 L 600.94 459.47 L 601.37 459.27 L 601.80 459.06 L 602.23 458.86 L 602.66 458.66 L 603.09 458.46" fill="none" stroke="#7a529c" stroke-width="3" />
+  <path d="M 609.76 455.60 L 610.22 455.42 L 610.68 455.24 L 611.14 455.06 L 611.60 454.88 L 612.07 454.71 L 612.53 454.53 L 613.00 454.36 L 613.47 454.19 L 613.94 454.02 L 614.41 453.85 L 614.89 453.68 L 615.36 453.51 L 615.84 453.35 L 616.32 453.18 L 616.80 453.02 L 617.28 452.86 L 617.77 452.70 L 618.25 452.54 L 618.74 452.38 L 619.23 452.23" fill="none" stroke="#7a529c" stroke-width="3" />
+  <path d="M 625.77 450.33 L 626.28 450.20 L 626.80 450.06 L 627.32 449.93 L 627.84 449.80 L 628.37 449.67 L 628.90 449.54 L 629.42 449.42 L 629.95 449.29 L 630.49 449.17 L 631.02 449.05 L 631.56 448.93 L 632.10 448.81 L 632.64 448.69 L 633.18 448.58 L 633.72 448.46 L 634.27 448.35 L 634.82 448.24 L 635.37 448.13" fill="none" stroke="#7a529c" stroke-width="3" />
+  <path d="M 642.16 446.97 L 642.74 446.88 L 643.32 446.80 L 643.91 446.72 L 644.49 446.64 L 645.08 446.56 L 645.67 446.48 L 646.27 446.41 L 646.86 446.33 L 647.46 446.26 L 648.06 446.19 L 648.67 446.12 L 649.27 446.06 L 649.88 445.99 L 650.49 445.93 L 651.11 445.87 L 651.72 445.82 L 652.34 445.76" fill="none" stroke="#7a529c" stroke-width="3" />
+  <path d="M 659.31 445.27 L 659.95 445.24 L 660.61 445.21 L 661.26 445.18 L 661.92 445.15 L 662.57 445.13 L 663.24 445.11 L 663.90 445.09 L 664.57 445.07 L 665.24 445.05 L 665.91 445.04 L 666.58 445.03 L 667.26 445.02 L 667.94 445.01 L 668.63 445.00 L 669.31 445.00" fill="none" stroke="#7a529c" stroke-width="3" />
+  <line x1="480" x2="490" y1="690" y2="690" stroke="#7a529c" stroke-width="3" />
+  <line x1="497" x2="507" y1="690" y2="690" stroke="#7a529c" stroke-width="3" />
+  <line x1="514" x2="524" y1="690" y2="690" stroke="#7a529c" stroke-width="3" />
+  <line x1="531" x2="540" y1="690" y2="690" stroke="#7a529c" stroke-width="3" />
+</svg>

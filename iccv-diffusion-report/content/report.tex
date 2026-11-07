@@ -1,42 +1,45 @@
 \begin{abstract}
 How can learning to remove noise enable a model to generate new images?
-This report explains the connection between Gaussian corruption, score
-estimation, noise-prediction training, and iterative generation. We review
+This report explains how Gaussian forward corruption, a learned reverse
+model, and noise-prediction training define an iterative generator. We review
 two complementary papers: Denoising Diffusion Probabilistic Models (DDPM)
 establishes a practical pixel-space formulation, while Latent Diffusion
 Models (LDM) moves denoising into a learned compressed representation.
-We explain the origin and role of DDPM's simplified loss, distinguish
-training from sampling, and illustrate forward noising with a complete
+We introduce the original 2015 diffusion framework, then distinguish
+DDPM's noise-prediction parameterization from direct reverse-parameter
+estimation. Starting from the variational objective, we
+explain DDPM's simplified loss, distinguish training from sampling,
+and illustrate forward noising with a complete
 scalar calculation and an original five-level image sequence. Published
 DDPM results demonstrate a sample-quality benefit from objective
 reweighting; a separately attributed LDM inpainting comparison illustrates
 the computational benefit of latent diffusion. The discussion emphasizes
 VAE encoder/decoder roles, briefly introduces conditioning, and separates
 compression savings from sampler acceleration. Mathematical derivations
-are provided in the appendices. No trained or pretrained image generator
-was executed for this report.
+are provided in the appendices.
 \end{abstract}
 
 \section{Introduction}\label{sec:intro}
-Adding noise destroys visible image structure, yet learning to remove it
-can support a generative model. The apparent paradox is resolved by
-considering a distribution of images rather than recovering one particular
-corrupted photograph. Across many training examples and noise levels,
-a denoiser learns statistical information that can guide a new random
-state toward plausible images.
+Adding noise destroys image structure, yet learning to remove it can
+support generation. Across many images and noise levels, a denoiser
+learns shared statistical structure. A generative process uses this
+information to produce samples rather than recover one particular
+corrupted photograph.
 
 Our guiding question is: \emph{How can learning to remove noise enable a
 model to generate new images?} Our learning objective is to \emph{explain
 forward noising and reverse denoising, including why latent diffusion
 reduces computational demands}. These goals organize the report around
-two complementary papers. DDPM \cite{ho2020ddpm} explains how Gaussian
-transitions and noise prediction define a practical generative process.
+two complementary papers. DDPM \cite{ho2020ddpm} develops the earlier diffusion framework
+\cite{sohl2015diffusion} through effective noise-prediction training.
 LDM \cite{rombach2022ldm} asks how to retain that process while reducing
 repeated computation at image resolution.
 
-We first establish the conceptual bridge from distribution modeling to
-noise prediction, then study DDPM's formulation and worked examples,
-and finally examine LDM's encoder, decoder, and latent representation.
+We first explain the 2015 probabilistic construction: forward corruption,
+a learned reverse model, sampling, and variational training. We then
+isolate DDPM's noise-prediction parameterization and simplified objective. A brief score-matching connection follows the method rather
+than serving as its prerequisite. We then examine LDM's encoder, decoder,
+and latent representation.
 Results distinguish our own forward-noising illustrations from published
 model measurements. We do not train a denoiser or run a pretrained
 generator, GPU benchmark, or prompt-adherence experiment.
@@ -67,191 +70,290 @@ A \emph{diffusion model} learns to reverse gradual noise corruption and
 generates an image by repeatedly denoising an initially random state
 \cite{ho2020ddpm}. It refines the whole state across multiple steps,
 requiring repeated network evaluations during sampling.
-Table~\ref{tab:families} summarizes these learning ideas, sampling procedures,
-and qualitative trade-offs.
+Figure~\ref{fig:families} in Appendix~\ref{app:familycomparison}
+compares the generative mechanisms of these three families.
 
 
-\begin{table*}[t]
-\centering\small
-\caption{Qualitative comparison of representative image generators.
-According to \cite{goodfellow2014gan,oord2016pixelrnn,ho2020ddpm};
-these are architectural tendencies, not universal performance rankings.}
-\label{tab:families}
-\begin{tabularx}{\linewidth}{@{}p{2.45cm}YYY@{}}
-\toprule
-Family & Learning idea & Sampling & Main trade-off\\
-\midrule
-GAN & Generator competes with a discriminator & Typically one generator pass & Fast synthesis; balancing the adversarial game can be difficult\\
-Autoregressive & Predict each variable from earlier variables & Sequential pixel/token prediction & Explicit factorization; sequential generation can be costly\\
-Diffusion & Predict corruption across noise levels & Repeated denoising of a whole state & Flexible conditioning; multiple network evaluations\\
-\bottomrule
-\end{tabularx}
-\end{table*}
 
-\subsection{Historical context: diffusion and score-based modeling}\label{sec:history}
-Sohl-Dickstein et al.\ \cite{sohl2015diffusion} introduced a tractable
-probabilistic construction that gradually corrupts data and learns a
-reverse process. Song and Ermon \cite{song2019score} developed a
-score-based route: estimate gradients of noisy data distributions at
-multiple noise levels and generate samples using annealed Langevin
-dynamics. DDPM connects diffusion modeling to denoising score matching
-through its noise-prediction parameterization \cite{ho2020ddpm}.
-LDM later changes the representation on which diffusion operates
-\cite{rombach2022ldm}.
 
-These contributions provide context rather than a claim that DDPM was
-derived historically by following a single score-first chain. The DDPM
-paper starts from a probabilistic model and variational inference. The
-next section uses the score viewpoint as a conceptual explanation;
-Section~\ref{sec:ddpm} then returns to DDPM's own formulation.
+% \subsection{Historical context: diffusion and score-based modeling}\label{sec:history}
+% Sohl-Dickstein et al.\ \cite{sohl2015diffusion} introduced a tractable
+% probabilistic construction that gradually corrupts data and learns a
+% reverse process. Song and Ermon \cite{song2019score} developed a
+% score-based route: estimate gradients of noisy data distributions at
+% multiple noise levels and generate samples using annealed Langevin
+% dynamics. DDPM connects diffusion modeling to denoising score matching
+% through its noise-prediction parameterization \cite{ho2020ddpm}.
+% LDM later changes the representation on which diffusion operates
+% \cite{rombach2022ldm}.
 
-\section{Method: From Denoising to Generation}\label{sec:method}
-\subsection{From a data distribution to its score}
-Let $p_{\rm data}(x)$ denote the unknown distribution of normalized image
-vectors $x\in\R^D$. A generative model should produce samples with a
-distribution close to $p_{\rm data}$; it need not evaluate the true data
-density explicitly. For a smooth positive density $p$, its \emph{score} is
-\begin{equation}
-s(x)=\nabla_x\log p(x).\label{eq:score}
-\end{equation}
-The score is a vector pointing toward the steepest local increase in log
-density, not a scalar quality rating. For the one-dimensional example
-$p(x)=\Normal(0,1)$, $\log p(x)=-x^2/2+C$ and $s(x)=-x$:
-positive values are directed left and negative values right.
 
-A score can support sampling rather than only optimization. For example,
-a discretized Langevin update uses the score and fresh Gaussian noise
-\cite{song2019score}:
-\begin{equation}
-v^{(k+1)}=v^{(k)}+\frac{\delta}{2}s(v^{(k)})
-+\sqrt{\delta}\,\zeta^{(k)}.\label{eq:langevin}
-\end{equation}
-Here $v^{(k)}$ is the sampling state after $k$ updates, $\delta>0$ is a
-step size, and $\zeta^{(k)}\sim\Normal(0,\Id)$ are independent draws.
-The random term matters: moving only
-up the density gradient tends to seek modes, whereas generation must
-represent a distribution. Exact sampling requires suitable limiting and
-regularity conditions; a finite update sequence is an approximation.
+\subsection{Historical context}
 
-\subsection{Why learn at multiple Gaussian noise levels?}
-Real images can concentrate near a low-dimensional subset of the ambient
-pixel space, and scores away from observed data can be difficult to
-estimate. Gaussian perturbation smooths the distribution and supplies
-tractable training targets \cite{song2019score}. To explain the connection
-without yet choosing a DDPM schedule, write
-\begin{equation}
-\tilde x=x_0+\rho\eps,\qquad
-x_0\sim p_{\rm data},\quad\eps\sim\Normal(0,\Id),\quad\rho>0.
-\label{eq:genericnoise}
-\end{equation}
-Here $\rho$ is a noise standard deviation, not a timestep. The conditional
-$q_\rho(\tilde x\mid x_0)=\Normal(x_0,\rho^2\Id)$ is known, but its
-marginal $q_\rho(\tilde x)$ averages over all clean examples. Different
-$\rho$ values therefore define different noisy data distributions.
-Larger noise levels help connect regions of image space; lower ones
-preserve finer structure. A noise-conditioned model learns information
-appropriate to each level rather than using the same score everywhere.
+The foundations of diffusion-based generative modeling were established
+by Sohl-Dickstein et al.\ \cite{sohl2015diffusion}, who introduced a
+probabilistic framework inspired by nonequilibrium thermodynamics.
+Their approach consists of a forward diffusion process that gradually
+destroys the structure of the data by adding noise, followed by a
+learned reverse process that reconstructs samples from noise.
+By decomposing a complex generative transformation into a sequence
+of small, tractable transitions, this framework enables likelihood-based
+training and probabilistic inference. However, generating samples
+requires many sequential reverse steps, making inference computationally
+expensive.
 
-\subsection{From denoising targets to noise prediction}\label{sec:scorebridge}
-Differentiating the known conditional Gaussian gives the target
-$\nabla_{\tilde x}\log q_\rho(\tilde x\mid x_0)=-\eps/\rho$.
-Denoising score matching connects this computable conditional target to
-the unknown marginal score \cite{song2019score,vincent2011dsm}:
-\begin{equation}
-\nabla_{\tilde x}\log q_\rho(\tilde x)
-=-\frac{\E[\eps\mid\tilde x,\rho]}{\rho}.
-\label{eq:scoreidentity}
-\end{equation}
-This identity is the essential bridge. Under squared-error training, the
-ideal predictor of a random target is its conditional expectation.
-Consequently, a noise predictor minimizing expected
-$\|\eps-\eps_\theta(\tilde x,\rho)\|_2^2$ implicitly supplies a score
-estimate $-\eps_\theta(\tilde x,\rho)/\rho$. Targets are generated by us,
-yet their relationship to noisy images depends on the training data.
-A network cannot generally identify the exact noise draw from a noisy
-image alone; its ideal output averages over compatible clean examples.
-Appendix~\ref{app:dsm} derives the identity and the squared-error result.
+An alternative perspective was developed by Song and Ermon
+\cite{song2019score} through score-based generative modeling.
+Instead of directly modeling the data probability density, their
+approach estimates its score function, defined as the gradient of
+the log-density. To address difficulties in estimating scores when
+data lie near low-dimensional manifolds, they introduced multiple
+levels of Gaussian noise and trained a noise-conditional score
+network. Samples are then generated using annealed Langevin dynamics,
+which progressively moves samples toward high-density regions
+as the noise level decreases.
 
-\subsection{Why this can produce new images}
-Learning denoising across noise levels provides a family of statistical
-directions. A sampling procedure can start from a simple random state and
-use those directions while moving toward lower noise levels. It is not
-required to begin with a corrupted real image or retrace a training
-image's forward trajectory. The shared denoiser has learned from many
-possible images; the generated sample is determined by the starting
-randomness, learned model, and sampling transitions.
+Ho et al.\ \cite{ho2020ddpm} subsequently introduced Denoising
+Diffusion Probabilistic Models (DDPM), establishing a connection
+between diffusion probabilistic modeling and denoising score matching.
+Their formulation parameterizes the reverse process through a neural
+network that predicts the Gaussian noise added at each diffusion
+timestep.
 
-This explains the conceptual link, but a score alone does not specify a
-complete finite-step generator. We must still choose a forward schedule,
-a reverse distribution, and a training objective. DDPM supplies these
-choices explicitly. Its signal-scaled Gaussian construction differs from
-Eq.~\eqref{eq:genericnoise}; the corresponding score--noise relationship
-is derived in Appendix~\ref{app:dsm}.
+Despite their strong generative performance, conventional diffusion
+models operate directly in high-dimensional pixel space, resulting
+in substantial training and sampling costs. To address this limitation,
+Rombach et al.\ \cite{rombach2022ldm} proposed Latent Diffusion Models
+(LDM). This architecture incorporates cross-attention mechanisms to support flexible conditioning,
+including text-guided image generation.
 
-\section{DDPM: Formulation and Worked Examples}\label{sec:ddpm}
-\subsection{Forward noising and its schedule}\label{sec:forward}
-For a vectorized image with $D$ normalized scalar coordinates, DDPM fixes
-a Markov chain that gradually adds Gaussian noise \cite[Sec.~2]{ho2020ddpm}:
+
+\section{Method: From the 2015 Framework to DDPM}\label{sec:ddpm}\label{sec:method}
+The first three subsections explain the Gaussian diffusion framework of
+Sohl-Dickstein et al.\ (2015) \cite{sohl2015diffusion}. We then isolate
+DDPM's choices of reverse parameterization and training objective
+\cite{ho2020ddpm}. We use $x_t$ and the later $\alpha_t,\ab_t$ notation
+throughout so that the two formulations can be compared directly.
+
+\subsection{2015: forward process, Gaussian noise, and schedule}\label{sec:forward}
+A clean image $x_0\in\R^D$ is gradually corrupted by a Gaussian Markov
+chain. The Gaussian branch of the 2015 model uses
+\cite[Sec.~2.1, Table~C.1]{sohl2015diffusion}
 \begin{align}
 q(x_t\mid x_{t-1})
  &=\Normal\!\left(\sqrt{1-\beta_t}\,x_{t-1},\,\beta_t\Id\right),\label{eq:forward}\\
-\alpha_t&=1-\beta_t,\qquad
-\ab_t=\prod_{j=1}^{t}\alpha_j,\quad\ab_0=1.\nonumber
+x_t&=\sqrt{1-\beta_t}\,x_{t-1}+\sqrt{\beta_t}\,\eps^{(t)},\nonumber\\
+\eps^{(t)}&\sim\Normal(0,\Id),\qquad
+\alpha_t=1-\beta_t,\quad\ab_t=\prod_{j=1}^t\alpha_j.\nonumber
 \end{align}
-$x_0$ is a clean image, $x_t\in\R^D$ is a noisy state, and the integer
-$t\in\{1,\ldots,T\}$ indexes noise level rather than seconds.
-The dimensionless variance $\beta_t\in(0,1)$ and identity matrix $\Id$
-specify independent per-coordinate innovations. The \emph{schedule}
-$(\beta_1,\ldots,\beta_T)$ controls how quickly signal disappears.
-The entire forward marginal has a closed form:
+Here $D$ counts normalized image coordinates, $\Id$ is the identity
+matrix, and $t\in\{1,\ldots,T\}$ is a step index, not physical time.
+The innovations $\eps^{(t)}$ are independent across steps and coordinates.
+The dimensionless variance $\beta_t\in(0,1)$ simultaneously attenuates
+the previous signal by $\sqrt{1-\beta_t}$ and sets the new noise standard
+deviation $\sqrt{\beta_t}$. The schedule $(\beta_1,\ldots,\beta_T)$
+controls how rapidly structure is lost.
+
+The standard Gaussian is stationary under this kernel: if a state has
+covariance $\Id$ and is standard normal, the next state's covariance is
+$(1-\beta_t)\Id+\beta_t\Id=\Id$. Repeated small steps can therefore
+transform a complex image distribution toward a simple Gaussian prior.
+In the 2015 Gaussian experiments, $\beta_1$ is fixed to a small value
+while $\beta_2,\ldots,\beta_T$ are learned through the variational bound;
+the paper also notes that a fixed schedule can work comparably
+\cite[Sec.~2.4.1]{sohl2015diffusion}. The Gaussian kernel's form is known
+even when its rates are optimized.
+
+Repeated Gaussian composition gives, with $\ab_0=1$,
 \begin{equation}
 x_t=\sqrt{\ab_t}\,x_0+\sqrt{1-\ab_t}\,\eps,
 \qquad\eps\sim\Normal(0,\Id).\label{eq:closed}
 \end{equation}
-Thus training can create a noisy example at any selected $t$ without
-simulating preceding steps. The aggregate noise $\eps$ in this expression
-is distinct from an individual Markov-step innovation.
-For a sufficiently small $\ab_T$, the terminal distribution is close to
-standard Gaussian noise. A finite schedule does not make this equality
-exact. Figure~\ref{fig:ddpm} contrasts the fixed forward process and the
-learned reverse process.
+This is the same Gaussian marginal later used by DDPM, written in its
+notation; it is not a new forward-process invention. The aggregate noise
+$\eps$ differs from an individual innovation $\eps^{(t)}$.
+For small $\ab_T$, the terminal distribution approaches standard normal;
+a finite schedule need not make that equality exact.
+
+\subsection{2015: learned reverse process and sampling}\label{sec:reversemodel}
+
+Let $p_{\rm data}(x_0)$ denote the unknown data distribution.
+The original diffusion model learns a finite reverse Markov chain,
+starting from a simple Gaussian prior
+$p(x_T)=\Normal(0,\Id)$ \cite[Sec.~2.2]{sohl2015diffusion}:
+\begin{align}
+p_\theta(x_{0:T})
+&=p(x_T)\prod_{t=1}^T p_\theta(x_{t-1}\mid x_t),
+\nonumber\\
+p_\theta(x_{t-1}\mid x_t)
+&=\Normal\!\left(
+\mu_\theta(x_t,t),\Sigma_\theta(x_t,t)
+\right).
+\label{eq:reversemodel}
+\end{align}
+Although the true reverse conditional depends on the unknown data
+distribution and is not necessarily Gaussian, sufficiently small
+diffusion steps motivate approximating each reverse transition
+with a Gaussian distribution.
+
+For learned intermediate transitions, neural functions
+$f_\mu$ and $f_\Sigma$ parameterize the mean
+$\mu_\theta(x_t,t)$ and covariance $\Sigma_\theta(x_t,t)$,
+respectively. The mean specifies the expected previous state,
+while the covariance captures uncertainty in the reverse transition.
+Unlike DDPM's later noise-prediction parameterization, the original
+model directly estimates these reverse-distribution parameters.
+The DDPM formulation is discussed in
+Section~\ref{sec:parameterization}.
+
+To generate a sample, the model draws
+$x_T\sim\Normal(0,\Id)$ and iteratively applies the
+reverse transitions:
+\begin{equation}
+x_{t-1}
+=\mu_\theta(x_t,t)
++\Sigma_\theta(x_t,t)^{1/2}u_t,
+\quad u_t\sim\Normal(0,\Id).
+\label{eq:originalsampling}
+\end{equation}
+For diagonal covariance, the matrix square root corresponds
+to elementwise standard deviations.
+The original formulation additionally specifies a boundary
+convention for the final transition at $t=1$
+\cite[App.~B.2]{sohl2015diffusion}, detailed in
+Appendix~\ref{app:originalbound}.
+Through these successive stochastic transitions, the model
+transforms Gaussian noise into samples approximating
+$p_{\rm data}$, without requiring a clean input image.
+
+
+Figure~\ref{fig:ddpm} summarizes the forward corruption process and the
+learned reverse sampling process: structure is progressively destroyed
+in the forward direction, while generation starts from noise and samples
+successive reverse transitions.
 
 \begin{figure*}[t]
 \centering
-\begin{tikzpicture}[>=Stealth, node distance=2.5cm,
-  state/.style={draw=hcmusblue,rounded corners,fill=lightblue,
-  minimum width=1.6cm,minimum height=.85cm,align=center,font=\small}]
-\node[state] (a) {$x_0$\\clean};
-\node[state,right=of a] (b) {$x_t$\\partly noisy};
-\node[state,right=of b] (c) {$x_T$\\nearly noise};
-\draw[->,thick] (a.north east) to[bend left=22] node[above,font=\small] {fixed $q$: add noise} (b.north west);
-\draw[->,thick] (b.north east) to[bend left=22] node[above,font=\small] {repeat} (c.north west);
-\draw[->,thick,hcmusblue] (c.south west) to[bend left=22] node[below,font=\small] {learned $p_\theta$} (b.south east);
-\draw[->,thick,hcmusblue] (b.south west) to[bend left=22] node[below,font=\small] {denoise and sample} (a.south east);
+\begin{tikzpicture}[>=Stealth,x=1cm,y=1cm,
+  tile/.style={draw=black!18,rounded corners=2pt,inner sep=2pt,
+    line width=.6pt,fill=white},
+  stage/.style={font=\small,align=center},
+  every node/.style={outer sep=0pt}]
+\definecolor{forwardblue}{HTML}{247BA0}
+\definecolor{reverseorange}{HTML}{C26930}
+\path[use as bounding box] (0,-.55) rectangle (16.2,5.15);
+\fill[forwardblue!5,rounded corners=5pt] (0,3.98) rectangle (16.2,5.10);
+\node[anchor=west,font=\small\bfseries,text=forwardblue] at (.22,4.77)
+  {FORWARD: gradually destroy image structure};
+\node[anchor=east,font=\small,text=forwardblue] at (15.98,4.77)
+  {known Gaussian corruption $q$};
+\draw[->,forwardblue,line width=1.5pt] (.25,4.22) -- (15.95,4.22);
+
+\foreach \position/\frameTime/\stageSymbol/\description in {
+  1.65/0/{x_0}/{clean image},
+  5.95/100/{x_{t_a}}/{partly noisy},
+  10.25/300/{x_{t_b}}/{mostly noisy},
+  14.55/1000/{x_T}/{nearly Gaussian noise}} {
+  \node[tile] at (\position,2.65)
+    {\includegraphics[width=2.38cm]{figures/diffusion_overview/state_\frameTime.png}};
+  \node[stage] at (\position,1.08) {$\stageSymbol$\\[-1pt]\description};
+}
+\foreach \startX/\endX in {3.02/4.58,7.32/8.88,11.62/13.18} {
+  \draw[->,forwardblue!75,line width=1pt] (\startX,2.96) -- (\endX,2.96);
+  \draw[<-,reverseorange!85,line width=1pt] (\startX,2.32) -- (\endX,2.32);
+}
+
+\fill[reverseorange!7,rounded corners=5pt] (0,-.42) rectangle (16.2,.68);
+\draw[<-,reverseorange,line width=1.5pt] (.25,.48) -- (15.95,.48);
+\node[anchor=west,font=\small\bfseries,text=reverseorange] at (.22,-.06)
+  {REVERSE: generate by denoising and sampling};
+\node[anchor=east,font=\small,text=reverseorange] at (15.98,-.06)
+  {learned transitions $p_\theta$; start from fresh noise};
 \end{tikzpicture}
-\caption{Original schematic of DDPM's two directions, based on
-\cite{ho2020ddpm}. Reverse arrows represent a learned distribution,
-not exact inversion of an individual forward trajectory.}\label{fig:ddpm}
+\caption{Two directions of diffusion, introduced in \cite{sohl2015diffusion}
+and retained in \cite{ho2020ddpm}. An original synthetic scene illustrates
+progressive Gaussian corruption (blue). Generation starts from fresh noise
+and samples learned reverse transitions (orange). Reverse arrows are
+conceptual: no trained-model output or exact recovery of this scene is implied.}\label{fig:ddpm}
 \end{figure*}
 
-\subsection{Why DDPM uses the simplified loss}\label{sec:objective}
-DDPM defines a reverse generative chain starting from
-$p(x_T)=\Normal(0,\Id)$. Its image likelihood marginalizes the intermediate
-states, making direct likelihood optimization difficult. The paper
-therefore uses a variational upper bound on negative log likelihood
-\cite[Secs.~2--3]{ho2020ddpm}. For $t>1$ and fixed reverse variance, each
-intermediate KL term reduces to a weighted noise-prediction error:
+
+\subsection{2015: Variational Training and Gaussian Posterior Targets}
+\label{sec:variational}
+
+Since computing the exact data likelihood requires integrating over
+all intermediate states, Sohl-Dickstein et al.\
+\cite{sohl2015diffusion} introduced a variational lower bound
+(ELBO) for training:
+\begin{equation}
+\E_{p_{\rm data}}[\log p_\theta(x_0)]
+\geq K_{2015}
+= -\sum_{t=2}^{T}\mathcal{D}_t + C_\beta.
+\label{eq:originalbound}
+\end{equation}
+Here, $\mathcal{D}_t$ measures the expected KL divergence between
+the learned reverse transition $p_\theta(x_{t-1}\mid x_t)$
+and the tractable Gaussian posterior
+$q(x_{t-1}\mid x_t,x_0)$, while $C_\beta$ collects
+terms independent of the reverse-network parameters
+for a fixed noise schedule.
+
+During training, the known clean image $x_0$ allows
+the Gaussian posterior to serve as a target for
+learning both the reverse mean and covariance.
+Consequently, the original objective involves matching
+probability distributions rather than directly minimizing
+a noise-prediction MSE, as later adopted in DDPM.
+The full derivation and Gaussian KL expressions are
+provided in Appendix~\ref{app:originalbound}.
+
+\subsection{DDPM: fixed variance and noise-prediction parameterization}\label{sec:parameterization}
+DDPM retains the Gaussian forward/reverse construction, but makes
+specific choices to improve image generation \cite[Secs.~3--4]{ho2020ddpm}.
+Its main setup fixes the forward schedule, with $T=1000$ and $\beta_t$
+increasing linearly from $10^{-4}$ to $0.02$. It also fixes the reverse
+variance to $\sigma_t^2\Id$ at intermediate steps rather than learning
+$\Sigma_\theta(x_t,t)$; the paper considers both $\sigma_t^2=\beta_t$
+and the posterior variance $\tilde\beta_t$.
+
+For this fixed-variance case, an intermediate expected Gaussian KL has
+parameter-dependent part
+\begin{equation}
+L_{t-1}=\E\!\left[
+\frac{\|\tilde\mu_t-\mu_\theta(x_t,t)\|_2^2}{2\sigma_t^2}
+\right]+C,\qquad t>1.
+\label{eq:meanloss}
+\end{equation}
+$C$ does not depend on denoiser parameters $\theta$. DDPM reparameterizes
+this reverse mean using a network that predicts the aggregate noise in
+Eq.~\eqref{eq:closed} \cite[Eqs.~10--11]{ho2020ddpm}:
+\begin{equation}
+\mu_\theta(x_t,t)=\frac{1}{\sqrt{\alpha_t}}
+\left(x_t-\frac{\beta_t}{\sqrt{1-\ab_t}}\eps_\theta(x_t,t)\right).
+\label{eq:ddpmmean}
+\end{equation}
+The time-conditioned network $\eps_\theta$ returns $D$ predicted noise
+coordinates. Substitution into Eq.~\eqref{eq:meanloss} yields
 \begin{equation}
 L_{t-1}=\E\!\left[w_t
-\|\eps-\eps_\theta(x_t,t)\|_2^2\right]+C,
+\|\eps-\eps_\theta(x_t,t)\|_2^2\right]+C.
 \label{eq:weightedloss}
 \end{equation}
-where $w_t>0$ is determined by the schedule and reverse variance, and
-$C$ does not depend on denoiser parameters $\theta$.
-Appendix~\ref{app:vlb} gives the bound, posterior, and exact coefficient.
-The endpoint reconstruction term is handled separately in that derivation.
+The positive weight $w_t$ depends on the schedule and fixed reverse
+variance; Appendix~\ref{app:vlb} derives it. Noise prediction therefore
+changes how the reverse mean is learned, not the underlying Gaussian
+forward process. Directly predicting a mean or clean image is another
+possible parameterization, so effectiveness must be checked empirically.
 
-The simplified objective drops these timestep-dependent coefficients
+DDPM also uses a time-conditioned U-Net \cite[Sec.~4]{ho2020ddpm}
+rather than the earlier multi-scale image network
+\cite[App.~D.2]{sohl2015diffusion}. Its central methodological contribution here
+is the noise-prediction parameterization and its training/sampling
+interpretation, together with the objective choice below, not the
+invention of forward noising or variational diffusion modeling.
+
+\subsection{DDPM: the simplified objective and its effect}\label{sec:objective}
+DDPM's simplified objective drops the timestep-dependent coefficients
 \cite[Eq.~14]{ho2020ddpm}:
 \begin{equation}
 L_{\rm simple}=\E_{t,x_0,\eps}
@@ -259,18 +361,11 @@ L_{\rm simple}=\E_{t,x_0,\eps}
 \end{equation}
 $t$ is sampled uniformly from $1$ to $T$, $x_0$ from training images, and
 $\eps$ independently from a standard Gaussian; $x_t$ is formed by
-Eq.~\eqref{eq:closed}. The predictor returns $D$ noise coordinates,
-and the squared Euclidean norm sums their squared errors.
+Eq.~\eqref{eq:closed}. The squared Euclidean norm sums coordinate errors.
 Every target is known because the training algorithm drew the noise.
 The same network is conditioned on $t$ and shared across noise levels.
-
-\textbf{Why this is meaningful.}
-As Section~\ref{sec:scorebridge} explains, the ideal noise predictor
-estimates $\E[\eps\mid x_t,t]$, which determines the marginal score.
-Predicting noise is therefore a parameterization of a learned denoising
-direction, not a claim that Gaussian noise is recognizable independently
-of image structure. Predicting $x_0$ or the reverse mean is also possible;
-the usefulness of this particular parameterization requires evidence.
+Predicting $x_0$ or the reverse mean is also possible; the usefulness of
+this particular parameterization requires evidence.
 
 \textbf{Why simplification helps in the reported setting.}
 Removing $w_t$ changes the relative emphasis of noise levels. Under the
@@ -290,41 +385,41 @@ closed-form marginal and stochastic timestep sampling, not solely from
 removing $w_t$. The simplified loss does not itself reduce the number of
 sampling steps or the spatial cost of a denoiser evaluation.
 
-\subsection{Reverse denoising and generation}\label{sec:reverse}
-DDPM models a reverse transition as
-\begin{equation}
-p_\theta(x_{t-1}\mid x_t)
-=\Normal\!\left(\mu_\theta(x_t,t),\sigma_t^2\Id\right).
-\end{equation}
-Here $\mu_\theta$ is computed from the noise predictor; $\sigma_t\ge0$
-is a chosen reverse standard deviation. For example, the paper considers
-$\sigma_t^2=\beta_t$ for intermediate steps. Its epsilon-parameterized
-sampling update is \cite[Eq.~11, Algorithm~2]{ho2020ddpm}
-\begin{equation}
-\begin{aligned}
-x_{t-1}&=\underbrace{\frac{1}{\sqrt{\alpha_t}}
-\left(x_t-\frac{\beta_t}{\sqrt{1-\ab_t}}\eps_\theta(x_t,t)\right)}_{\mu_\theta(x_t,t)}\\
-&\quad+\sigma_t u,\qquad u\sim\Normal(0,\Id).
-\end{aligned}\label{eq:reverse}
-\end{equation}
-Starting with $x_T\sim\Normal(0,\Id)$, run this update for
-$t=T,T-1,\ldots,1$; the final step omits the fresh noise term.
-Predicted noise determines the reverse \emph{mean}; $u$ is newly drawn
-sampling noise. The algorithm does not simply subtract a predicted noise
-vector from the current state.
+DDPM's endpoint and terminal-prior terms are treated separately in
+Appendix~\ref{app:vlb}; its full variational bound is not numerically
+identical to $L_{\rm simple}$.
 
-The true reverse conditional need not be Gaussian. Small forward steps
-motivate DDPM's Gaussian approximation; Appendix~\ref{app:reversemean}
-connects its mean to the score explicitly. Many local transitions allow
-a flexible overall distribution. A one-step deterministic MSE estimate
-from almost pure noise would instead approach an average of compatible
-images, not provide a general sampling rule. This does not rule out other
-models or trained few-step samplers; it explains the original DDPM design.
+\subsection{DDPM sampling and its score interpretation}\label{sec:reverse}\label{sec:scorebridge}
+After training, draw $x_T\sim\Normal(0,\Id)$ and run
+$t=T,T-1,\ldots,1$. At each step evaluate $\eps_\theta$, compute
+Eq.~\eqref{eq:ddpmmean}, and sample \cite[Algorithm~2]{ho2020ddpm}
+\begin{equation}
+x_{t-1}=\mu_\theta(x_t,t)+\sigma_tu,\qquad u\sim\Normal(0,\Id).
+\label{eq:reverse}
+\end{equation}
+Fresh sampling noise is used at intermediate steps; DDPM's final step
+omits it. Predicted noise determines the reverse \emph{mean}; $u$ is a
+new random draw. The algorithm does not simply subtract a noise vector
+from the current image, nor require a corrupted real image as input.
+The 2015 framework already supplied the prior-to-data reverse chain;
+DDPM changes the prediction target, variance choice, and training weights.
 
-DDPM's contribution is the combination of effective noise-prediction
-training, its connection to denoising score matching, and demonstrated
-image synthesis. It builds on the earlier diffusion construction rather
-than introducing the entire family from scratch.
+There is also a score interpretation of this parameterization
+\cite[Sec.~3.2]{ho2020ddpm}. Let $q_t(x_t)$ be the marginal distribution
+of noisy data at timestep $t$. Then
+\begin{equation}
+s_\theta(x_t,t):=-\frac{\eps_\theta(x_t,t)}{\sqrt{1-\ab_t}}
+\approx\nabla_{x_t}\log q_t(x_t).
+\label{eq:scoreestimate}
+\end{equation}
+At the ideal MSE optimum $\eps_\theta=\E[\eps\mid x_t,t]$, this is
+exact under the assumptions in Appendix~\ref{app:dsm}. It estimates the
+\emph{noisy} marginal score, not the clean-data gradient at every noise
+level. No explicit score-evaluation step is added to the algorithm.
+In conditional LDM, the same interpretation applies to noisy latents
+given the condition. Appendix~\ref{app:scorebackground} provides optional
+score background; its role is explanatory rather than a prerequisite
+for the probabilistic construction above.
 
 \subsection{A complete one-dimensional calculation}\label{sec:scalar}
 For one step $t=1$, choose normalized $x_0=0.8$, variance $\beta_1=0.1$,
@@ -385,7 +480,7 @@ This illustrates corruption, not learned denoising or generation.
 
 \section{LDM: Latent Space and Efficient Generation}\label{sec:ldm}
 \subsection{Why move from pixels to a latent representation?}\label{sec:synthesis}
-DDPM supplies a way to generate images, but repeatedly processing a
+The diffusion framework supplies a way to generate images, but repeatedly processing a
 high-resolution pixel grid is expensive. LDM separates learning a useful
 image representation from learning its generative distribution
 \cite[Secs.~3.1--3.2]{rombach2022ldm}. Its first stage compresses images;
@@ -570,7 +665,8 @@ Simplified $L_{\rm simple}$ & 3.17 & 3.75\\
 \end{tabularx}
 \end{table}
 
-FID compares generated and reference feature-distribution statistics
+FID (Fr\'echet Inception Distance) compares generated and reference
+feature-distribution statistics
 \cite{heusel2017fid}; it does not directly measure every image's quality
 or prompt adherence. DDPM computes these CIFAR-10 FIDs against training
 images; its reported test-reference FID for the simplified model is
@@ -615,10 +711,6 @@ $0.32/0.11=2.91$. The reported FID is $9.53$ points lower, a relative
 decrease of $38.5\%$; this percentage is \emph{not} a percentage increase
 in perceptual quality.
 
-FID (Fr\'echet Inception Distance) compares feature-distribution statistics
-between generated and reference images \cite{heusel2017fid}. It does not
-directly measure prompt adherence, fairness, factual correctness, or the
-quality of every individual image.
 The result supports an efficiency--quality advantage for this configuration
 and training endpoint. Six equal epochs do not imply equal wall-clock
 training budgets or equal convergence. Moreover, the table flags
@@ -741,21 +833,25 @@ count, guidance, resolution, and dataset fixed, report both autoencoder
 and denoiser costs, and evaluate quality and control separately.
 
 \section{Conclusion}\label{sec:conclusion}
-Learning to remove noise enables generation because denoising targets
-carry information about noisy data distributions. At the squared-error
-optimum, noise prediction determines a marginal score; a reverse sampling
-process uses that information to move a new random state toward the
-learned image distribution. DDPM makes this connection concrete through
-Gaussian transitions, a tractable training procedure, and an empirically
-effective simplified objective. The quality benefit of that objective
-must be distinguished from likelihood optimization and sampling speed.
+Learning to remove noise enables generation by fitting a sequence of
+reverse conditional distributions. The 2015 diffusion framework supplies
+forward Gaussian corruption, learned reverse mean/covariance functions,
+and variational training against tractable posterior targets. Starting
+from a new Gaussian draw and composing the reverse transitions then
+produces an image sample. DDPM retains this construction while fixing
+variance choices, parameterizing the reverse mean through predicted
+noise, and simplifying the training objective. Its published ablation
+supports a sample-quality benefit from that objective choice, distinct
+from likelihood optimization or fewer sampling steps. The score
+connection explains the parameterization without adding a separate
+computational stage.
 
-LDM preserves the denoising principle while moving repeated computation
-into a learned latent space. Its encoder/decoder determine what can be
-compressed and reconstructed; the diffusion model learns how to generate
-those representations. Published inpainting evidence supports reduced
-computational cost in a specific latent setting, with autoencoder costs
-and reconstruction limits still relevant. Together, DDPM and LDM answer
-the guiding question at the levels of generative mechanism and practical
-representation, without making efficiency a guarantee of semantic
-control, fairness, or unrestricted data use.
+
+LDM preserves this denoising principle while operating in a learned
+latent representation. The encoder/decoder trade reconstruction fidelity
+for reduced repeated spatial computation. Published inpainting evidence
+supports an efficiency benefit in a specific configuration, with
+autoencoder costs and information loss still relevant. Together, DDPM
+and LDM develop the original framework through better parameterization
+and more efficient representation; neither guarantees semantic control,
+fairness, or unrestricted data use.

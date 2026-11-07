@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1793987398.79977 "main.aux" "main.bbl" "main" 1793987561.1264 0
+["bibtex main"] 1794063874.75626 "main.aux" "main.bbl" "main" 1794063876.65358 0
   "./ieeenat_fullname.bst" 1793936253.48742 26900 a296cb1ebee73f7bfa143751dc4e1dfd ""
   "./references.bib" 1793987063.59235 6210 1f60672eb13573dfb262ba00d71456cd ""
-  "main.aux" 1793987560.71639 27545 edc05709fcf98444dd57618a2e6618b8 "pdflatex"
+  "main.aux" 1794063876.34772 30847 3d9c422e7e4c32001ae875a93b1278aa "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1793987558.47354 "/Users/caoquanghung/HCMUS/CS/CS420-AI (not deep learning)/seminar/AI-seminar/Diffusion-seminar/iccv-diffusion-report/main.tex" "main.pdf" "main" 1793987561.12669 0
+["pdflatex"] 1794063874.87936 "/Users/caoquanghung/HCMUS/CS/CS420-AI (not deep learning)/seminar/AI-seminar/Diffusion-seminar/iccv-diffusion-report/main.tex" "main.pdf" "main" 1794063876.65385 0
   "/Users/caoquanghung/HCMUS/CS/CS420-AI (not deep learning)/seminar/AI-seminar/Diffusion-seminar/iccv-diffusion-report/main.tex" 1793987308.41475 2097 1369af4596001b716dad562f659a4805 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -241,13 +241,18 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1770039146 5467155 19efa205003f9ecad95fbbaa6ff24da1 ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1770039052 3345736 81db01a6245a3e10ea9ff49542dd4476 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "content/appendices.tex" 1793987557.95974 22637 28eb06fec5072080142625f951db8341 ""
-  "content/report.tex" 1793987308.41566 41251 ee18e1e9ff37edc9cbda401b15ca77be ""
+  "content/appendices.tex" 1794046128.67145 27815 8ac9408fabe1369d055c8a6068df4252 ""
+  "content/report.tex" 1794063872.26769 44487 ac369881a7920d27579f3aa31fc32b65 ""
+  "figures/diffusion_overview/state_0.png" 1794062350.56337 1414 edb36b708cf4520328af8a371333c3e5 ""
+  "figures/diffusion_overview/state_100.png" 1794062350.58307 36741 88172ca9f6e71390d0960242bcd480ad ""
+  "figures/diffusion_overview/state_1000.png" 1794062350.61754 33124 4c3ab6472eb6a24eb535260987af23f5 ""
+  "figures/diffusion_overview/state_300.png" 1794062350.5996 34689 8e7780e795f6ba181b4ad195162db3d8 ""
   "figures/noise_sequence.pdf" 1793881695.08914 28987 c08cb22dc00eaf2ee02ad36e3eb79b17 ""
+  "figures/qualitative_comparison.png" 1794035539.37612 1770432 e981b160270b58f80a600a502c53f113 ""
   "iccv.sty" 1793936253.48717 17969 83aadcf3355eea424c91c104fd0dcd25 ""
-  "main.aux" 1793987560.71639 27545 edc05709fcf98444dd57618a2e6618b8 "pdflatex"
-  "main.bbl" 1793987398.91287 5823 c2116c98b74062ef0ae613a460463a1e "bibtex main"
-  "main.out" 1793987560.71903 12113 887eb5f3c87b6ccb0b49f9801906635a "pdflatex"
+  "main.aux" 1794063876.34772 30847 3d9c422e7e4c32001ae875a93b1278aa "pdflatex"
+  "main.bbl" 1794063874.87591 5823 c2116c98b74062ef0ae613a460463a1e "bibtex main"
+  "main.out" 1794063876.35065 12778 ba0453eeb78e0cbf1f64283a32b5190a "pdflatex"
   "main.tex" 1793987308.41475 2097 1369af4596001b716dad562f659a4805 ""
   (generated)
   "main.aux"

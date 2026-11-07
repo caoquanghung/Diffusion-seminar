@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2026.2.2)  7 NOV 2026 00:52
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2026.2.2)  7 NOV 2026 22:04
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -779,53 +779,81 @@ File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 
 
 [2]
+<figures/diffusion_overview/state_0.png, id=243, 112.42pt x 112.42pt>
+File: figures/diffusion_overview/state_0.png Graphic file (type png)
+<use figures/diffusion_overview/state_0.png>
+Package pdftex.def Info: figures/diffusion_overview/state_0.png  used on input line 260.
+(pdftex.def)             Requested size: 67.7177pt x 67.72011pt.
+<figures/diffusion_overview/state_100.png, id=244, 112.42pt x 112.42pt>
+File: figures/diffusion_overview/state_100.png Graphic file (type png)
+<use figures/diffusion_overview/state_100.png>
+Package pdftex.def Info: figures/diffusion_overview/state_100.png  used on input line 260.
+(pdftex.def)             Requested size: 67.7177pt x 67.72011pt.
+<figures/diffusion_overview/state_300.png, id=245, 112.42pt x 112.42pt>
+File: figures/diffusion_overview/state_300.png Graphic file (type png)
+<use figures/diffusion_overview/state_300.png>
+Package pdftex.def Info: figures/diffusion_overview/state_300.png  used on input line 260.
+(pdftex.def)             Requested size: 67.7177pt x 67.72011pt.
+<figures/diffusion_overview/state_1000.png, id=246, 112.42pt x 112.42pt>
+File: figures/diffusion_overview/state_1000.png Graphic file (type png)
+<use figures/diffusion_overview/state_1000.png>
+Package pdftex.def Info: figures/diffusion_overview/state_1000.png  used on input line 260.
+(pdftex.def)             Requested size: 67.7177pt x 67.72011pt.
+
 
 
 
 [3]
 
-LaTeX Font Info:    Trying to load font information for T1+pcr on input line 349.
-(/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/t1pcr.fd
+
+
+[4 <./figures/diffusion_overview/state_0.png (PNG copy)> <./figures/diffusion_overview/state_100.png (PNG copy)> <./figures/diffusion_overview/state_300.png (PNG copy)> <./figures/diffusion_overview/state_1000.png (PNG copy)>]
+LaTeX Font Info:    Trying to load font information for T1+pcr on input line 444.
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/t1pcr.fd
 File: t1pcr.fd 2001/06/04 font definitions for T1/pcr.
 )
 Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `pcr' (encoding: T1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
-<figures/noise_sequence.pdf, id=271, 612.2875pt x 152.57pt>
+<figures/noise_sequence.pdf, id=296, 612.2875pt x 152.57pt>
 File: figures/noise_sequence.pdf Graphic file (type pdf)
 <use figures/noise_sequence.pdf>
-Package pdftex.def Info: figures/noise_sequence.pdf  used on input line 357.
+Package pdftex.def Info: figures/noise_sequence.pdf  used on input line 452.
 (pdftex.def)             Requested size: 496.85625pt x 123.80684pt.
 
 
-[4]
+
+
+[5]
 
 
 
-[5 <./figures/noise_sequence.pdf>]
-
-
-
-[6]
+[6 <./figures/noise_sequence.pdf>]
 
 
 
 [7]
 
-)
 
-[8] (./main.bbl
 
-)
+[8])
+
+
 
 [9
+
+] (./main.bbl
+
+)
+
+[10
 
 ] (./content/appendices.tex
 
 
 
-[10
+[11
 
 
 ] (/usr/local/texlive/2025/texmf-dist/tex/latex/listings/lstlang1.sty
@@ -836,15 +864,7 @@ File: lstlang1.sty 2024/09/23 1.10c listings language file
 
 
 
-[11
-
-]
-
-
-
 [12
-
-
 
 ]
 
@@ -852,38 +872,64 @@ File: lstlang1.sty 2024/09/23 1.10c listings language file
 
 [13
 
+
+
 ]
 
 
 
-[14]
+[14
 
+]
+
+
+
+[15]
+
+
+
+[16]
+
+
+
+[17
+
+
+]
+<figures/qualitative_comparison.png, id=589, 1678.27pt x 944.52875pt>
+File: figures/qualitative_comparison.png Graphic file (type png)
+<use figures/qualitative_comparison.png>
+Package pdftex.def Info: figures/qualitative_comparison.png  used on input line 587.
+(pdftex.def)             Requested size: 496.85625pt x 279.62802pt.
 )
 
-[15
 
 
-] (./main.aux)
+[18
+
+
+
+ <./figures/qualitative_comparison.png (PNG copy)>] (./main.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 887EB5F3C87B6CCB0B49F9801906635A;12113.
+(rerunfilecheck)             Checksum: BA0453EEB78E0CBF1F64283A32B5190A;12778.
  ) 
 Here is how much of TeX's memory you used:
- 31777 strings out of 473190
- 581349 string characters out of 5715801
- 1208936 words of memory out of 5000000
- 54032 multiletter control sequences out of 15000+600000
- 620996 words of font info for 334 fonts, out of 8000000 for 9000
+ 31847 strings out of 473190
+ 583510 string characters out of 5715801
+ 1210762 words of memory out of 5000000
+ 54095 multiletter control sequences out of 15000+600000
+ 620710 words of font info for 331 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 84i,18n,87p,1120b,1234s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,15n,87p,1120b,1234s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex9.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (15 pages, 399112 bytes).
+Output written on main.pdf (18 pages, 2266505 bytes).
 PDF statistics:
- 676 PDF objects out of 1000 (max. 8388607)
- 543 compressed objects within 6 object streams
- 127 named destinations out of 1000 (max. 500000)
- 52602 words of extra memory for PDF output out of 61914 (max. 10000000)
+ 728 PDF objects out of 1000 (max. 8388607)
+ 584 compressed objects within 6 object streams
+ 139 named destinations out of 1000 (max. 500000)
+ 52635 words of extra memory for PDF output out of 61914 (max. 10000000)
 

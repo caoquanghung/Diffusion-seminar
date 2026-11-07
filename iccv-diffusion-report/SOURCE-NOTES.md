@@ -1,5 +1,23 @@
 # Source and claim checks
 
+## Figure 1 visual revision, November 7, 2026
+
+The first Figure 1 reference and its source block now follow the reverse-process
+and sampling explanation at the end of subsection 3.2. Subsection 3.1 ends with
+the forward process approaching a Gaussian prior. The wide figure floats to
+page 4, after both directions have been introduced in the text.
+
+The diffusion overview now uses a procedural RGB mountain/cabin scene with
+forward-corruption tiles at 0/100/300/1000, seed 421, and the DDPM linear schedule
+from 0.0001 to 0.02. `code/make_overview.py` uses the Python standard library;
+subsampled Gaussian Markov transitions are composed analytically. Internal
+values remain unclipped; PNG display values are clipped to [-1,1]. Blue arrows
+show known forward corruption; orange arrows show conceptual learned reverse
+sampling. No trained denoiser was run and the caption explicitly distinguishes
+this schematic from generated-model evidence. Editable labels/arrows are in
+`content/report.tex`; tiles are in `figures/diffusion_overview/`. The main text
+is 9 pages, with 1 reference page and 8 appendix pages (18 total).
+
 Sources initially consulted on November 5, 2026; the DDPM/LDM and historical foundations were rechecked for the November 7, 2026 revision. Performance statements are scoped to the reported historical experiments; no claim is made that these are current state-of-the-art models.
 
 ## Core technical sources
@@ -15,8 +33,8 @@ Sources initially consulted on November 5, 2026; the DDPM/LDM and historical fou
 
 ## Historical and mathematical foundations added November 7, 2026
 
-- **Sohl-Dickstein et al. (2015):** https://proceedings.mlr.press/v37/sohl-dickstein15.html. Foundation for gradual forward corruption and learned reverse diffusion.
-- **Song and Ermon (2019):** https://arxiv.org/html/1907.05600v3. Sections 2-4 cover score estimation, Gaussian denoising targets, multiple noise levels, and annealed Langevin sampling. This provides a conceptual bridge, not a claim that DDPM historically starts from score matching.
+- **Sohl-Dickstein et al. (2015):** https://proceedings.mlr.press/v37/sohl-dickstein15.html and https://proceedings.mlr.press/v37/sohl-dickstein15-supp.pdf. Sections 2.1/2.2/2.4/2.4.1 define forward/reverse processes, variational training and learned Gaussian rates (beta_1 fixed, beta_2:T learned; a footnote also supports fixed schedules). Supplement B.2 specifies the stationary-kernel endpoint; B.3 derives the KL/entropy bound; Table C.1 gives Gaussian transitions/targets; D.2 confirms learned diagonal covariance and the multiscale architecture. The user's Human_note/original_method.md was used to guide exposition and cross-checked against these primary sources.
+- **Song and Ermon (2019):** https://arxiv.org/html/1907.05600v3. Sections 2-4 cover score estimation, Gaussian denoising targets, multiple noise levels, and annealed Langevin sampling. This supplies optional Appendix C background and the brief post-method score interpretation; the main exposition follows DDPM's probabilistic construction.
 - **Vincent (2011):** https://doi.org/10.1162/NECO_a_00142. Original denoising score-matching connection. The author-hosted PDF was indexed but direct access was blocked; publication metadata were checked, and the conditional/marginal identity is explicitly derived in Appendix C and cross-checked against Song and Ermon's formulation.
 
 ## Published DDPM objective comparison
@@ -64,4 +82,18 @@ Scientific content, numerical data, and original figure/code assets are retained
 
 ## Narrative revision, November 7, 2026
 
-The report now has seven main sections: Introduction; Background and Paper Review; Method: From Denoising to Generation; DDPM: Formulation and Worked Examples; LDM: Latent Space and Efficient Generation; Results and Discussion; Conclusion. The abstract, introduction, subtitle, and conclusion cover both DDPM and LDM. Qualitative family comparison remains in subsection 2.2. The main text is 8 pages (below the 10-page limit), followed by 1 reference page and 6 appendix pages. Upstream style files and original image/data/code remain unchanged.
+The report has six main sections: Introduction; Background and Paper Review; DDPM: Method and Worked Examples; LDM: Latent Space and Efficient Generation; Results and Discussion; Conclusion. The abstract, introduction, subtitle, and conclusion cover both DDPM and LDM. Qualitative family comparison remains in subsection 2.2. The main text is 8 pages (below the 10-page limit), followed by 1 reference page and 6 appendix pages. Upstream style files and original image/data/code remain unchanged.
+
+## Qualitative comparison illustration, November 7, 2026
+
+The user supplied `qualitative comparison.png`; an unchanged copy is included as `figures/qualitative_comparison.png`. It replaces the former main-text family-comparison table and appears as Figure 5 in Appendix E, referenced from subsection 2.2 and the requirement map. It is credited as user-supplied rather than attributed as an original team drawing. Its labels describe typical model behavior, not measured or universal quality rankings. Related GAN, PixelRNN and DDPM references remain in the figure caption. The main text remains 8 pages; the complete PDF now has 16 pages (1 reference page, 7 appendix pages).
+
+## Probabilistic method flow, November 7, 2026
+
+The user approved moving away from a score-first exposition. Section 3 now proceeds through forward corruption, the Gaussian reverse generative model, the variational negative-log-likelihood bound, reverse-mean noise parameterization, the simplified objective and its evidence, then sampling. Subsection 3.6 gives the score connection only after the method is established. The model estimate -epsilon_theta/sqrt(1-alpha_bar_t) is distinguished from the true noisy marginal score and from the clean-data score; ideal equality requires the MSE-optimal predictor. Score/Langevin/additive-Gaussian background is in Appendix C.2, with derivations following it. Neither DDPM nor LDM requires an extra explicit score-evaluation step. The complete PDF remains 16 pages: 8 body, 1 references, 7 appendices.
+
+## 2015 foundation versus DDPM contributions, November 7, 2026
+
+Subsections 3.1-3.3 now review the Gaussian branch of the original 2015 framework. They use later alpha/alpha-bar notation for continuity without attributing new forward-process ideas to DDPM. The reverse network predicts mean and covariance; it is not the epsilon predictor used by DDPM. The original bound K_2015 is a log-likelihood lower bound with expected posterior KLs plus schedule-dependent entropy terms. Appendix C records its normalization/boundary assumptions and full diagonal Gaussian KL. Those entropy terms cannot be discarded when optimizing beta.
+
+Subsections 3.4-3.6 isolate DDPM's fixed schedule/variance choices, epsilon parameterization, weighted noise-MSE derivation, simplified loss and sampling/score connection. The 2015 stationary-kernel endpoint is distinguished from DDPM's endpoint likelihood and final noise-free update. The complete delivery is 17 pages: 8 main text, 1 references, 8 appendices.
