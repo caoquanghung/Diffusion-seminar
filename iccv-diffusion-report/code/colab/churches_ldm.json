@@ -1,0 +1,32 @@
+{
+  "sampler": "DDIM",
+  "steps": 50,
+  "eta": 0,
+  "ema_buffers": true,
+  "source_revision": "a506df5756472e2ebaf9078affdde2c4f1502cd4",
+  "taming_revision": "3ba01b241669f5ade541ce990f7650a3b8f65318",
+  "backend": "CompVis latent-diffusion; updated Lightning import",
+  "seeds": [
+    2026,
+    2027,
+    2028,
+    2029
+  ],
+  "seconds_per_seed": [
+    2.416252417999999,
+    2.391954697000074,
+    2.4681780459999345,
+    2.6684832890000507
+  ],
+  "median_seconds": 2.442215231999967,
+  "setup_seconds": 55.663449465999975,
+  "peak_cuda_allocated_bytes": 1803706368,
+  "checkpoint_files": [
+    {
+      "url": "https://ommer-lab.com/files/latent-diffusion/lsun_churches.zip",
+      "file": "lsun_churches.zip",
+      "bytes": 2499767804,
+      "sha256": "757743285e5d573b8367b779a1043efeb83655c9a9cf36e2fef847c83fb789fb"
+    }
+  ]
+}

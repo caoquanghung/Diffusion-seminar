@@ -10,13 +10,12 @@ DDPM's noise-prediction parameterization from direct reverse-parameter
 estimation. Starting from the variational objective, we
 explain DDPM's simplified loss, distinguish training from sampling,
 and illustrate forward noising with a complete
-scalar calculation and an original five-level image sequence. Published
-DDPM results demonstrate a sample-quality benefit from objective
-reweighting; a separately attributed LDM inpainting comparison illustrates
-the computational benefit of latent diffusion. The discussion emphasizes
-VAE encoder/decoder roles, briefly introduces conditioning, and separates
-compression savings from sampler acceleration. Mathematical derivations
-are provided in the appendices.
+scalar calculation and an original five-level image sequence. With
+pretrained checkpoints, we measure median sampling times of $6.10$~s
+for pixel DDPM and $2.44$~s for LDM on LSUN Churches under our settings.
+Across five ImageNet classes, saved intermediate states show how image
+structure emerges during denoising. We discuss these observations alongside
+published evidence on quality, efficiency, and conditioning.
 \end{abstract}
 
 \section{Introduction}\label{sec:intro}
@@ -40,9 +39,10 @@ a learned reverse model, sampling, and variational training. We then
 isolate DDPM's noise-prediction parameterization and simplified objective. A brief score-matching connection follows the method rather
 than serving as its prerequisite. We then examine LDM's encoder, decoder,
 and latent representation.
-Results distinguish our own forward-noising illustrations from published
-model measurements. We do not train a denoiser or run a pretrained
-generator, GPU benchmark, or prompt-adherence experiment.
+Our experiments time pretrained pixel and latent generators on LSUN
+Churches and trace sampling and forward noising across five ImageNet
+classes. We compare the observations with published results and discuss
+the scope of class labels and text prompts.
 
 \section{Background and Paper Review}\label{sec:background}
 
@@ -763,213 +763,179 @@ reduce the number of evaluations \cite{song2021ddim}; the two ideas can
 be combined without treating them as the same speedup.
 
 \section{Results and Discussion}\label{sec:results}
-\subsection{Original illustrations and evidence boundaries}
-Our own results are the scalar calculation in Section~\ref{sec:scalar}
-and the forward trajectory in Section~\ref{sec:noise}.
-Figure~\ref{fig:noise} shows the synthetic house losing recognizable
-structure as the signal multiplier falls from $1$ to $0.00635$.
-Table~\ref{tab:noise} relates the sequence to the schedule. One random
-trajectory, especially with display clipping, does not establish a
-population-level image-quality trend.
 
-These calculations illustrate forward corruption, not successful
-learned reversal. No pretrained generation, denoising benchmark, GPU
-runtime, peak-memory, or prompt-adherence measurement was performed.
-The following two comparisons are published results from different
-studies and tasks; they must not be combined into a DDPM-versus-LDM
-quality ranking.
+\subsection{Experimental configuration}\label{sec:colab-setup}
+We ran inference with four released checkpoints. Table~\ref{tab:colab-setup}
+records the settings for the two tasks. The checkpoint URLs, class IDs,
+sampling code, and timing records are in Appendix~\ref{app:repro}.
 
-\subsection{Published DDPM evidence for the objective choice}\label{sec:ddpmresults}
-Table~\ref{tab:ddpmobjective} reports Ho et al.'s unconditional CIFAR-10
-comparison with epsilon prediction and fixed isotropic reverse variance
-\cite[Tables~1--2]{ho2020ddpm}. The simplified objective lowers FID from
-$13.51$ to $3.17$, while its reported negative-log-likelihood upper bound
-is slightly higher. This demonstrates a sample-quality/codelength trade-off
-in the authors' setting, rather than equivalent optimization of the
-original likelihood bound.
+\begin{table*}[t]
+\centering\small
+\caption{Colab configuration for the two experiments. Both runs used
+pretrained weights, a Tesla T4 with PyTorch \texttt{2.14.1+cu130}, batch size
+one, $256\times256$ RGB output, and 50 DDIM updates with $\eta=0$.}
+\label{tab:colab-setup}
+\begin{tabularx}{\textwidth}{@{}p{0.20\textwidth}YY@{}}
+\toprule
+Setting & LSUN Churches & ImageNet\\
+\midrule
+Pixel checkpoint & Google \texttt{ddpm-ema-church-256} &
+OpenAI ADM \texttt{256x256\_diffusion.pt}\\
+Latent checkpoint & CompVis LDM-KL-8 (\texttt{lsun\_churches.zip}) &
+CompVis \texttt{cin256-v2} (VQ, $f=4$)\\
+Conditioning & Unconditional for both models &
+Class label for both models, with CFG $s=3.0$ for LDM\\
+Precision & FP32 for both models &
+ADM uses FP16 in the U-Net torso with FP32 diffusion states. LDM uses FP32\\
+Seeds and samples & Seeds 2026--2029, four timed images per model after warm-up &
+Seed 2026, one image per class and model for five shared classes\\
+Outputs analyzed & Sampling time, peak allocation, and visual quality &
+Final images and saved forward and reverse states\\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\subsection{Pixel versus latent diffusion on LSUN Churches}\label{sec:tradeoffs}
+We timed generation from the initial noise draw to the final RGB tensor,
+with GPU synchronization. The LDM timing includes its decoder. Model loading,
+one warm-up image per model, and PNG export are outside the timed interval.
+For visual quality, we inspect recognizable church features and the clarity
+of outlines and fine detail across all four timed samples.
 
 \begin{table}[t]
 \centering\small
-\caption{Published DDPM objective comparison \cite[Table~1]{ho2020ddpm}.
-NLL upper bounds are in bits/dimension; lower values are better.
-These are not measurements from our team.}
-\label{tab:ddpmobjective}
-\begin{tabularx}{\columnwidth}{@{}Yrr@{}}
+\caption{Comparison on LSUN Churches under the settings in
+Table~\ref{tab:colab-setup}. Latency is the median of four images.
+Peak allocation is PyTorch's peak CUDA tensor allocation.}
+\label{tab:comparison}
+\begin{tabularx}{\columnwidth}{@{}YYY@{}}
 \toprule
-Objective & FID & NLL bound\\
+Criterion & Pixel DDPM & LDM-KL-8\\
 \midrule
-Variational bound $L$ & 13.51 & 3.70\\
-Simplified $L_{\rm simple}$ & 3.17 & 3.75\\
+Denoising state & $256\times256\times3$ & $32\times32\times4$\\
+Latency (s/image) & 6.10 & 2.44\\
+Peak allocation (GiB) & 0.75 & 1.68\\
+Visual quality & Clear steeple in seed 2028. Darker seed 2029 obscures details. &
+Clear facades in seeds 2027--2029. Seed 2026 shows a distant complex.\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-FID (Fr\'echet Inception Distance) compares generated and reference
-feature-distribution statistics
-\cite{heusel2017fid}; it does not directly measure every image's quality
-or prompt adherence. DDPM computes these CIFAR-10 FIDs against training
-images; its reported test-reference FID for the simplified model is
-$5.24$ \cite[Sec.~4.1]{ho2020ddpm}. Stating the reference set matters.
-The ablation supports the combination of epsilon prediction and the
-simplified objective, not a claim that any unweighted reconstruction
-loss improves any generative model.
+\begin{figure}[t]
+\centering
+\setlength{\tabcolsep}{1pt}
+\begin{tabular}{@{}lcccc@{}}
+\small Seed & \scriptsize 2026 & \scriptsize 2027 & \scriptsize 2028 & \scriptsize 2029\\
+\raisebox{.08\columnwidth}{\small DDPM} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ddpm_2026.png} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ddpm_2027.png} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ddpm_2028.png} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ddpm_2029.png}\\
+\raisebox{.08\columnwidth}{\small LDM} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ldm_2026.png} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ldm_2027.png} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ldm_2028.png} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ldm_2029.png}\\
+\end{tabular}
+\caption{All eight timed LSUN Churches samples, grouped by seed. Each
+model draws its initial noise in its own state space.}
+\label{fig:churches-samples}
+\end{figure}
 
-\subsection{A published pixel-versus-latent setting}\label{sec:benchmark}
-We select the \emph{Places inpainting} comparison in
-Rombach et al.\ \cite[Sec.~4.5, Table~6]{rombach2022ldm}:
-pixel-space LDM-1 versus LDM-4 with a KL-regularized first stage and
-attention. Their denoisers have a matched parameter count. The published
-protocol trains on $256\times256$ crops; the supplementary protocol
-specifies fixed validation masks and a 2,000-image validation set.
-We preserve the table's two sampling resolutions and six-epoch endpoint.
+The latent pipeline achieved a $2.50\times$ speedup by median latency
+and used more peak tensor memory (Table~\ref{tab:comparison}).
+Both produced recognizable church imagery
+(Figure~\ref{fig:churches-samples}). The sample count, checkpoints, and
+implementations limit conclusions to the tested pipelines.
 
-\begin{table*}[t]
-\centering\small
-\caption{Published inpainting comparison, transcribed from
-\cite[Table~6]{rombach2022ldm}. These are the paper's measurements,
-not a benchmark run by our team. Higher throughput and lower FID are better.}
-\label{tab:benchmark}
-\begin{tabularx}{\linewidth}{@{}Yrr@{}}
-\toprule
-Criterion & Pixel LDM-1 & LDM-4 (KL, with attention)\\
-\midrule
-Training throughput (samples/s) & 0.11 & 0.32\\
-Sampling throughput at $256^2$ (samples/s) & 0.26 & 0.97\\
-Sampling throughput at $512^2$ (samples/s) & 0.07 & 0.34\\
-Training + validation (hours/epoch) & 20.66 & 7.66\\
-Validation FID after epoch 6 (2k samples) & 24.74 & 15.21\\
-Peak memory (GB) & \multicolumn{2}{c}{Not reported in this table}\\
-\bottomrule
-\end{tabularx}
-\end{table*}
+\subsection{ImageNet samples and denoising trajectories}
+\label{sec:imagenet-results}
+In the ImageNet run, ADM denoised an RGB state and CompVis denoised a
+$64\times64\times3$ latent. Figure~\ref{fig:imagenet-grid} shows all ten
+outputs for golden retriever, tabby cat, school bus, monarch butterfly,
+and volcano (Table~\ref{tab:colab-setup}). We assess recognizable class
+features and coherence of shape.
 
-Our arithmetic gives sampling-throughput ratios
-$0.97/0.26=3.73$ at $256^2$ and $0.34/0.07=4.86$ at $512^2$.
-The epoch-time ratio is $20.66/7.66=2.70$ and training-throughput ratio
-$0.32/0.11=2.91$. The reported FID is $9.53$ points lower, a relative
-decrease of $38.5\%$; this percentage is \emph{not} a percentage increase
-in perceptual quality.
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.94\textwidth]{figures/colab/imagenet_comparison.png}
+\caption{Our ImageNet samples for five shared class labels. The top row
+uses pixel-space ADM and the bottom row uses latent diffusion.}
+\label{fig:imagenet-grid}
+\end{figure*}
 
-The result supports an efficiency--quality advantage for this configuration
-and training endpoint. Six equal epochs do not imply equal wall-clock
-training budgets or equal convergence. Moreover, the table flags
-GPU-setting/batch-size differences from the paper's Figure~7; its ratios
-should not be universalized. Separate autoencoder pretraining is an
-additional cost not isolated by this table. Inpainting uses spatial conditions, so this
-experiment does not itself establish a text-prompt-control advantage.
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.76\textwidth]{figures/colab/retriever_step25.png}
+\caption{Inside DDIM update 25 for the golden retriever. Read each row
+from the noisy input through the predicted noise and clean estimate to
+the updated state. ADM noise is displayed in RGB. The LDM heatmap
+shows the root mean square of the guided noise across latent channels.
+The other LDM panels show decoded states.}
+\label{fig:imagenet-step}
+\end{figure*}
 
+Reverse sampling starts from a Gaussian draw. At each update the
+denoiser predicts noise, the sampler estimates the clean state, and
+that estimate helps compute the next state. At update 25, the clean
+estimates already show the retriever's head and muzzle, while the
+updated states still carry visible noise (Figure~\ref{fig:imagenet-step}).
+In a separate forward pass, we start from each model's final state
+and add Gaussian noise using its schedule. The retriever's features
+gradually disappear. Appendix~\ref{app:colab-traces} shows both
+directions for all five labels.
 
-\subsection{Speed, quality, memory, and control: explicit criteria}\label{sec:tradeoffs}
-Table~\ref{tab:comparison} connects the benchmark to the mechanisms developed
-in Section~\ref{sec:ldm}. Its memory and control entries are analytical
-comparisons, not unreported empirical measurements.
+Both bus samples show yellow bodies and rows of windows. The volcano appears as a lava scene in ADM and as a slope
+with a plume in LDM. The different outputs illustrate variation
+under the same label. One sample per class and different guidance
+settings limit the comparison to the examples shown.
 
-\begin{table*}[t]
-\centering\small
-\caption{Pixel versus latent diffusion. The concrete latent setting is
-LDM-4 with KL regularization. Architecture-based analysis is informed by
-\cite{ho2020ddpm,rombach2022ldm,ho2022cfg}; measured values are confined
-to Table~\ref{tab:benchmark}.}
-\label{tab:comparison}
-\begin{tabularx}{\linewidth}{@{}p{1.55cm}YY@{}}
-\toprule
-Criterion & Pixel diffusion & Latent diffusion (KL, $f=4$)\\
-\midrule
-Speed & Repeatedly processes a pixel-resolution state &
-Smaller repeated states; one final decode. The published inpainting
-throughput is higher in the selected setting\\
-Quality & No separate autoencoder bottleneck; still limited by denoiser,
-data, and sampling & Compression can retain useful structure but lose
-detail or introduce reconstruction artifacts\\
-Memory & Larger spatial states and potentially larger feature maps &
-Fewer latent positions; autoencoder/text-encoder weights and decoder
-activations add memory. End-to-end peak memory needs measurement\\
-Control & Can support text conditioning and guidance when trained for it &
-Cross-attention and guidance support flexible prompts; compression itself
-does not guarantee better semantic control\\
-\bottomrule
-\end{tabularx}
-\end{table*}
+\subsection{Published evidence on quality and speed}\label{sec:benchmark}
+For a quantitative comparison within one task, Rombach
+et al.~\cite[Table~6]{rombach2022ldm} report $0.26$ versus $0.97$
+samples/s at $256^2$ and FID@2k $24.74$ versus $15.21$ after six epochs
+for pixel LDM-1 and latent LDM-4 (KL with attention), respectively,
+in Places inpainting. FID compares generated and reference feature
+distributions \cite{heusel2017fid}. These figures describe the paper's
+inpainting setup.
 
-\textbf{Where speed comes from.}
-An analytical latency decomposition is
-\begin{equation}
-\mathcal T_{\rm gen}\approx
-\mathcal T_{\rm text}
-+K\,r\,\mathcal T_{\rm U\text{-}Net}
-+\mathcal T_{\rm decode},\label{eq:cost}
-\end{equation}
-where every $\mathcal T$ is measured in seconds, $K$ is the number of
-sampling updates, and $r$ is the effective number of denoiser evaluations
-per update ($1$ without standard CFG, $2$ with it, before batching effects).
-The final term is absent in pixel diffusion. Latent compression mainly
-reduces the cost of a U-Net evaluation; DDIM can reduce $K$
-\cite{song2021ddim}. Fewer updates, higher guidance, and greater compression
-are separate design choices with different quality consequences.
+\paragraph{DDPM objective ablation.}
+On unconditional CIFAR-10, Ho et al.~\cite[Tables~1--2]{ho2020ddpm}
+report training-reference FID of $13.51$ for the variational objective
+and $3.17$ for the simplified objective with epsilon prediction and
+fixed isotropic variance. The reported NLL upper bound changes from
+$3.70$ to $3.75$ bits per dimension.
 
-\textbf{Why a smaller state is not a guaranteed memory ratio.}
-At $256^2$, RGB has $196{,}608$ coordinates; the illustrative
-$64\times64\times3$ latent has $12{,}288$, giving a $16{:}1$ state-element
-ratio. Generally it is $3f^2/c$.
-At fixed feature width, spatial activation storage also benefits from fewer
-positions, but model weights, attention, batching, and the full-resolution
-decoder affect the peak. Therefore neither a $16\times$ runtime speedup nor
-a $16\times$ total-memory reduction follows from this arithmetic.
+\FloatBarrier
+\balance
+\subsection{Prompt control, training data, copyright, and bias}
+\label{sec:ethics}
+\textbf{Prompt-based control.} A text prompt such as \emph{a red bus beside
+a blue car} specifies objects, attributes, and a spatial relation.
+Cross-attention supplies the text condition to the denoiser. Classifier-free
+guidance can strengthen conditioning at the cost of diversity
+\cite{rombach2022ldm,ho2022cfg}. LSUN generation was unconditional. ImageNet
+conditioning used class IDs, so our samples show class control only.
+A prompt-adherence test would check object presence, color binding, and
+the requested relation over repeated seeds.
 
-\textbf{Quality and applicability.}
-Moderate compression can make iterative generation practical at larger
-resolutions. Tasks needing exact text, tiny structures, or pixel-faithful
-reconstruction must also inspect autoencoder error. Stronger guidance and
-lower FID cannot substitute for checking requested object attributes and
-relations. These distinctions explain why the favorable inpainting result
-is useful evidence without settling every application.
+\textbf{Training data.} The church checkpoints specialize in church imagery.
+The ImageNet checkpoints use a fixed class vocabulary. Dataset coverage
+limits the evidence a model sees for rare subjects and their variations.
+In text-to-image training, captions also determine which attributes and
+relations receive language supervision.
 
+\textbf{Bias.} Bianchi et al.~\cite{bianchi2023bias} found demographic
+stereotypes in images generated from ordinary prompts. Measuring this
+effect would require comparable prompts and multiple seeds across groups.
+Our Colab runs contain no such group comparison.
 
-\subsection{Training data, bias, copyright, and limitations}\label{sec:ethics}
-\textbf{Data dependence.}
-The VAE learns what can be represented, the denoiser learns what is likely,
-and the text encoder learns which language features connect to imagery.
-Errors or underrepresentation at any stage can propagate to outputs.
-Large image--text corpora such as LAION-5B illustrate the scale of this
-dependency \cite{schuhmann2022laion}; they are not interchangeable with the
-specific datasets used in every original LDM experiment.
-Caption noise, duplicate images, language imbalance, and missing
-provenance are distinct concerns. Our analytical recommendation is to
-document dataset versions, sources, filters, and evaluation splits, and
-audit duplicates and underrepresented concepts.
-
-\textbf{Bias and prompt control.}
-Bianchi et al.\ \cite{bianchi2023bias} report demographic stereotype
-amplification in text-to-image systems, including prompts that do not
-explicitly name demographic groups. Latent compression does not remove
-these associations. Because guidance amplifies conditional preferences
-and can reduce diversity, stronger prompt adherence should not be assumed
-to imply fairer representation. Evaluation should compare distributions
-across multiple prompts, groups, and seeds; prompt rewriting alone is
-insufficient evidence of mitigation.
-
-\textbf{Memorization and copyright.}
-Carlini et al.\ \cite{carlini2023extract} demonstrate extraction of memorized
-training examples from diffusion models. This establishes a possible
-failure mode, not that every output is copied.
-Dataset availability, permission to use underlying works, memorization
-risk, and rights in an output are separate questions.
-The U.S. Copyright Office's 2025 pre-publication analysis distinguishes
-data collection, training, outputs, and licensing
-\cite{usco2025training}; it is a U.S. policy source, not Vietnamese law.
-Compression is no technical guarantee against reproduction.
-Our recommendations are documented provenance, appropriate permissions,
-deduplication, and similarity checks for sensitive use cases; none alone
-certifies legal compliance.
-
-\textbf{Limits of this report.}
-Our original evidence covers a scalar calculation and one synthetic
-forward trajectory. The model evidence comprises published DDPM objective results and an
-LDM inpainting comparison, not our own matched text-to-image benchmark. We have no
-measured peak-memory values or prompt-adherence scores.
-A future study should hold hardware, precision, batch size, sampler, step
-count, guidance, resolution, and dataset fixed, report both autoencoder
-and denoiser costs, and evaluate quality and control separately.
+\textbf{Copyright and memorization.} Carlini et al.~\cite{carlini2023extract}
+extracted memorized training images from diffusion models. This motivates
+documenting data provenance and checking for close matches to training
+images. Permissions for training materials and rights in generated outputs
+are separate questions. The U.S. Copyright Office report discusses
+training under U.S. copyright law \cite{usco2025training}.
 
 \section{Conclusion}\label{sec:conclusion}
 Learning to remove noise enables generation by fitting a sequence of
@@ -986,11 +952,9 @@ connection explains the parameterization without adding a separate
 computational stage.
 
 
-LDM preserves this denoising principle while operating in a learned
-latent representation. The encoder/decoder trade reconstruction fidelity
-for reduced repeated spatial computation. Published inpainting evidence
-supports an efficiency benefit in a specific configuration, with
-autoencoder costs and information loss still relevant. Together, DDPM
-and LDM develop the original framework through better parameterization
-and more efficient representation; neither guarantees semantic control,
-fairness, or unrestricted data use.
+LDM preserves this denoising principle in a learned representation.
+The ImageNet traces show recognizable structure emerging in both spaces.
+In our LSUN Churches run, the latent pipeline had lower sampling latency
+and higher peak tensor allocation. These measurements apply to the tested
+checkpoints. Text control and the effects of training data require
+evaluation beyond class-conditioned image examples.

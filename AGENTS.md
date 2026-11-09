@@ -92,9 +92,9 @@ for an arbitrary trained network.
 
 The former qualitative comparison Table 1 has been replaced by the user-supplied `figures/qualitative_comparison.png` in Appendix E (Figure 5). Subsection 2.2 keeps its prose and references that illustration. Do not restore the old table unless requested.
 
-Heavy DSM, MSE-optimum, original 2015 bound/covariance, and score-to-reverse-mean derivations are in Appendix C. Supporting VAE, attention matrix/toy example, and CFG details are in Appendix D; main-text attention is brief. The current PDF has **9 main-text pages + 1 reference page + 8 appendix pages = 18 pages**. The body must remain at most 10 pages, excluding references/appendices. The ZIP clean-build check must be refreshed after edits.
+Heavy DSM, MSE-optimum, original 2015 bound/covariance, and score-to-reverse-mean derivations are in Appendix C. Supporting VAE, attention matrix/toy example, and CFG details are in Appendix D; main-text attention is brief. The current PDF has **9 main-text pages + 1 reference page + 11 appendix pages = 21 pages**. The body must remain at most 10 pages, excluding references/appendices. The ZIP clean-build check must be refreshed after edits.
 
-Appendix F (page 18) contains side-by-side Algorithms 1/2 for forward Gaussian
+Appendix F contains side-by-side Algorithms 1/2 for forward Gaussian
 diffusion and backward sampling with the 2015 learned mean/covariance model.
 The backward loop handles t=T,...,2 and then uses the original stationary
 kernel at t=1. A companion paragraph explains the DDPM epsilon/fixed-variance
@@ -137,7 +137,7 @@ The active edition uses `\documentclass[10pt,twocolumn,letterpaper]{article}` an
 
 ## Evidence boundaries: do not fabricate experiments
 
-The user had not supplied completed Results. The delivered report contains original illustrations/calculations and clearly attributed published results. **No pretrained image generator, denoising benchmark, GPU runtime benchmark, peak-memory measurement, or prompt-adherence experiment was executed.** The future evaluation protocol is a proposal, not a completed study.
+Section 5 tabulates the configurations for two pretrained Colab runs. LSUN Churches compares pixel DDPM and CompVis LDM-KL-8 at 256×256 with 50 DDIM updates on a T4. Median latency is 6.10 s/image versus 2.44 s/image. Peak PyTorch CUDA tensor allocation is 0.75 GiB versus 1.68 GiB. The report shows all eight timed images and assesses quality visually. ImageNet compares ADM and CompVis cin256-v2 across five class labels. Figures and full trajectories are included in the main text and Appendix G, with provenance in code/colab/. Prompt adherence, FID, and bias were not measured in these runs. The published comparisons and proposed prompt protocol have separate sources.
 
 Original illustration: a procedural 28×28 grayscale house (no external dataset), NumPy seed 420, 1,000 Markov noising steps, beta linearly increasing from 0.0001 to 0.02, snapshots at 0/50/200/500/1000. Arrays remain unclipped; only displayed intensities are clipped. Tested generator versions: NumPy 2.3.5 and ReportLab 4.4.9 under Python 3.12. The other three diagrams are editable TikZ in `content/report.tex` and the supporting conditioning appendix in `content/appendices.tex`.
 
@@ -210,4 +210,4 @@ Layout details/pitfalls:
 
 ## Next-agent starting point
 
-Read this file, the latest user message, and the active source README. Check `git status` and current file contents before editing. The report migration and delivery are complete; there is no pending automatic experiment, upload, or content rewrite. Future work should be scoped to the user's next request. Overleaf import instructions are: New Project → Upload Project → select ZIP → main.tex → pdfLaTeX. Actual author names/IDs and any real model results remain to be supplied if the user wants them added.
+Read this file, the latest user message, and the active source README. Check `git status` and current file contents before editing. The report migration and delivery are complete; there is no pending automatic experiment, upload, or content rewrite. Future work should be scoped to the user's next request. Overleaf import instructions are: New Project → Upload Project → select ZIP → main.tex → pdfLaTeX. Actual author names/IDs remain to be supplied.

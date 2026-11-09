@@ -1,5 +1,14 @@
 # Source and claim checks
 
+## Colab evidence added to Section 5
+
+The LSUN Churches timing and PyTorch CUDA allocation values come from the
+per-model JSON records in `code/colab/`. The timed LDM function includes
+the decoder. The ImageNet traces are from a separate class-conditioned
+run. Its step-25 noise panel shows RGB epsilon for ADM and channel RMS
+of guided epsilon for CompVis. The adjacent states for CompVis are
+decoded images. The five paired samples support qualitative observations.
+
 ## Explicit score-based model attribution, November 9, 2026
 
 The score paragraph in subsection 3.3 now explicitly cites Song and Ermon
@@ -157,7 +166,7 @@ Sources initially consulted on November 5, 2026; the DDPM/LDM and historical fou
 - **Rombach et al. (2022), LDM, arXiv v2:** https://arxiv.org/abs/2112.10752. Read Sections 3.1–3.3 (perceptual autoencoder, KL/VQ variants, latent denoising, conditioning), Sections 4.1 and 4.5, and supplementary Sections E.2.2/E.3.5. Table 8 confirms the illustrative KL f=4, c=3 autoencoder shape. Table 6 is the selected quantitative pixel/latent inpainting baseline.
 - **Kingma and Welling (2014), VAE:** https://arxiv.org/abs/1312.6114. Used for posterior/reparameterization/ELBO background. The report distinguishes this textbook objective from the perceptual/adversarial, weak-KL objective in LDM.
 - **Ho and Salimans (2022), CFG:** https://arxiv.org/abs/2207.12598. Section 3.2 and Eq. 6 specify conditional dropout and guidance. The report's scale s is 1+w relative to that equation. The source also discusses diversity and extra denoiser evaluations.
-- **Song, Meng, and Ermon (2021), DDIM:** https://arxiv.org/abs/2010.02502. Used to distinguish sampler acceleration from changing the representation to latent space; no new DDIM measurements are claimed.
+- **Song, Meng, and Ermon (2021), DDIM:** https://arxiv.org/abs/2010.02502. Used to distinguish sampler acceleration from changing the representation to latent space. The paper and our Colab timings have separate protocols.
 - **Vaswani et al. (2017):** https://arxiv.org/abs/1706.03762. Scaled dot-product attention; report matrices use row-vector conventions. The toy example is newly constructed.
 - **Heusel et al. (2017):** https://arxiv.org/abs/1706.08500. FID as a feature-distribution comparison; FID is not interpreted as prompt accuracy or an absolute percentage of image quality.
 - **Goodfellow et al. (2014)** and **van den Oord et al. (2016):** the bibliography links the original GAN and PixelRNN papers for the qualitative family comparison.
@@ -204,7 +213,7 @@ The PDF table was visually checked against the source paper. Ratios in the repor
 
 Original: prose synthesis, geometric house, five-level sequence, scalar noising calculation, attention/guidance toy calculations, three editable TikZ diagrams, cost decomposition, storage-ratio arithmetic, and future evaluation protocol.
 
-Sourced: established equations/methods, historical paper findings, the explicitly transcribed inpainting table, the ICCV 2025 style and bibliography files. Sources are cited in the manuscript and figure/table captions. AI assistance is disclosed in Appendix B.3.
+Sourced: established equations/methods, historical paper findings, the explicitly transcribed inpainting table, the ICCV 2025 style and bibliography files. Sources are cited in the manuscript and figure/table captions. AI assistance is disclosed in Appendix B.
 
 
 ## Format migration, November 6, 2026

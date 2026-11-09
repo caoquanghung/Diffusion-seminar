@@ -1,0 +1,20 @@
+{
+  "dataset": "LSUN Churches",
+  "resolution": [
+    256,
+    256
+  ],
+  "conditioning": "unconditional",
+  "batch_size": 1,
+  "warmup_seed": 2025,
+  "trained_here": false,
+  "device": "Tesla T4",
+  "torch": "2.14.1+cu130",
+  "precision": "float32",
+  "models_completed": [
+    "StyleGAN2",
+    "DDPM",
+    "LDM"
+  ],
+  "errors": []
+}
