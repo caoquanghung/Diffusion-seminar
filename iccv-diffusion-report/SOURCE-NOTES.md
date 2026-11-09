@@ -9,12 +9,126 @@ run. Its step-25 noise panel shows RGB epsilon for ADM and channel RMS
 of guided epsilon for CompVis. The adjacent states for CompVis are
 decoded images. The five paired samples support qualitative observations.
 
+## Explicit score-based model attribution, November 9, 2026
+
+The score paragraph in subsection 3.3 now explicitly cites Song and Ermon
+(2019), "Generative Modeling by Estimating Gradients of the Data Distribution"
+(song2019score), for noise-conditional score learning and annealed Langevin
+generation. This attributes the generative approach without claiming that
+the paper invented score matching itself.
+
+## Subsection 3.3 appendix-reference audit, November 9, 2026
+
+The current user-edited 3.3 integrates noise/score prediction and reverse
+sampling. Its existing structure and formulas were preserved while adding
+proof/background references: C.2 for scores and Gaussian perturbations,
+C.3 for the closed-form forward marginal, C.4 for DSM/MSE optimality and
+the timestep-dependent conversion between score/noise losses, C.5 for the
+full Gaussian covariance KL, C.6 for the true reverse-conditional-mean
+identity, C.7 for interpreting predicted noise, and F for sampler pseudocode.
+Only stable labels were added to C.3/C.7; no duplicate proof appendix was
+restored. Two reverse references that resolved to "Sections 3.3 and 3.3"
+were consolidated. Current numbering is 3.3 for the full DDPM discussion,
+3.4 for the scalar example and 3.5 for the five-level illustration.
+
+## Merged DDPM training subsection, November 9, 2026
+
+The previous subsections 3.3 and 3.4 are now a single subsection 3.3,
+"DDPM: Variational Training and the Simplified Noise Loss". The complete
+variational objective, posterior targets, fixed-variance reduction, mean/noise
+parameterization, weighted MSE, and simplified objective form one sequence
+with paragraph headings. The transition to the simplified objective was
+shortened to remove repetition; scientific equations and evidence remain.
+The sec:objective label now points to the merged subsection alongside
+sec:variational and sec:parameterization. Sampling is 3.4, the scalar example
+is 3.5, and the five-level illustration is 3.6. Earlier subsection numbers
+below record prior revisions. Counts remain 9 main pages plus 1 reference
+page and 8 appendix pages (18 total).
+
+## Removal of the duplicate DDPM derivation, November 9, 2026
+
+The former Appendix C.6, "From the variational bound to weighted noise MSE",
+has been removed because its objective/mean/noise derivation is already in
+subsection 3.3. All five references to its app:vlb label were removed or
+redirected to the main method and the sampler pseudocode. Subsection 3.4
+now cites DDPM Sections 3.3-3.4 directly for the discretized decoder/endpoint
+detail. The original 2015 objective and covariance KL remain in C.5; the
+score-to-reverse-mean section is automatically renumbered C.6. Earlier
+subsection numbers recorded below are historical. The document now contains
+9 main pages, 1 reference page, and 8 appendix pages (18 total); Appendix F
+is on page 18.
+
+## DDPM-focused method revision, November 9, 2026
+
+This revision supersedes earlier subsection numbers recorded below. The
+standalone main-text review of the 2015 loss has been removed; its complete
+K/entropy/covariance treatment and minimized loss remain in Appendix C.5.
+Subsections 3.1-3.2 introduce the common forward/reverse framework and the end
+of 3.2 explicitly transitions to DDPM's variational training. The former 3.4
+is now 3.3 and has been expanded: complete L_VLB, meaning of all three terms,
+tractable training posterior, fixed-variance KL reduction, target posterior
+mean expressed in epsilon, predicted mean expressed in epsilon_theta, and
+the weighted noise-MSE coefficient obtained by subtracting the means.
+These are DDPM Sections 2-3, Eqs. 5-12; the complete algebra is also retained
+in Appendix C.6. New subsection 3.4 explains why dropping w_t changes relative
+timestep weights even though w_t does not depend on theta, and points to the
+published objective ablation rather than claiming universal optimality.
+Sampling/variance choices and the brief score interpretation are now 3.5;
+the scalar and five-level examples are 3.6/3.7. The main text remains 9 pages,
+followed by 1 reference page and 9 appendix pages (19 total).
+
+## DDPM reverse variance choices, November 9, 2026
+
+Subsection 3.6 now explicitly contrasts the learned intermediate covariance
+in the 2015 sampler with DDPM 2020's fixed isotropic reverse covariance.
+Before the sampling update, it gives both sigma_t^2=beta_t and
+sigma_t^2=tilde_beta_t=[(1-alpha_bar_{t-1})/(1-alpha_bar_t)] beta_t for t>1.
+DDPM Section 3.2 reports similar results for the two choices. Both depend
+only on the schedule; the posterior-variance choice does not require the
+clean image at generation time. The text separates the predicted reverse
+mean from fresh sampling noise, states u_1=0 and x_0=mu_theta(x_1,1), and
+distinguishes that final display/sampling convention from the likelihood
+decoder variance and the original 2015 endpoint. Appendix F now points to
+the explicit main-text variance equation. Subsection 3.4 retains the
+fixed-variance assumption used to derive mean/noise MSE. Sources: DDPM
+Section 3.2 and Algorithm 2; original 2015 Section 2.2 and Appendix B.2.
+
+## Forward/backward pseudocode, November 9, 2026
+
+Appendix F adds two original expository algorithms, referenced from the end
+of subsection 3.2. Algorithm 1 implements the Gaussian forward transition
+with independent innovations. Algorithm 2 samples learned mean/covariance
+transitions for t=T,...,2 and then the original prescribed stationary Gaussian
+kernel at t=1 (Sohl-Dickstein et al., Secs. 2.1-2.2 and Appendix B.2).
+The direct forward marginal and the changes needed for DDPM Algorithm 2 are
+explained alongside the pseudocode. All sampled noise variables are fresh;
+the backward procedure has no clean-image input. The user's screenshot of
+DDPM Algorithms 3/4 (Sending/Receiving, Sec. 4.3) is a layout reference, not
+the forward-noising or reverse-generation algorithm reproduced here.
+No training or pretrained-model experiment is implied. The document has
+9 main pages, 1 reference page, and 9 appendix pages (19 total).
+
+## Figure 1 architecture diagram, November 9, 2026
+
+Figure 1 now uses only editable vector TikZ blocks and arrows. The forward
+lane explicitly shows the Gaussian kernel, beta schedule, fresh innovation,
+and progression from data to noise. The backward lane runs right to left:
+fresh Gaussian prior, current state, timestep-conditioned neural model,
+predicted mean/covariance, Gaussian sampling with a new random draw, previous
+state, and generated image. Outputs f_mu/f_Sigma follow the 2015 Gaussian
+framework in subsection 3.2; the caption points to DDPM's later noise-based
+mean parameterization in 3.4 and notes the final-step boundary convention.
+Sources are the already-checked original 2015 forward/reverse definitions
+and DDPM's inherited Gaussian construction. No specific U-Net architecture
+or trained-model output is claimed. The former RGB illustration is superseded;
+its files are retained but no longer referenced by Figure 1.
+
 ## Explicit loss decomposition, November 9, 2026
 
 Subsections 3.3-3.5 now introduce the original 2015 maximized bound K and
 the minimized loss -K, including the directed posterior-to-model KL and
-the schedule-dependent entropy term. Before any DDPM mean/noise
-parameterization, subsection 3.3 presents the complete prior, reverse-step,
+the schedule-dependent entropy term in subsection 3.3. Before any DDPM mean/noise
+parameterization, the start of subsection 3.4 presents the complete prior, reverse-step,
 and decoder decomposition with L_T, L_{t-1}, and L_0, following DDPM Eq. 5.
 The expectation is distributed over the three terms, so each label is an
 expected contribution. The user-supplied screenshot is DDPM Eq. 5, not a

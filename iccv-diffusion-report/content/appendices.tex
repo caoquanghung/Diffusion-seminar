@@ -172,7 +172,7 @@ DDPM variational negative-log-likelihood bound, in nats\\
 $L_T,L_{t-1},L_0$ & Expected prior KL, intermediate posterior-to-model KL,
 and final decoder negative log likelihood, in nats\\
 $w_t,\tilde\beta_t,\tilde\mu_t$ & Positive loss weight; forward-posterior
-variance and mean, for $t>1$; see Appendix~\ref{app:vlb}\\
+variance and mean, for $t>1$; see Section~\ref{sec:parameterization}\\
 $\Normal(\mu,\Sigma),\Id$ & Gaussian with mean $\mu$ and covariance $\Sigma$;
 identity covariance of the relevant dimension\\
 $\eps,\eps_z,u,\xi$ & Independent standard-normal draws in their respective
@@ -246,7 +246,7 @@ learning its score requires the conditional-to-marginal identity below.
 Different noise levels define different smoothed distributions.
 DDPM instead scales the clean signal as well, as in Eq.~\eqref{eq:closed}.
 
-\subsection{Why the forward marginal is available in closed form}
+\subsection{Why the forward marginal is available in closed form}\label{app:forwardmarginal}
 Assume independent standard-normal innovations
 $\eps^{(1)},\eps^{(2)}$ and let $x_0$ be fixed. Applying
 Eq.~\eqref{eq:forward} twice gives
@@ -342,6 +342,7 @@ K_{2015}&=-\sum_{t=2}^T\mathcal D_t+C_\beta,\nonumber\\
 \|p_\theta(x_{t-1}\mid x_t)\big)\right],\nonumber\\
 C_\beta&=H_q(X_T\mid X_0)-H_q(X_1\mid X_0)-H_\pi(X_T).
 \end{align}
+The minimized 2015 loss is $\mathcal L_{2015}=-K_{2015}$.
 $H$ denotes differential entropy in nats and $\pi=\Normal(0,\Id)$.
 The stationary-prior cross-entropy simplification uses the paper's
 normalization of the data. For the isotropic Gaussian forward chain,
@@ -373,60 +374,8 @@ with $v_{\theta,i}>0$, the per-example KL is
 Learning covariance therefore changes more than a mean-MSE target.
 Only after fixing reverse variance do the variance-dependent pieces
 become constant in $\theta$, giving the mean-MSE expression used in
-DDPM's parameterization argument. The explicit Gaussian posterior
-parameters are given next.
+the parameterization argument in Section~\ref{sec:parameterization}.
 
-\subsection{From the variational bound to weighted noise MSE}\label{app:vlb}
-DDPM retains the joint generator and Gaussian forward construction
-with a fixed schedule \cite[Secs.~2--3]{ho2020ddpm}:
-\begin{align}
-p_\theta(x_{0:T})&=p(x_T)\prod_{t=1}^T p_\theta(x_{t-1}\mid x_t),\nonumber\\
-q(x_{1:T}\mid x_0)&=\prod_{t=1}^T q(x_t\mid x_{t-1}).
-\end{align}
-Jensen's inequality bounds negative log likelihood by
-$L=\E_q[\log q(x_{1:T}\mid x_0)-\log p_\theta(x_{0:T})]$.
-Here $L$ is the $L_{\rm VLB}$ introduced in
-Eq.~\eqref{eq:vlbcomponents}.
-Rearranging gives
-\begin{equation}
-\begin{aligned}
-L&=\E\bigg[\KL(q(x_T\mid x_0)\|p(x_T))\\
-&\quad+\sum_{t=2}^T\KL\big(q(x_{t-1}\mid x_t,x_0)\|p_\theta(x_{t-1}\mid x_t)\big)\\
-&\quad-\log p_\theta(x_0\mid x_1)\bigg].
-\end{aligned}
-\end{equation}
-The terminal term is fixed when the schedule and prior are fixed.
-The endpoint term is a reconstruction/decoder likelihood; DDPM's
-original implementation uses a discretized decoder for image integers.
-It is not simply another intermediate Gaussian KL.
-
-For $t>1$, conditioning on $x_0$ yields a Gaussian posterior with
-\begin{align}
-\tilde\beta_t&=\frac{1-\ab_{t-1}}{1-\ab_t}\beta_t,\nonumber\\
-\tilde\mu_t&=\frac{\sqrt{\ab_{t-1}}\beta_t}{1-\ab_t}x_0
-+\frac{\sqrt{\alpha_t}(1-\ab_{t-1})}{1-\ab_t}x_t.
-\end{align}
-With fixed reverse variance $\sigma_t^2>0$, the Gaussian KL is
-$\E[\|\tilde\mu_t-\mu_\theta\|^2/(2\sigma_t^2)]+C$.
-Substituting $x_0=(x_t-\sqrt{1-\ab_t}\eps)/\sqrt{\ab_t}$ gives
-\begin{equation}
-\tilde\mu_t=\frac{1}{\sqrt{\alpha_t}}
-\left(x_t-\frac{\beta_t}{\sqrt{1-\ab_t}}\eps\right).
-\end{equation}
-Replacing $\eps$ by $\eps_\theta$ defines the model mean in
-Eq.~\eqref{eq:ddpmmean}; subtracting the two means gives
-\begin{equation}
-w_t=\frac{\beta_t^2}{2\sigma_t^2\alpha_t(1-\ab_t)}.
-\end{equation}
-These are DDPM's Eqs.~8--12. The simplified objective omits this
-coefficient for intermediate steps; its $t=1$ term is related to the
-endpoint decoder using the approximation explained in DDPM Section~3.4.
-Consequently $L_{\rm simple}$ is a reweighted surrogate, not numerically
-the original variational bound. The CIFAR-10 results in
-Section~\ref{sec:benchmark} empirically motivate that change.
-
-\newpage
-\balance
 \subsection{Why the score determines the reverse mean}\label{app:reversemean}
 Apply the marginal-score identity to a single Gaussian forward step:
 \begin{equation}
@@ -446,7 +395,7 @@ conditional Gaussian. Its higher moments and possible multimodality
 are not specified by the mean alone. DDPM uses a Gaussian approximation
 motivated by small forward steps and learns an approximate score.
 
-\subsection{Why noise prediction is useful without knowing the true noise}
+\subsection{Why noise prediction is useful without knowing the true noise}\label{app:noiseinterpretation}
 For a fixed $x_t$ and $t$, the vector minimizing expected squared prediction
 error is $\E[\eps\mid x_t,t]$ (and, in a conditional model,
 $\E[\eps\mid x_t,t,y]$). Thus a trained predictor estimates a statistical
@@ -601,6 +550,113 @@ The labels describe typical behavior rather than universal performance guarantee
 \vspace{8pt}
 }]
 
+\pagecut
+\nobalance
+\twocolumn[{
+\section{Pseudocode for Forward and Backward Flows}\label{app:pseudocode}
+These algorithms make the Gaussian processes in
+Sections~\ref{sec:forward}--\ref{sec:reversemodel} explicit, using the
+2015 reverse-parameter formulation \cite{sohl2015diffusion}.
+All states lie in $\R^D$; each Gaussian noise draw is independent.
+The two procedures describe corruption and generation; the DDPM variant
+is distinguished below.
+\vspace{8pt}
+}]
+
+\subsection{Forward noising}
+\begin{algorithm}[H]
+\caption{Forward Gaussian diffusion}\label{alg:forward}
+\small
+\begin{algorithmic}[1]
+\Require Clean state $x_0$; schedule $\beta_1,\ldots,\beta_T$
+\Ensure Forward trajectory $(x_0,x_1,\ldots,x_T)$
+\For{$t=1,\ldots,T$}
+  \State Draw $\eps^{(t)}\sim\Normal(0,\Id)$
+  \State $\alpha_t\gets 1-\beta_t$
+  \State $x_t\gets\sqrt{\alpha_t}\,x_{t-1}
+                   +\sqrt{\beta_t}\,\eps^{(t)}$
+\EndFor
+\State \Return $(x_0,x_1,\ldots,x_T)$
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{What this computes.}
+Algorithm~\ref{alg:forward} applies the known Gaussian transition
+in Eq.~\eqref{eq:forward}. The schedule satisfies $0<\beta_t<1$;
+the original Gaussian framework may learn its rates, whereas the
+reported DDPM implementation fixes them. The forward transition
+itself does not evaluate a denoising network. A sufficiently long
+schedule makes the terminal distribution approximately standard
+Gaussian, not necessarily exactly Gaussian at finite $T$.
+
+\paragraph{Direct access to one timestep.}
+When only one noisy training input is required, the full loop is
+unnecessary. Compute $\ab_t=\prod_{j=1}^{t}(1-\beta_j)$ and draw
+\begin{equation*}
+x_t=\sqrt{\ab_t}\,x_0+\sqrt{1-\ab_t}\,\eps,
+\qquad\eps\sim\Normal(0,\Id).
+\end{equation*}
+This samples the same marginal $q(x_t\mid x_0)$ as
+Eq.~\eqref{eq:closed}; it does not recover the particular path generated
+by Algorithm~\ref{alg:forward}.
+
+\paragraph{Separate runs and separate noise.}
+Backward generation starts from a fresh prior draw, independently of
+the clean image and trajectory used in Algorithm~\ref{alg:forward}.
+The reverse noise $u_t$ is not the forward innovation $\eps^{(t)}$.
+Composing the learned reverse transitions produces a model sample;
+it does not guarantee recovery of the original $x_0$.
+
+\newpage
+\subsection{Backward sampling: the 2015 Gaussian model}
+\begin{algorithm}[H]
+\caption{Backward Gaussian sampling}
+\label{alg:reverse2015}
+\small
+\begin{algorithmic}[1]
+\Require $T$; trained $f_\mu,f_\Sigma$; first-step variance $\beta_1$
+\Ensure A generated state $x_0$
+\State Draw $x_T\sim\Normal(0,\Id)$
+\For{$t=T,T-1,\ldots,2$}
+  \State $\mu_t\gets f_\mu(x_t,t)$
+  \State $\Sigma_t\gets f_\Sigma(x_t,t)$
+  \State Draw $u_t\sim\Normal(0,\Id)$
+  \State $x_{t-1}\gets\mu_t+\Sigma_t^{1/2}u_t$
+\EndFor
+\State Draw $u_1\sim\Normal(0,\Id)$
+\State $x_0\gets\sqrt{1-\beta_1}\,x_1+\sqrt{\beta_1}\,u_1$
+\State \Return $x_0$
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{Learned intermediate steps.}
+The network receives the current noisy state and timestep, and
+predicts a reverse mean and positive covariance. For the original
+image model, $\Sigma_t$ is diagonal and its square root is computed
+elementwise. The random draw implements
+$p_\theta(x_{t-1}\mid x_t)=\Normal(\mu_t,\Sigma_t)$, as in
+Eq.~\eqref{eq:originalsampling}.
+
+\paragraph{The 2015 endpoint.}
+The last update uses the prescribed stationary Gaussian kernel
+\cite[App.~B.2]{sohl2015diffusion}, rather than another learned
+transition. Its formula and role in the original variational bound
+are given in Appendix~\ref{app:originalbound}.
+
+\paragraph{How DDPM changes the backward sampler.}
+DDPM \cite[Algorithm~2]{ho2020ddpm} computes $\mu_\theta$ from
+$\eps_\theta$ using Eq.~\eqref{eq:ddpmmean} and uses a fixed
+$\sigma_t^2\Id$ for the intermediate reverse covariance.
+The two choices, $\sigma_t^2=\beta_t$ and
+$\sigma_t^2=\tilde\beta_t$, are specified in
+Eq.~\eqref{eq:ddpmvariance}.
+Its update is $x_{t-1}=\mu_\theta(x_t,t)+\sigma_tu_t$ for
+$t=T,\ldots,1$, drawing $u_t\sim\Normal(0,\Id)$ when $t>1$
+and setting $u_1=0$ for the final update. Thus the 2015 endpoint in
+Algorithm~\ref{alg:reverse2015} must also be replaced when implementing
+DDPM. Forward noising remains Algorithm~\ref{alg:forward};
+Section~\ref{sec:parameterization} explains the parameterization and
+sampling changes.
 
 \onecolumn
 \section{ImageNet Forward and Reverse Trajectories}\label{app:colab-traces}
