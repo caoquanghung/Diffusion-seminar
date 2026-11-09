@@ -12,13 +12,13 @@
 The requested template is https://www.overleaf.com/latex/templates/iccv2025-author-kit/nwnvrwcqwcsh.
 This edition uses the official ICCV 2025 style and bibliography files, 10-point text, two columns, and US Letter paper. The new template request supersedes the previous HCMUS cover and A4 layout. The manuscript is a CS420 seminar report, not a claim of ICCV acceptance or a conference submission. Author names remain visible; page numbers are enabled.
 
-The main report occupies **9 pages**, followed by **1 page of references** and **9 pages of appendices** (19 pages total). Wide figures/tables span the two-column grid for readability. Long equations are split across lines rather than reduced to tiny text. The appendix requirement and notation tables are full-width, with accompanying prose in two columns.
+The main report occupies **9 pages**, followed by **1 page of references** and **8 pages of appendices** (18 pages total). Wide figures/tables span the two-column grid for readability. Long equations are split across lines rather than reduced to tiny text. The appendix requirement and notation tables are full-width, with accompanying prose in two columns.
 
 Edit scientific content in **content/report.tex**, appendices in **content/appendices.tex**, and references in **references.bib**. The report retains all six written task requirements and reviews DDPM and LDM around the guiding question: how can learning to remove noise enable a model to generate new images? The learning objective also explicitly covers why latent diffusion reduces computational demands. Standalone slides/oral presentation requirements remain outside this package.
 
 ## Evidence and reproducibility
 
-Subsection 3.5 explains both fixed reverse-variance choices from DDPM 2020
+Subsection 3.3 explains both fixed reverse-variance choices from DDPM 2020
 before its sampling update, contrasting them with the learned covariance
 in subsection 3.2. It distinguishes the final noise-free sampling update
 from the likelihood decoder and the original 2015 endpoint.
@@ -32,11 +32,17 @@ pseudocode, not evidence of a trained-model experiment.
 The original 2015 bound and minimized loss (-K) are in Appendix C.5.
 Subsection 3.3 begins with DDPM's full three-part variational loss (prior,
 intermediate reverse KLs, final decoder), explains the posterior targets,
-then derives mean MSE and weighted noise MSE. Subsection 3.4 explains the
-simplified surrogate, reweighting and empirical benefit. The two papers'
+then connects mean/noise prediction to score estimation and derives weighted
+noise MSE. The same subsection continues to the simplified surrogate,
+reweighting, empirical benefit, and reverse sampling. It links to supporting
+Appendices C.2-C.7 and F at the corresponding steps. The two papers'
 endpoint conventions remain distinct.
 
-Results distinguish original numerical/noising illustrations from published DDPM objective-ablation results and LDM inpainting measurements. No pretrained-generation, GPU-time, peak-memory, or prompt-control benchmark was run. Subsections 3.1-3.2 introduce the forward/reverse Gaussian framework with historical attribution to 2015. Subsections 3.3-3.5 focus on DDPM's objective, fixed-variance/noise-prediction parameterization, simplified loss, sampling choices and brief score interpretation; score/Langevin background is optional material in Appendix C. The LDM section emphasizes latent space and VAE encoder/decoder roles. Cross-attention and guidance receive brief treatment. DSM, the original 2015 objective and covariance KL, DDPM variational-bound and reverse-mean derivations are in Appendix C; detailed VAE/attention/guidance material is in Appendix D. The user-supplied qualitative-comparison illustration is included at full text width in Appendix E and referenced from subsection 2.2. The original figure data and reproducibility code are retained.
+The redundant appendix section deriving weighted noise MSE from the
+variational bound has been removed. Subsection 3.3 now contains that
+explanation; later appendix subsections have been renumbered automatically.
+
+Results distinguish original numerical/noising illustrations from published DDPM objective-ablation results and LDM inpainting measurements. No pretrained-generation, GPU-time, peak-memory, or prompt-control benchmark was run. Subsections 3.1-3.2 introduce the forward/reverse Gaussian framework with historical attribution to 2015. Subsection 3.3 covers DDPM's objective, noise/score parameterization, simplified loss and sampling; worked examples follow in 3.4-3.5. Score/Langevin background is optional material in Appendix C. The LDM section emphasizes latent space and VAE encoder/decoder roles. Cross-attention and guidance receive brief treatment. DSM, the original 2015 objective and covariance KL, and the score-to-reverse-mean derivation are in Appendix C; detailed VAE/attention/guidance material is in Appendix D. The user-supplied qualitative-comparison illustration is included at full text width in Appendix E and referenced from subsection 2.2. The original figure data and reproducibility code are retained.
 
 Compile locally with:
 

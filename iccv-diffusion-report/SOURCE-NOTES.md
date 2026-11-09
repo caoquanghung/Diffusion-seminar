@@ -1,5 +1,54 @@
 # Source and claim checks
 
+## Explicit score-based model attribution, November 9, 2026
+
+The score paragraph in subsection 3.3 now explicitly cites Song and Ermon
+(2019), "Generative Modeling by Estimating Gradients of the Data Distribution"
+(song2019score), for noise-conditional score learning and annealed Langevin
+generation. This attributes the generative approach without claiming that
+the paper invented score matching itself.
+
+## Subsection 3.3 appendix-reference audit, November 9, 2026
+
+The current user-edited 3.3 integrates noise/score prediction and reverse
+sampling. Its existing structure and formulas were preserved while adding
+proof/background references: C.2 for scores and Gaussian perturbations,
+C.3 for the closed-form forward marginal, C.4 for DSM/MSE optimality and
+the timestep-dependent conversion between score/noise losses, C.5 for the
+full Gaussian covariance KL, C.6 for the true reverse-conditional-mean
+identity, C.7 for interpreting predicted noise, and F for sampler pseudocode.
+Only stable labels were added to C.3/C.7; no duplicate proof appendix was
+restored. Two reverse references that resolved to "Sections 3.3 and 3.3"
+were consolidated. Current numbering is 3.3 for the full DDPM discussion,
+3.4 for the scalar example and 3.5 for the five-level illustration.
+
+## Merged DDPM training subsection, November 9, 2026
+
+The previous subsections 3.3 and 3.4 are now a single subsection 3.3,
+"DDPM: Variational Training and the Simplified Noise Loss". The complete
+variational objective, posterior targets, fixed-variance reduction, mean/noise
+parameterization, weighted MSE, and simplified objective form one sequence
+with paragraph headings. The transition to the simplified objective was
+shortened to remove repetition; scientific equations and evidence remain.
+The sec:objective label now points to the merged subsection alongside
+sec:variational and sec:parameterization. Sampling is 3.4, the scalar example
+is 3.5, and the five-level illustration is 3.6. Earlier subsection numbers
+below record prior revisions. Counts remain 9 main pages plus 1 reference
+page and 8 appendix pages (18 total).
+
+## Removal of the duplicate DDPM derivation, November 9, 2026
+
+The former Appendix C.6, "From the variational bound to weighted noise MSE",
+has been removed because its objective/mean/noise derivation is already in
+subsection 3.3. All five references to its app:vlb label were removed or
+redirected to the main method and the sampler pseudocode. Subsection 3.4
+now cites DDPM Sections 3.3-3.4 directly for the discretized decoder/endpoint
+detail. The original 2015 objective and covariance KL remain in C.5; the
+score-to-reverse-mean section is automatically renumbered C.6. Earlier
+subsection numbers recorded below are historical. The document now contains
+9 main pages, 1 reference page, and 8 appendix pages (18 total); Appendix F
+is on page 18.
+
 ## DDPM-focused method revision, November 9, 2026
 
 This revision supersedes earlier subsection numbers recorded below. The

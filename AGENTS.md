@@ -37,23 +37,36 @@ Current deliverables:
 The standalone 2015-loss subsection has been removed from main text. Its
 K, negative-bound loss and covariance/entropy details remain in Appendix C.5.
 The end of 3.2 states that DDPM inherits the forward/reverse construction
-and trains through variational inference. The former 3.4 is now 3.3:
-it introduces the full DDPM L_VLB decomposition, explains tractable posterior
+and trains through variational inference. Subsection 3.3 now merges the full
+training derivation and simplified objective: it introduces the DDPM L_VLB
+decomposition, explains tractable posterior
 targets, fixes covariance, derives mean MSE, writes the target and predicted
 means in noise coordinates, and derives weighted noise MSE with explicit w_t.
-The simplified objective is now 3.4, including why dropping time-dependent
-weights changes the objective and the empirical quality/likelihood tradeoff.
+The current user-edited subsection is titled "DDPM: From Variational Training
+to Noise and Score Prediction". It includes the score/noise connection,
+weighted and simplified objectives, and reverse sampling. Labels sec:variational,
+sec:parameterization, sec:objective, sec:reverse and sec:scorebridge all refer
+to 3.3. Preserve this current structure when making targeted edits.
+The score paragraph explicitly cites Song and Ermon (2019), song2019score,
+for noise-conditional score-based generation and annealed Langevin sampling.
+The appendix-reference audit adds links from 3.3 to C.2 (background), C.3
+(forward marginal), C.4 (DSM/MSE optimum and loss scaling), C.5 (Gaussian KL),
+C.6 (score-to-mean identity), C.7 (noise-estimate interpretation), and F
+(pseudocode). New stable labels were added to C.3 and C.7. Duplicate reverse
+references reading "Sections 3.3 and 3.3" were consolidated to one link.
 The screenshot of the three-part objective is DDPM Eq. 5 and is attributed
-accordingly. Heavy derivations stay in Appendix C.
+accordingly. The duplicate appendix derivation from the variational bound
+to weighted noise MSE has been removed; that derivation is now in 3.3 only.
+All former app:vlb references have been removed or redirected. The remaining
+score-to-reverse-mean derivation is now C.6 after automatic renumbering.
 
-Subsection 3.5 explicitly compares the 2015 learned covariance with DDPM
+The reverse-sampling paragraph of subsection 3.3 compares the 2015 learned covariance with DDPM
 2020's fixed isotropic choices sigma_t^2=beta_t or tilde_beta_t for t>1.
 It defines the posterior-variance formula before sampling, notes the paper's
 similar-results finding, and separates predicted mean from fresh sampling
 noise. The final u_1=0 update is distinguished from decoder variance and
 the original 2015 endpoint. Appendix F references this main-text equation.
-Keep 3.3 focused on the variational-to-noise derivation; 3.4 explains the
-simplified objective and 3.5 gives the concrete sampling variance choices.
+The sampling variance choices are also in 3.3; worked examples begin at 3.4.
 
 The user approved a broader DDPM/LDM flow. The guiding question is **How can learning to remove noise enable a model to generate new images?** The Introduction also states the learning objective: **Explain forward noising and reverse denoising, including why latent diffusion reduces computational demands.**
 
@@ -63,18 +76,25 @@ The first two subsections explain common Gaussian forward/reverse foundations,
 with historical credit to 2015 rather than year-prefixed titles. They retain
 the distinction that the original network predicts mean/covariance, not epsilon,
 and that its beta_2:T could be learned with beta_1 fixed. DDPM is the main
-method: 3.3 objective/parameterization, 3.4 simplified loss, 3.5 sampling and
-brief score interpretation, 3.6 scalar example, 3.7 five-level illustration.
+method: 3.3 objective/parameterization/score connection/simplified loss/sampling,
+3.4 scalar example, and 3.5 five-level illustration.
 Original entropy terms depend on beta; their derivation and the stationary-kernel
 endpoint are kept in Appendix C, distinct from DDPM's final noise-free update.
 
-The general flow remains probabilistic: forward corruption -> reverse generative model -> variational objective -> noise prediction and L_simple -> sampling -> latent diffusion. Do not restore a standalone score-first main section. A brief score interpretation appears only after sampling, in 3.5. Optional score/Langevin/Gaussian-perturbation background is in Appendix C.2. DDPM/LDM do not explicitly compute the clean-data score; their noise predictions parameterize a noisy marginal score estimate (conditional latent score in conditional LDM). Equality with the true score is an ideal MSE-optimum statement, not an exact guarantee for an arbitrary trained network.
+The current flow remains probabilistic: forward/reverse construction -> DDPM
+variational objective -> mean/noise parameterization -> score connection ->
+weighted/simplified losses -> sampling -> latent diffusion. Do not restore a
+standalone score-first main section. Optional score/Langevin/Gaussian-perturbation
+background is in Appendix C.2. DDPM/LDM do not explicitly compute the clean-data
+score; noise predictions parameterize a noisy marginal score estimate. Equality
+with the true score is an ideal MSE-optimum statement, not an exact guarantee
+for an arbitrary trained network.
 
 The former qualitative comparison Table 1 has been replaced by the user-supplied `figures/qualitative_comparison.png` in Appendix E (Figure 5). Subsection 2.2 keeps its prose and references that illustration. Do not restore the old table unless requested.
 
-Heavy DSM, MSE-optimum, variational-bound, and reverse-mean derivations are in Appendix C. Supporting VAE, attention matrix/toy example, and CFG details are in Appendix D; main-text attention is brief. The current PDF has **9 main-text pages + 1 reference page + 9 appendix pages = 19 pages**. The body must remain at most 10 pages, excluding references/appendices. The ZIP clean-build check must be refreshed after edits.
+Heavy DSM, MSE-optimum, original 2015 bound/covariance, and score-to-reverse-mean derivations are in Appendix C. Supporting VAE, attention matrix/toy example, and CFG details are in Appendix D; main-text attention is brief. The current PDF has **9 main-text pages + 1 reference page + 8 appendix pages = 18 pages**. The body must remain at most 10 pages, excluding references/appendices. The ZIP clean-build check must be refreshed after edits.
 
-Appendix F (page 19) contains side-by-side Algorithms 1/2 for forward Gaussian
+Appendix F (page 18) contains side-by-side Algorithms 1/2 for forward Gaussian
 diffusion and backward sampling with the 2015 learned mean/covariance model.
 The backward loop handles t=T,...,2 and then uses the original stationary
 kernel at t=1. A companion paragraph explains the DDPM epsilon/fixed-variance

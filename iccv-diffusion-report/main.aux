@@ -55,26 +55,35 @@
 \citation{ho2020ddpm}
 \citation{ho2020ddpm}
 \citation{ho2020ddpm}
+\citation{song2019score}
 \newlabel{eq:reversemodel}{{3}{3}{\texorpdfstring {\hskip -1em.~}{}Reverse model and sampling}{equation.3}{}}
 \newlabel{eq:reversemodel@cref}{{[equation][3][]3}{[1][2][]3}{}{}{}}
 \newlabel{eq:originalsampling}{{4}{3}{\texorpdfstring {\hskip -1em.~}{}Reverse model and sampling}{equation.4}{}}
 \newlabel{eq:originalsampling@cref}{{[equation][4][]4}{[1][3][]3}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}\hskip -1em.~DDPM: From the Variational Objective to Noise Prediction}{3}{subsection.3.3}\protected@file@percent }
-\newlabel{sec:variational}{{3.3}{3}{\texorpdfstring {\hskip -1em.~}{}DDPM: From the Variational Objective to Noise Prediction}{subsection.3.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}\hskip -1em.~DDPM: From Variational Training to Noise and Score Prediction}{3}{subsection.3.3}\protected@file@percent }
+\newlabel{sec:variational}{{3.3}{3}{\texorpdfstring {\hskip -1em.~}{}DDPM: From Variational Training to Noise and Score Prediction}{subsection.3.3}{}}
 \newlabel{sec:variational@cref}{{[subsection][3][3]3.3}{[1][3][]3}{}{}{}}
-\newlabel{sec:parameterization}{{3.3}{3}{\texorpdfstring {\hskip -1em.~}{}DDPM: From the Variational Objective to Noise Prediction}{subsection.3.3}{}}
+\newlabel{sec:parameterization}{{3.3}{3}{\texorpdfstring {\hskip -1em.~}{}DDPM: From Variational Training to Noise and Score Prediction}{subsection.3.3}{}}
 \newlabel{sec:parameterization@cref}{{[subsection][3][3]3.3}{[1][3][]3}{}{}{}}
-\@writefile{toc}{\contentsline {paragraph}{The complete training objective.}{3}{section*.2}\protected@file@percent }
-\newlabel{eq:vlbcomponents}{{5}{3}{The complete training objective}{equation.5}{}}
+\newlabel{sec:objective}{{3.3}{3}{\texorpdfstring {\hskip -1em.~}{}DDPM: From Variational Training to Noise and Score Prediction}{subsection.3.3}{}}
+\newlabel{sec:objective@cref}{{[subsection][3][3]3.3}{[1][3][]3}{}{}{}}
+\newlabel{sec:reverse}{{3.3}{3}{\texorpdfstring {\hskip -1em.~}{}DDPM: From Variational Training to Noise and Score Prediction}{subsection.3.3}{}}
+\newlabel{sec:reverse@cref}{{[subsection][3][3]3.3}{[1][3][]3}{}{}{}}
+\newlabel{sec:scorebridge}{{3.3}{3}{\texorpdfstring {\hskip -1em.~}{}DDPM: From Variational Training to Noise and Score Prediction}{subsection.3.3}{}}
+\newlabel{sec:scorebridge@cref}{{[subsection][3][3]3.3}{[1][3][]3}{}{}{}}
+\@writefile{toc}{\contentsline {paragraph}{Variational training and Gaussian posterior targets.}{3}{section*.2}\protected@file@percent }
+\newlabel{eq:vlbcomponents}{{5}{3}{Variational training and Gaussian posterior targets}{equation.5}{}}
 \newlabel{eq:vlbcomponents@cref}{{[equation][5][]5}{[1][3][]3}{}{}{}}
-\@writefile{toc}{\contentsline {paragraph}{Why the reverse-step targets are available.}{3}{section*.3}\protected@file@percent }
-\newlabel{eq:forwardposterior}{{6}{3}{Why the reverse-step targets are available}{equation.6}{}}
+\newlabel{eq:forwardposterior}{{6}{3}{Variational training and Gaussian posterior targets}{equation.6}{}}
 \newlabel{eq:forwardposterior@cref}{{[equation][6][]6}{[1][3][]3}{}{}{}}
-\@writefile{toc}{\contentsline {paragraph}{Fixed variance turns Gaussian KL into mean matching.}{3}{section*.4}\protected@file@percent }
-\newlabel{eq:meanloss}{{7}{3}{Fixed variance turns Gaussian KL into mean matching}{equation.7}{}}
+\newlabel{eq:meanloss}{{7}{3}{Variational training and Gaussian posterior targets}{equation.7}{}}
 \newlabel{eq:meanloss@cref}{{[equation][7][]7}{[1][3][]3}{}{}{}}
-\@writefile{toc}{\contentsline {paragraph}{Parameterize that mean through a noise predictor.}{3}{section*.5}\protected@file@percent }
-\citation{ho2020ddpm}
+\@writefile{toc}{\contentsline {paragraph}{From mean prediction to noise prediction.}{3}{section*.3}\protected@file@percent }
+\newlabel{eq:posteriormean-noise}{{8}{3}{From mean prediction to noise prediction}{equation.8}{}}
+\newlabel{eq:posteriormean-noise@cref}{{[equation][8][]8}{[1][3][]3}{}{}{}}
+\newlabel{eq:ddpmmean}{{9}{3}{From mean prediction to noise prediction}{equation.9}{}}
+\newlabel{eq:ddpmmean@cref}{{[equation][9][]9}{[1][3][]3}{}{}{}}
+\@writefile{toc}{\contentsline {paragraph}{Connection to denoising score matching.}{3}{section*.4}\protected@file@percent }
 \citation{ho2020ddpm}
 \citation{ho2020ddpm}
 \citation{ho2020ddpm}
@@ -82,21 +91,16 @@
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
 \newlabel{fig:ddpm}{{1}{4}{Architecture of the Gaussian diffusion flows \cite {sohl2015diffusion,ho2020ddpm}. Forward steps (blue) use the noise schedule and Gaussian innovations. Backward steps (orange) start from fresh noise; a neural model predicts reverse-distribution parameters and a Gaussian sampler produces the next state. The displayed neural outputs follow the 2015 formulation; DDPM's noise-based mean parameterization is introduced in Section~\ref {sec:parameterization}. The learned intermediate steps are shown; the final-step boundary is discussed in the text}{figure.caption.1}{}}
 \newlabel{fig:ddpm@cref}{{[figure][1][]1}{[1][3][]4}{}{}{}}
-\newlabel{eq:posteriormean-noise}{{8}{4}{Parameterize that mean through a noise predictor}{equation.8}{}}
-\newlabel{eq:posteriormean-noise@cref}{{[equation][8][]8}{[1][3][]4}{}{}{}}
-\newlabel{eq:ddpmmean}{{9}{4}{Parameterize that mean through a noise predictor}{equation.9}{}}
-\newlabel{eq:ddpmmean@cref}{{[equation][9][]9}{[1][3][]4}{}{}{}}
-\@writefile{toc}{\contentsline {paragraph}{The resulting weighted noise loss.}{4}{section*.6}\protected@file@percent }
-\newlabel{eq:weightedloss}{{10}{4}{The resulting weighted noise loss}{equation.10}{}}
-\newlabel{eq:weightedloss@cref}{{[equation][10][]10}{[1][4][]4}{}{}{}}
-\newlabel{eq:noiseweight}{{11}{4}{The resulting weighted noise loss}{equation.11}{}}
-\newlabel{eq:noiseweight@cref}{{[equation][11][]11}{[1][4][]4}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}\hskip -1em.~DDPM: Simplified Noise-Prediction Objective}{4}{subsection.3.4}\protected@file@percent }
-\newlabel{sec:objective}{{3.4}{4}{\texorpdfstring {\hskip -1em.~}{}DDPM: Simplified Noise-Prediction Objective}{subsection.3.4}{}}
-\newlabel{sec:objective@cref}{{[subsection][4][3]3.4}{[1][4][]4}{}{}{}}
-\newlabel{eq:loss}{{12}{4}{\texorpdfstring {\hskip -1em.~}{}DDPM: Simplified Noise-Prediction Objective}{equation.12}{}}
-\newlabel{eq:loss@cref}{{[equation][12][]12}{[1][4][]4}{}{}{}}
-\citation{ho2020ddpm}
+\newlabel{eq:scoreestimate}{{12}{4}{Connection to denoising score matching}{equation.12}{}}
+\newlabel{eq:scoreestimate@cref}{{[equation][12][]12}{[1][4][]4}{}{}{}}
+\@writefile{toc}{\contentsline {paragraph}{Weighted and simplified noise objectives.}{4}{section*.5}\protected@file@percent }
+\newlabel{eq:weightedloss}{{14}{4}{Weighted and simplified noise objectives}{equation.14}{}}
+\newlabel{eq:weightedloss@cref}{{[equation][14][]14}{[1][4][]4}{}{}{}}
+\newlabel{eq:noiseweight}{{15}{4}{Weighted and simplified noise objectives}{equation.15}{}}
+\newlabel{eq:noiseweight@cref}{{[equation][15][]15}{[1][4][]4}{}{}{}}
+\newlabel{eq:loss}{{16}{4}{Weighted and simplified noise objectives}{equation.16}{}}
+\newlabel{eq:loss@cref}{{[equation][16][]16}{[1][4][]4}{}{}{}}
+\@writefile{toc}{\contentsline {paragraph}{Reverse sampling and score interpretation.}{4}{section*.6}\protected@file@percent }
 \citation{ho2020ddpm}
 \citation{ho2020ddpm}
 \citation{ho2020ddpm}
@@ -104,26 +108,17 @@
 \citation{rombach2022ldm}
 \citation{rombach2022ldm}
 \citation{kingma2014vae,rombach2022ldm}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}\hskip -1em.~DDPM sampling and its score interpretation}{5}{subsection.3.5}\protected@file@percent }
-\newlabel{sec:reverse}{{3.5}{5}{\texorpdfstring {\hskip -1em.~}{}DDPM sampling and its score interpretation}{subsection.3.5}{}}
-\newlabel{sec:reverse@cref}{{[subsection][5][3]3.5}{[1][4][]5}{}{}{}}
-\newlabel{sec:scorebridge}{{3.5}{5}{\texorpdfstring {\hskip -1em.~}{}DDPM sampling and its score interpretation}{subsection.3.5}{}}
-\newlabel{sec:scorebridge@cref}{{[subsection][5][3]3.5}{[1][4][]5}{}{}{}}
-\@writefile{toc}{\contentsline {paragraph}{Choosing the reverse variance.}{5}{section*.7}\protected@file@percent }
-\newlabel{eq:ddpmvariance}{{13}{5}{Choosing the reverse variance}{equation.13}{}}
-\newlabel{eq:ddpmvariance@cref}{{[equation][13][]13}{[1][5][]5}{}{}{}}
-\@writefile{toc}{\contentsline {paragraph}{Sampling with the chosen variance.}{5}{section*.8}\protected@file@percent }
-\newlabel{eq:reverse}{{14}{5}{Sampling with the chosen variance}{equation.14}{}}
-\newlabel{eq:reverse@cref}{{[equation][14][]14}{[1][5][]5}{}{}{}}
-\@writefile{toc}{\contentsline {paragraph}{Score interpretation.}{5}{section*.9}\protected@file@percent }
-\newlabel{eq:scoreestimate}{{15}{5}{Score interpretation}{equation.15}{}}
-\newlabel{eq:scoreestimate@cref}{{[equation][15][]15}{[1][5][]5}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}\hskip -1em.~A complete one-dimensional calculation}{5}{subsection.3.6}\protected@file@percent }
-\newlabel{sec:scalar}{{3.6}{5}{\texorpdfstring {\hskip -1em.~}{}A complete one-dimensional calculation}{subsection.3.6}{}}
-\newlabel{sec:scalar@cref}{{[subsection][6][3]3.6}{[1][5][]5}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}\hskip -1em.~Five noise levels on an original small image}{5}{subsection.3.7}\protected@file@percent }
-\newlabel{sec:noise}{{3.7}{5}{\texorpdfstring {\hskip -1em.~}{}Five noise levels on an original small image}{subsection.3.7}{}}
-\newlabel{sec:noise@cref}{{[subsection][7][3]3.7}{[1][5][]5}{}{}{}}
+\citation{rombach2022ldm}
+\newlabel{eq:ddpmvariance}{{17}{5}{Reverse sampling and score interpretation}{equation.17}{}}
+\newlabel{eq:ddpmvariance@cref}{{[equation][17][]17}{[1][5][]5}{}{}{}}
+\newlabel{eq:reverse}{{18}{5}{Reverse sampling and score interpretation}{equation.18}{}}
+\newlabel{eq:reverse@cref}{{[equation][18][]18}{[1][5][]5}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}\hskip -1em.~A complete one-dimensional calculation}{5}{subsection.3.4}\protected@file@percent }
+\newlabel{sec:scalar}{{3.4}{5}{\texorpdfstring {\hskip -1em.~}{}A complete one-dimensional calculation}{subsection.3.4}{}}
+\newlabel{sec:scalar@cref}{{[subsection][4][3]3.4}{[1][5][]5}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}\hskip -1em.~Five noise levels on an original small image}{5}{subsection.3.5}\protected@file@percent }
+\newlabel{sec:noise}{{3.5}{5}{\texorpdfstring {\hskip -1em.~}{}Five noise levels on an original small image}{subsection.3.5}{}}
+\newlabel{sec:noise@cref}{{[subsection][5][3]3.5}{[1][5][]5}{}{}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {4}\hskip -1em.~LDM: Latent Space and Efficient Generation}{5}{section.4}\protected@file@percent }
 \newlabel{sec:ldm}{{4}{5}{\texorpdfstring {\hskip -1em.~}{}LDM: Latent Space and Efficient Generation}{section.4}{}}
 \newlabel{sec:ldm@cref}{{[section][4][]4}{[1][5][]5}{}{}{}}
@@ -133,54 +128,56 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.2}\hskip -1em.~VAE encoder, decoder, and the compression trade-off}{5}{subsection.4.2}\protected@file@percent }
 \newlabel{sec:vae}{{4.2}{5}{\texorpdfstring {\hskip -1em.~}{}VAE encoder, decoder, and the compression trade-off}{subsection.4.2}{}}
 \newlabel{sec:vae@cref}{{[subsection][2][4]4.2}{[1][5][]5}{}{}{}}
+\newlabel{eq:vae}{{19}{5}{\texorpdfstring {\hskip -1em.~}{}VAE encoder, decoder, and the compression trade-off}{equation.19}{}}
+\newlabel{eq:vae@cref}{{[equation][19][]19}{[1][5][]5}{}{}{}}
 \citation{rombach2022ldm}
 \citation{rombach2022ldm}
 \citation{rombach2022ldm}
 \citation{rombach2022ldm}
-\citation{rombach2022ldm}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Original forward-noising illustration at five timesteps. The same trajectory is shown throughout. Values are clipped to $[-1,1]$ only for display; stored arrays and calculations remain unclipped. The equation and schedule follow \cite  {ho2020ddpm}.}}{6}{figure.caption.10}\protected@file@percent }
-\newlabel{fig:noise}{{2}{6}{Original forward-noising illustration at five timesteps. The same trajectory is shown throughout. Values are clipped to $[-1,1]$ only for display; stored arrays and calculations remain unclipped. The equation and schedule follow \cite {ho2020ddpm}}{figure.caption.10}{}}
+\citation{ho2022cfg}
+\citation{song2021ddim}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Original forward-noising illustration at five timesteps. The same trajectory is shown throughout. Values are clipped to $[-1,1]$ only for display; stored arrays and calculations remain unclipped. The equation and schedule follow \cite  {ho2020ddpm}.}}{6}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:noise}{{2}{6}{Original forward-noising illustration at five timesteps. The same trajectory is shown throughout. Values are clipped to $[-1,1]$ only for display; stored arrays and calculations remain unclipped. The equation and schedule follow \cite {ho2020ddpm}}{figure.caption.7}{}}
 \newlabel{fig:noise@cref}{{[figure][2][]2}{[1][5][]6}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Coefficients computed by the supplied script. Signal and noise columns refer to Eq.~\eqref  {eq:closed}, not measured image quality.}}{6}{table.caption.11}\protected@file@percent }
-\newlabel{tab:noise}{{1}{6}{Coefficients computed by the supplied script. Signal and noise columns refer to Eq.~\eqref {eq:closed}, not measured image quality}{table.caption.11}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Coefficients computed by the supplied script. Signal and noise columns refer to Eq.~\eqref  {eq:closed}, not measured image quality.}}{6}{table.caption.8}\protected@file@percent }
+\newlabel{tab:noise}{{1}{6}{Coefficients computed by the supplied script. Signal and noise columns refer to Eq.~\eqref {eq:closed}, not measured image quality}{table.caption.8}{}}
 \newlabel{tab:noise@cref}{{[table][1][]1}{[1][5][]6}{}{}{}}
-\newlabel{eq:vae}{{16}{6}{\texorpdfstring {\hskip -1em.~}{}VAE encoder, decoder, and the compression trade-off}{equation.16}{}}
-\newlabel{eq:vae@cref}{{[equation][16][]16}{[1][5][]6}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.3}\hskip -1em.~Diffusion training and sampling in latent space}{6}{subsection.4.3}\protected@file@percent }
 \newlabel{sec:pipeline}{{4.3}{6}{\texorpdfstring {\hskip -1em.~}{}Diffusion training and sampling in latent space}{subsection.4.3}{}}
 \newlabel{sec:pipeline@cref}{{[subsection][3][4]4.3}{[1][6][]6}{}{}{}}
-\newlabel{eq:latentnoise}{{17}{6}{\texorpdfstring {\hskip -1em.~}{}Diffusion training and sampling in latent space}{equation.17}{}}
-\newlabel{eq:latentnoise@cref}{{[equation][17][]17}{[1][6][]6}{}{}{}}
-\newlabel{eq:ldmloss}{{18}{6}{\texorpdfstring {\hskip -1em.~}{}Diffusion training and sampling in latent space}{equation.18}{}}
-\newlabel{eq:ldmloss@cref}{{[equation][18][]18}{[1][6][]6}{}{}{}}
+\newlabel{eq:latentnoise}{{20}{6}{\texorpdfstring {\hskip -1em.~}{}Diffusion training and sampling in latent space}{equation.20}{}}
+\newlabel{eq:latentnoise@cref}{{[equation][20][]20}{[1][6][]6}{}{}{}}
+\newlabel{eq:ldmloss}{{21}{6}{\texorpdfstring {\hskip -1em.~}{}Diffusion training and sampling in latent space}{equation.21}{}}
+\newlabel{eq:ldmloss@cref}{{[equation][21][]21}{[1][6][]6}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.4}\hskip -1em.~Conditioning and the complete pipeline}{6}{subsection.4.4}\protected@file@percent }
 \newlabel{sec:attention}{{4.4}{6}{\texorpdfstring {\hskip -1em.~}{}Conditioning and the complete pipeline}{subsection.4.4}{}}
 \newlabel{sec:attention@cref}{{[subsection][4][4]4.4}{[1][6][]6}{}{}{}}
 \newlabel{sec:cfg}{{4.4}{6}{\texorpdfstring {\hskip -1em.~}{}Conditioning and the complete pipeline}{subsection.4.4}{}}
 \newlabel{sec:cfg@cref}{{[subsection][4][4]4.4}{[1][6][]6}{}{}{}}
-\citation{ho2022cfg}
-\citation{song2021ddim}
 \citation{ho2020ddpm}
 \citation{ho2020ddpm}
 \citation{ho2020ddpm}
 \citation{heusel2017fid}
 \citation{ho2020ddpm}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Original latent diffusion pipeline, based on \cite  [Fig.~3 and Sec.~3]{rombach2022ldm}. The VAE is learned first and frozen for diffusion training; its decoder runs after the denoising loop. Pure text-to-image generation does not require a real input image or the image encoder.}}{7}{figure.caption.12}\protected@file@percent }
-\newlabel{fig:ldm}{{3}{7}{Original latent diffusion pipeline, based on \cite [Fig.~3 and Sec.~3]{rombach2022ldm}. The VAE is learned first and frozen for diffusion training; its decoder runs after the denoising loop. Pure text-to-image generation does not require a real input image or the image encoder}{figure.caption.12}{}}
+\citation{rombach2022ldm}
+\citation{rombach2022ldm}
+\citation{rombach2022ldm}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Original latent diffusion pipeline, based on \cite  [Fig.~3 and Sec.~3]{rombach2022ldm}. The VAE is learned first and frozen for diffusion training; its decoder runs after the denoising loop. Pure text-to-image generation does not require a real input image or the image encoder.}}{7}{figure.caption.9}\protected@file@percent }
+\newlabel{fig:ldm}{{3}{7}{Original latent diffusion pipeline, based on \cite [Fig.~3 and Sec.~3]{rombach2022ldm}. The VAE is learned first and frozen for diffusion training; its decoder runs after the denoising loop. Pure text-to-image generation does not require a real input image or the image encoder}{figure.caption.9}{}}
 \newlabel{fig:ldm@cref}{{[figure][3][]3}{[1][6][]7}{}{}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {5}\hskip -1em.~Results and Discussion}{7}{section.5}\protected@file@percent }
 \newlabel{sec:results}{{5}{7}{\texorpdfstring {\hskip -1em.~}{}Results and Discussion}{section.5}{}}
-\newlabel{sec:results@cref}{{[section][5][]5}{[1][7][]7}{}{}{}}
+\newlabel{sec:results@cref}{{[section][5][]5}{[1][6][]7}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.1}\hskip -1em.~Original illustrations and evidence boundaries}{7}{subsection.5.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Published DDPM objective comparison \cite  [Table~1]{ho2020ddpm}. NLL upper bounds are in bits/dimension; lower values are better. These are not measurements from our team.}}{7}{table.caption.13}\protected@file@percent }
-\newlabel{tab:ddpmobjective}{{2}{7}{Published DDPM objective comparison \cite [Table~1]{ho2020ddpm}. NLL upper bounds are in bits/dimension; lower values are better. These are not measurements from our team}{table.caption.13}{}}
-\newlabel{tab:ddpmobjective@cref}{{[table][2][]2}{[1][7][]7}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.2}\hskip -1em.~Published DDPM evidence for the objective choice}{7}{subsection.5.2}\protected@file@percent }
 \newlabel{sec:ddpmresults}{{5.2}{7}{\texorpdfstring {\hskip -1em.~}{}Published DDPM evidence for the objective choice}{subsection.5.2}{}}
 \newlabel{sec:ddpmresults@cref}{{[subsection][2][5]5.2}{[1][7][]7}{}{}{}}
-\citation{rombach2022ldm}
-\citation{rombach2022ldm}
-\citation{rombach2022ldm}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Published DDPM objective comparison \cite  [Table~1]{ho2020ddpm}. NLL upper bounds are in bits/dimension; lower values are better. These are not measurements from our team.}}{7}{table.caption.10}\protected@file@percent }
+\newlabel{tab:ddpmobjective}{{2}{7}{Published DDPM objective comparison \cite [Table~1]{ho2020ddpm}. NLL upper bounds are in bits/dimension; lower values are better. These are not measurements from our team}{table.caption.10}{}}
+\newlabel{tab:ddpmobjective@cref}{{[table][2][]2}{[1][7][]7}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}\hskip -1em.~A published pixel-versus-latent setting}{7}{subsection.5.3}\protected@file@percent }
+\newlabel{sec:benchmark}{{5.3}{7}{\texorpdfstring {\hskip -1em.~}{}A published pixel-versus-latent setting}{subsection.5.3}{}}
+\newlabel{sec:benchmark@cref}{{[subsection][3][5]5.3}{[1][7][]7}{}{}{}}
 \citation{ho2020ddpm,rombach2022ldm,ho2022cfg}
 \citation{ho2020ddpm,rombach2022ldm,ho2022cfg}
 \citation{song2021ddim}
@@ -188,22 +185,19 @@
 \citation{bianchi2023bias}
 \citation{carlini2023extract}
 \citation{usco2025training}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}\hskip -1em.~A published pixel-versus-latent setting}{8}{subsection.5.3}\protected@file@percent }
-\newlabel{sec:benchmark}{{5.3}{8}{\texorpdfstring {\hskip -1em.~}{}A published pixel-versus-latent setting}{subsection.5.3}{}}
-\newlabel{sec:benchmark@cref}{{[subsection][3][5]5.3}{[1][8][]8}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Published inpainting comparison, transcribed from \cite  [Table~6]{rombach2022ldm}. These are the paper's measurements, not a benchmark run by our team. Higher throughput and lower FID are better.}}{8}{table.caption.11}\protected@file@percent }
+\newlabel{tab:benchmark}{{3}{8}{Published inpainting comparison, transcribed from \cite [Table~6]{rombach2022ldm}. These are the paper's measurements, not a benchmark run by our team. Higher throughput and lower FID are better}{table.caption.11}{}}
+\newlabel{tab:benchmark@cref}{{[table][3][]3}{[1][7][]8}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.4}\hskip -1em.~Speed, quality, memory, and control: explicit criteria}{8}{subsection.5.4}\protected@file@percent }
 \newlabel{sec:tradeoffs}{{5.4}{8}{\texorpdfstring {\hskip -1em.~}{}Speed, quality, memory, and control: explicit criteria}{subsection.5.4}{}}
 \newlabel{sec:tradeoffs@cref}{{[subsection][4][5]5.4}{[1][8][]8}{}{}{}}
-\newlabel{eq:cost}{{19}{8}{\texorpdfstring {\hskip -1em.~}{}Speed, quality, memory, and control: explicit criteria}{equation.19}{}}
-\newlabel{eq:cost@cref}{{[equation][19][]19}{[1][8][]8}{}{}{}}
+\newlabel{eq:cost}{{22}{8}{\texorpdfstring {\hskip -1em.~}{}Speed, quality, memory, and control: explicit criteria}{equation.22}{}}
+\newlabel{eq:cost@cref}{{[equation][22][]22}{[1][8][]8}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.5}\hskip -1em.~Training data, bias, copyright, and limitations}{8}{subsection.5.5}\protected@file@percent }
 \newlabel{sec:ethics}{{5.5}{8}{\texorpdfstring {\hskip -1em.~}{}Training data, bias, copyright, and limitations}{subsection.5.5}{}}
 \newlabel{sec:ethics@cref}{{[subsection][5][5]5.5}{[1][8][]8}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Published inpainting comparison, transcribed from \cite  [Table~6]{rombach2022ldm}. These are the paper's measurements, not a benchmark run by our team. Higher throughput and lower FID are better.}}{9}{table.caption.14}\protected@file@percent }
-\newlabel{tab:benchmark}{{3}{9}{Published inpainting comparison, transcribed from \cite [Table~6]{rombach2022ldm}. These are the paper's measurements, not a benchmark run by our team. Higher throughput and lower FID are better}{table.caption.14}{}}
-\newlabel{tab:benchmark@cref}{{[table][3][]3}{[1][8][]9}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Pixel versus latent diffusion. The concrete latent setting is LDM-4 with KL regularization. Architecture-based analysis is informed by \cite  {ho2020ddpm,rombach2022ldm,ho2022cfg}; measured values are confined to Table~\ref {tab:benchmark}.}}{9}{table.caption.15}\protected@file@percent }
-\newlabel{tab:comparison}{{4}{9}{Pixel versus latent diffusion. The concrete latent setting is LDM-4 with KL regularization. Architecture-based analysis is informed by \cite {ho2020ddpm,rombach2022ldm,ho2022cfg}; measured values are confined to Table~\ref {tab:benchmark}}{table.caption.15}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Pixel versus latent diffusion. The concrete latent setting is LDM-4 with KL regularization. Architecture-based analysis is informed by \cite  {ho2020ddpm,rombach2022ldm,ho2022cfg}; measured values are confined to Table~\ref {tab:benchmark}.}}{9}{table.caption.12}\protected@file@percent }
+\newlabel{tab:comparison}{{4}{9}{Pixel versus latent diffusion. The concrete latent setting is LDM-4 with KL regularization. Architecture-based analysis is informed by \cite {ho2020ddpm,rombach2022ldm,ho2022cfg}; measured values are confined to Table~\ref {tab:benchmark}}{table.caption.12}{}}
 \newlabel{tab:comparison@cref}{{[table][4][]4}{[1][8][]9}{}{}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {6}\hskip -1em.~Conclusion}{9}{section.6}\protected@file@percent }
 \newlabel{sec:conclusion}{{6}{9}{\texorpdfstring {\hskip -1em.~}{}Conclusion}{section.6}{}}
@@ -254,34 +248,34 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {C.2}\hskip -1em.~Optional background: scores and Gaussian perturbation}{14}{subsection.C.2}\protected@file@percent }
 \newlabel{app:scorebackground}{{C.2}{14}{\texorpdfstring {\hskip -1em.~}{}Optional background: scores and Gaussian perturbation}{subsection.C.2}{}}
 \newlabel{app:scorebackground@cref}{{[subsection][2][3]C.2}{[1][14][]14}{}{}{}}
-\newlabel{eq:score}{{20}{14}{\texorpdfstring {\hskip -1em.~}{}Optional background: scores and Gaussian perturbation}{equation.20}{}}
-\newlabel{eq:score@cref}{{[equation][20][]20}{[1][14][]14}{}{}{}}
-\newlabel{eq:langevin}{{21}{14}{\texorpdfstring {\hskip -1em.~}{}Optional background: scores and Gaussian perturbation}{equation.21}{}}
-\newlabel{eq:langevin@cref}{{[equation][21][]21}{[1][14][]14}{}{}{}}
-\newlabel{eq:genericnoise}{{22}{14}{\texorpdfstring {\hskip -1em.~}{}Optional background: scores and Gaussian perturbation}{equation.22}{}}
-\newlabel{eq:genericnoise@cref}{{[equation][22][]22}{[1][14][]14}{}{}{}}
+\newlabel{eq:score}{{23}{14}{\texorpdfstring {\hskip -1em.~}{}Optional background: scores and Gaussian perturbation}{equation.23}{}}
+\newlabel{eq:score@cref}{{[equation][23][]23}{[1][14][]14}{}{}{}}
+\newlabel{eq:langevin}{{24}{14}{\texorpdfstring {\hskip -1em.~}{}Optional background: scores and Gaussian perturbation}{equation.24}{}}
+\newlabel{eq:langevin@cref}{{[equation][24][]24}{[1][14][]14}{}{}{}}
+\newlabel{eq:genericnoise}{{25}{14}{\texorpdfstring {\hskip -1em.~}{}Optional background: scores and Gaussian perturbation}{equation.25}{}}
+\newlabel{eq:genericnoise@cref}{{[equation][25][]25}{[1][14][]14}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {C.3}\hskip -1em.~Why the forward marginal is available in closed form}{14}{subsection.C.3}\protected@file@percent }
+\newlabel{app:forwardmarginal}{{C.3}{14}{\texorpdfstring {\hskip -1em.~}{}Why the forward marginal is available in closed form}{subsection.C.3}{}}
+\newlabel{app:forwardmarginal@cref}{{[subsection][3][3]C.3}{[1][14][]14}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {C.4}\hskip -1em.~Denoising score matching and the MSE optimum}{14}{subsection.C.4}\protected@file@percent }
 \newlabel{app:dsm}{{C.4}{14}{\texorpdfstring {\hskip -1em.~}{}Denoising score matching and the MSE optimum}{subsection.C.4}{}}
 \newlabel{app:dsm@cref}{{[subsection][4][3]C.4}{[1][14][]14}{}{}{}}
-\newlabel{eq:marginalscore}{{23}{14}{\texorpdfstring {\hskip -1em.~}{}Denoising score matching and the MSE optimum}{equation.23}{}}
-\newlabel{eq:marginalscore@cref}{{[equation][23][]23}{[1][14][]14}{}{}{}}
-\newlabel{eq:ddpmscore}{{25}{14}{\texorpdfstring {\hskip -1em.~}{}Denoising score matching and the MSE optimum}{equation.25}{}}
-\newlabel{eq:ddpmscore@cref}{{[equation][25][]25}{[1][14][]14}{}{}{}}
+\newlabel{eq:marginalscore}{{26}{14}{\texorpdfstring {\hskip -1em.~}{}Denoising score matching and the MSE optimum}{equation.26}{}}
+\newlabel{eq:marginalscore@cref}{{[equation][26][]26}{[1][14][]14}{}{}{}}
+\newlabel{eq:ddpmscore}{{28}{14}{\texorpdfstring {\hskip -1em.~}{}Denoising score matching and the MSE optimum}{equation.28}{}}
+\newlabel{eq:ddpmscore@cref}{{[equation][28][]28}{[1][14][]14}{}{}{}}
 \citation{sohl2015diffusion}
-\citation{ho2020ddpm}
+\citation{rombach2022ldm}
 \@writefile{toc}{\contentsline {subsection}{\numberline {C.5}\hskip -1em.~The original 2015 bound and learned covariance}{15}{subsection.C.5}\protected@file@percent }
 \newlabel{app:originalbound}{{C.5}{15}{\texorpdfstring {\hskip -1em.~}{}The original 2015 bound and learned covariance}{subsection.C.5}{}}
 \newlabel{app:originalbound@cref}{{[subsection][5][3]C.5}{[1][14][]15}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.6}\hskip -1em.~From the variational bound to weighted noise MSE}{15}{subsection.C.6}\protected@file@percent }
-\newlabel{app:vlb}{{C.6}{15}{\texorpdfstring {\hskip -1em.~}{}From the variational bound to weighted noise MSE}{subsection.C.6}{}}
-\newlabel{app:vlb@cref}{{[subsection][6][3]C.6}{[1][15][]15}{}{}{}}
-\citation{rombach2022ldm}
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.7}\hskip -1em.~Why the score determines the reverse mean}{16}{subsection.C.7}\protected@file@percent }
-\newlabel{app:reversemean}{{C.7}{16}{\texorpdfstring {\hskip -1em.~}{}Why the score determines the reverse mean}{subsection.C.7}{}}
-\newlabel{app:reversemean@cref}{{[subsection][7][3]C.7}{[1][16][]16}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.8}\hskip -1em.~Why noise prediction is useful without knowing the true noise}{16}{subsection.C.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.9}\hskip -1em.~Two training stages and their different roles}{16}{subsection.C.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.6}\hskip -1em.~Why the score determines the reverse mean}{15}{subsection.C.6}\protected@file@percent }
+\newlabel{app:reversemean}{{C.6}{15}{\texorpdfstring {\hskip -1em.~}{}Why the score determines the reverse mean}{subsection.C.6}{}}
+\newlabel{app:reversemean@cref}{{[subsection][6][3]C.6}{[1][15][]15}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.7}\hskip -1em.~Why noise prediction is useful without knowing the true noise}{15}{subsection.C.7}\protected@file@percent }
+\newlabel{app:noiseinterpretation}{{C.7}{15}{\texorpdfstring {\hskip -1em.~}{}Why noise prediction is useful without knowing the true noise}{subsection.C.7}{}}
+\newlabel{app:noiseinterpretation@cref}{{[subsection][7][3]C.7}{[1][15][]15}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.8}\hskip -1em.~Two training stages and their different roles}{15}{subsection.C.8}\protected@file@percent }
 \citation{vaswani2017attention,rombach2022ldm}
 \citation{vaswani2017attention,rombach2022ldm}
 \citation{kingma2014vae}
@@ -289,55 +283,55 @@
 \citation{vaswani2017attention,rombach2022ldm}
 \citation{ho2022cfg}
 \citation{ho2022cfg}
-\@writefile{toc}{\contentsline {section}{\numberline {D}\hskip -1em.~Supporting Autoencoder and Conditioning Details}{17}{appendix.D}\protected@file@percent }
-\newlabel{app:support}{{D}{17}{\texorpdfstring {\hskip -1em.~}{}Supporting Autoencoder and Conditioning Details}{appendix.D}{}}
-\newlabel{app:support@cref}{{[section][4][]D}{[1][17][]17}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Original single-head cross-attention schematic, based on \cite  {vaswani2017attention,rombach2022ldm}. Multi-head attention learns several such projections and combines their outputs.}}{17}{figure.4}\protected@file@percent }
-\newlabel{fig:attention}{{4}{17}{Original single-head cross-attention schematic, based on \cite {vaswani2017attention,rombach2022ldm}. Multi-head attention learns several such projections and combines their outputs}{figure.4}{}}
-\newlabel{fig:attention@cref}{{[figure][4][]4}{[1][17][]17}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {D.1}\hskip -1em.~Textbook VAE objective and the LDM distinction}{17}{subsection.D.1}\protected@file@percent }
-\newlabel{app:vaedetails}{{D.1}{17}{\texorpdfstring {\hskip -1em.~}{}Textbook VAE objective and the LDM distinction}{subsection.D.1}{}}
-\newlabel{app:vaedetails@cref}{{[subsection][1][4]D.1}{[1][17][]17}{}{}{}}
-\newlabel{eq:elbo}{{40}{17}{\texorpdfstring {\hskip -1em.~}{}Textbook VAE objective and the LDM distinction}{equation.40}{}}
-\newlabel{eq:elbo@cref}{{[equation][40][]40}{[1][17][]17}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {D.2}\hskip -1em.~Cross-attention: how language reaches the denoiser}{17}{subsection.D.2}\protected@file@percent }
-\newlabel{app:attention}{{D.2}{17}{\texorpdfstring {\hskip -1em.~}{}Cross-attention: how language reaches the denoiser}{subsection.D.2}{}}
-\newlabel{app:attention@cref}{{[subsection][2][4]D.2}{[1][17][]17}{}{}{}}
-\newlabel{eq:qkv}{{41}{17}{\texorpdfstring {\hskip -1em.~}{}Cross-attention: how language reaches the denoiser}{equation.41}{}}
-\newlabel{eq:qkv@cref}{{[equation][41][]41}{[1][17][]17}{}{}{}}
-\newlabel{eq:attention}{{42}{17}{\texorpdfstring {\hskip -1em.~}{}Cross-attention: how language reaches the denoiser}{equation.42}{}}
-\newlabel{eq:attention@cref}{{[equation][42][]42}{[1][17][]17}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {D.3}\hskip -1em.~Prompt control and classifier-free guidance}{17}{subsection.D.3}\protected@file@percent }
-\newlabel{app:cfg}{{D.3}{17}{\texorpdfstring {\hskip -1em.~}{}Prompt control and classifier-free guidance}{subsection.D.3}{}}
-\newlabel{app:cfg@cref}{{[subsection][3][4]D.3}{[1][17][]17}{}{}{}}
-\newlabel{eq:cfg}{{43}{17}{\texorpdfstring {\hskip -1em.~}{}Prompt control and classifier-free guidance}{equation.43}{}}
-\newlabel{eq:cfg@cref}{{[equation][43][]43}{[1][17][]17}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {D}\hskip -1em.~Supporting Autoencoder and Conditioning Details}{16}{appendix.D}\protected@file@percent }
+\newlabel{app:support}{{D}{16}{\texorpdfstring {\hskip -1em.~}{}Supporting Autoencoder and Conditioning Details}{appendix.D}{}}
+\newlabel{app:support@cref}{{[section][4][]D}{[1][16][]16}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Original single-head cross-attention schematic, based on \cite  {vaswani2017attention,rombach2022ldm}. Multi-head attention learns several such projections and combines their outputs.}}{16}{figure.4}\protected@file@percent }
+\newlabel{fig:attention}{{4}{16}{Original single-head cross-attention schematic, based on \cite {vaswani2017attention,rombach2022ldm}. Multi-head attention learns several such projections and combines their outputs}{figure.4}{}}
+\newlabel{fig:attention@cref}{{[figure][4][]4}{[1][16][]16}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {D.1}\hskip -1em.~Textbook VAE objective and the LDM distinction}{16}{subsection.D.1}\protected@file@percent }
+\newlabel{app:vaedetails}{{D.1}{16}{\texorpdfstring {\hskip -1em.~}{}Textbook VAE objective and the LDM distinction}{subsection.D.1}{}}
+\newlabel{app:vaedetails@cref}{{[subsection][1][4]D.1}{[1][16][]16}{}{}{}}
+\newlabel{eq:elbo}{{38}{16}{\texorpdfstring {\hskip -1em.~}{}Textbook VAE objective and the LDM distinction}{equation.38}{}}
+\newlabel{eq:elbo@cref}{{[equation][38][]38}{[1][16][]16}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {D.2}\hskip -1em.~Cross-attention: how language reaches the denoiser}{16}{subsection.D.2}\protected@file@percent }
+\newlabel{app:attention}{{D.2}{16}{\texorpdfstring {\hskip -1em.~}{}Cross-attention: how language reaches the denoiser}{subsection.D.2}{}}
+\newlabel{app:attention@cref}{{[subsection][2][4]D.2}{[1][16][]16}{}{}{}}
+\newlabel{eq:qkv}{{39}{16}{\texorpdfstring {\hskip -1em.~}{}Cross-attention: how language reaches the denoiser}{equation.39}{}}
+\newlabel{eq:qkv@cref}{{[equation][39][]39}{[1][16][]16}{}{}{}}
+\newlabel{eq:attention}{{40}{16}{\texorpdfstring {\hskip -1em.~}{}Cross-attention: how language reaches the denoiser}{equation.40}{}}
+\newlabel{eq:attention@cref}{{[equation][40][]40}{[1][16][]16}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {D.3}\hskip -1em.~Prompt control and classifier-free guidance}{16}{subsection.D.3}\protected@file@percent }
+\newlabel{app:cfg}{{D.3}{16}{\texorpdfstring {\hskip -1em.~}{}Prompt control and classifier-free guidance}{subsection.D.3}{}}
+\newlabel{app:cfg@cref}{{[subsection][3][4]D.3}{[1][16][]16}{}{}{}}
+\newlabel{eq:cfg}{{41}{16}{\texorpdfstring {\hskip -1em.~}{}Prompt control and classifier-free guidance}{equation.41}{}}
+\newlabel{eq:cfg@cref}{{[equation][41][]41}{[1][16][]16}{}{}{}}
 \citation{goodfellow2014gan,oord2016pixelrnn,ho2020ddpm}
 \citation{goodfellow2014gan,oord2016pixelrnn,ho2020ddpm}
-\@writefile{toc}{\contentsline {section}{\numberline {E}\hskip -1em.~Qualitative Comparison of Generative Models}{18}{appendix.E}\protected@file@percent }
-\newlabel{app:familycomparison}{{E}{18}{\texorpdfstring {\hskip -1em.~}{}Qualitative Comparison of Generative Models}{appendix.E}{}}
-\newlabel{app:familycomparison@cref}{{[section][5][]E}{[1][18][]18}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Overview of GAN, autoregressive, and diffusion models. Related methods are described in \cite  {goodfellow2014gan,oord2016pixelrnn,ho2020ddpm}. The labels describe typical behavior rather than universal performance guarantees.}}{18}{figure.5}\protected@file@percent }
-\newlabel{fig:families}{{5}{18}{Overview of GAN, autoregressive, and diffusion models. Related methods are described in \cite {goodfellow2014gan,oord2016pixelrnn,ho2020ddpm}. The labels describe typical behavior rather than universal performance guarantees}{figure.5}{}}
-\newlabel{fig:families@cref}{{[figure][5][]5}{[1][18][]18}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {E}\hskip -1em.~Qualitative Comparison of Generative Models}{17}{appendix.E}\protected@file@percent }
+\newlabel{app:familycomparison}{{E}{17}{\texorpdfstring {\hskip -1em.~}{}Qualitative Comparison of Generative Models}{appendix.E}{}}
+\newlabel{app:familycomparison@cref}{{[section][5][]E}{[1][17][]17}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Overview of GAN, autoregressive, and diffusion models. Related methods are described in \cite  {goodfellow2014gan,oord2016pixelrnn,ho2020ddpm}. The labels describe typical behavior rather than universal performance guarantees.}}{17}{figure.5}\protected@file@percent }
+\newlabel{fig:families}{{5}{17}{Overview of GAN, autoregressive, and diffusion models. Related methods are described in \cite {goodfellow2014gan,oord2016pixelrnn,ho2020ddpm}. The labels describe typical behavior rather than universal performance guarantees}{figure.5}{}}
+\newlabel{fig:families@cref}{{[figure][5][]5}{[1][17][]17}{}{}{}}
 \citation{sohl2015diffusion}
 \citation{sohl2015diffusion}
 \citation{ho2020ddpm}
-\@writefile{toc}{\contentsline {section}{\numberline {F}\hskip -1em.~Pseudocode for Forward and Backward Flows}{19}{appendix.F}\protected@file@percent }
-\newlabel{app:pseudocode}{{F}{19}{\texorpdfstring {\hskip -1em.~}{}Pseudocode for Forward and Backward Flows}{appendix.F}{}}
-\newlabel{app:pseudocode@cref}{{[section][6][]F}{[1][19][]19}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {F.1}\hskip -1em.~Forward noising}{19}{subsection.F.1}\protected@file@percent }
-\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Forward Gaussian diffusion}}{19}{algorithm.1}\protected@file@percent }
-\newlabel{alg:forward}{{1}{19}{Forward Gaussian diffusion}{algorithm.1}{}}
-\newlabel{alg:forward@cref}{{[algorithm][1][]1}{[1][19][]19}{}{}{}}
-\@writefile{toc}{\contentsline {paragraph}{What this computes.}{19}{section*.18}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Direct access to one timestep.}{19}{section*.19}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Separate runs and separate noise.}{19}{section*.20}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {F.2}\hskip -1em.~Backward sampling: the 2015 Gaussian model}{19}{subsection.F.2}\protected@file@percent }
-\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Backward Gaussian sampling}}{19}{algorithm.2}\protected@file@percent }
-\newlabel{alg:reverse2015}{{2}{19}{Backward Gaussian sampling}{algorithm.2}{}}
-\newlabel{alg:reverse2015@cref}{{[algorithm][2][]2}{[1][19][]19}{}{}{}}
-\@writefile{toc}{\contentsline {paragraph}{Learned intermediate steps.}{19}{section*.21}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{The 2015 endpoint.}{19}{section*.22}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{How DDPM changes the backward sampler.}{19}{section*.23}\protected@file@percent }
-\gdef \@abspage@last{19}
+\@writefile{toc}{\contentsline {section}{\numberline {F}\hskip -1em.~Pseudocode for Forward and Backward Flows}{18}{appendix.F}\protected@file@percent }
+\newlabel{app:pseudocode}{{F}{18}{\texorpdfstring {\hskip -1em.~}{}Pseudocode for Forward and Backward Flows}{appendix.F}{}}
+\newlabel{app:pseudocode@cref}{{[section][6][]F}{[1][18][]18}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {F.1}\hskip -1em.~Forward noising}{18}{subsection.F.1}\protected@file@percent }
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Forward Gaussian diffusion}}{18}{algorithm.1}\protected@file@percent }
+\newlabel{alg:forward}{{1}{18}{Forward Gaussian diffusion}{algorithm.1}{}}
+\newlabel{alg:forward@cref}{{[algorithm][1][]1}{[1][18][]18}{}{}{}}
+\@writefile{toc}{\contentsline {paragraph}{What this computes.}{18}{section*.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Direct access to one timestep.}{18}{section*.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Separate runs and separate noise.}{18}{section*.17}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {F.2}\hskip -1em.~Backward sampling: the 2015 Gaussian model}{18}{subsection.F.2}\protected@file@percent }
+\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Backward Gaussian sampling}}{18}{algorithm.2}\protected@file@percent }
+\newlabel{alg:reverse2015}{{2}{18}{Backward Gaussian sampling}{algorithm.2}{}}
+\newlabel{alg:reverse2015@cref}{{[algorithm][2][]2}{[1][18][]18}{}{}{}}
+\@writefile{toc}{\contentsline {paragraph}{Learned intermediate steps.}{18}{section*.18}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The 2015 endpoint.}{18}{section*.19}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{How DDPM changes the backward sampler.}{18}{section*.20}\protected@file@percent }
+\gdef \@abspage@last{18}

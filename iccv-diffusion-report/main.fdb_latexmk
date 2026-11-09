@@ -1,13 +1,14 @@
 # Fdb version 4
-["bibtex main"] 1794202558.54983 "main.aux" "main.bbl" "main" 1794202560.64954 0
+["bibtex main"] 1794208488.22952 "main.aux" "main.bbl" "main" 1794208635.24802 0
   "./ieeenat_fullname.bst" 1793936253.48742 26900 a296cb1ebee73f7bfa143751dc4e1dfd ""
   "./references.bib" 1793987063.59235 6210 1f60672eb13573dfb262ba00d71456cd ""
-  "main.aux" 1794202560.28651 34274 0dbb803f83185f490ac8c93c2ada4516 "pdflatex"
+  "main.aux" 1794208634.91591 33770 f95cf7ddad13581dd6249da2eea3b739 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1794202558.67361 "main.tex" "main.pdf" "main" 1794202560.64978 0
+["pdflatex"] 1794208632.83332 "/Users/caoquanghung/HCMUS/CS/CS420-AI (not deep learning)/seminar/AI-seminar/Diffusion-seminar/iccv-diffusion-report/main.tex" "main.pdf" "main" 1794208635.24826 0
+  "/Users/caoquanghung/HCMUS/CS/CS420-AI (not deep learning)/seminar/AI-seminar/Diffusion-seminar/iccv-diffusion-report/main.tex" 1794194155.92909 2244 6e67348594812920da5a9e99308a4e1e ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/adobe/courier/pcrr8r.tfm" 1136768653 1292 bd42be2f344128bff6d35d98474adfe3 ""
@@ -65,7 +66,6 @@
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb" 1248133631 32726 0a1aea6fcd6468ee2cf64d891f5c43c8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb" 1248133631 33993 9b89b85fd2d9df0482bd47194d1d3bf3 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1248133631 32569 5e5ddc8df908dea60932f3c484a54c0d ""
-  "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb" 1248133631 32915 7bf7720c61a5b3a7ff25b0964421c9b6 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb" 1248133631 32587 1788b0c1c5b39540c96f5e42ccd6dae8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb" 1248133631 32716 08e384dc442464e7285e891af9f45947 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb" 1248133631 32626 4f5c1b83753b1dd3a97d1b399a005b4b ""
@@ -250,14 +250,14 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1770039146 5467155 19efa205003f9ecad95fbbaa6ff24da1 ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1770039052 3345736 81db01a6245a3e10ea9ff49542dd4476 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "content/appendices.tex" 1794202555.57135 32563 41ee246de6986abfeea8446d93057821 ""
-  "content/report.tex" 1794202555.47525 49478 2a2b44ea47c045b28c88ced1248ad50e ""
+  "content/appendices.tex" 1794208276.94263 30367 4a5c782646032a59369b46b6d52a3c21 ""
+  "content/report.tex" 1794208632.46082 48627 101e83770b50a56f47687eb82bf91a1d ""
   "figures/noise_sequence.pdf" 1793881695.08914 28987 c08cb22dc00eaf2ee02ad36e3eb79b17 ""
   "figures/qualitative_comparison.png" 1794035539.37612 1770432 e981b160270b58f80a600a502c53f113 ""
   "iccv.sty" 1793936253.48717 17969 83aadcf3355eea424c91c104fd0dcd25 ""
-  "main.aux" 1794202560.28651 34274 0dbb803f83185f490ac8c93c2ada4516 "pdflatex"
-  "main.bbl" 1794202558.66979 5883 60738332f1fba4f5b89aeca888fc6bb2 "bibtex main"
-  "main.out" 1794202560.28974 12963 43cde715ab7f07265ec4904e5e21ea04 "pdflatex"
+  "main.aux" 1794208634.91591 33770 f95cf7ddad13581dd6249da2eea3b739 "pdflatex"
+  "main.bbl" 1794208488.70973 5883 60738332f1fba4f5b89aeca888fc6bb2 "bibtex main"
+  "main.out" 1794208634.91883 12106 f2ff1a93791dba7c603cbc38ea706a19 "pdflatex"
   "main.tex" 1794194155.92909 2244 6e67348594812920da5a9e99308a4e1e ""
   (generated)
   "main.aux"
