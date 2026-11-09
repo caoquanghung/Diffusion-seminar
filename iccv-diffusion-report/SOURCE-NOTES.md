@@ -1,5 +1,51 @@
 # Source and claim checks
 
+## DDPM reverse variance choices, November 9, 2026
+
+Subsection 3.6 now explicitly contrasts the learned intermediate covariance
+in the 2015 sampler with DDPM 2020's fixed isotropic reverse covariance.
+Before the sampling update, it gives both sigma_t^2=beta_t and
+sigma_t^2=tilde_beta_t=[(1-alpha_bar_{t-1})/(1-alpha_bar_t)] beta_t for t>1.
+DDPM Section 3.2 reports similar results for the two choices. Both depend
+only on the schedule; the posterior-variance choice does not require the
+clean image at generation time. The text separates the predicted reverse
+mean from fresh sampling noise, states u_1=0 and x_0=mu_theta(x_1,1), and
+distinguishes that final display/sampling convention from the likelihood
+decoder variance and the original 2015 endpoint. Appendix F now points to
+the explicit main-text variance equation. Subsection 3.4 retains the
+fixed-variance assumption used to derive mean/noise MSE. Sources: DDPM
+Section 3.2 and Algorithm 2; original 2015 Section 2.2 and Appendix B.2.
+
+## Forward/backward pseudocode, November 9, 2026
+
+Appendix F adds two original expository algorithms, referenced from the end
+of subsection 3.2. Algorithm 1 implements the Gaussian forward transition
+with independent innovations. Algorithm 2 samples learned mean/covariance
+transitions for t=T,...,2 and then the original prescribed stationary Gaussian
+kernel at t=1 (Sohl-Dickstein et al., Secs. 2.1-2.2 and Appendix B.2).
+The direct forward marginal and the changes needed for DDPM Algorithm 2 are
+explained alongside the pseudocode. All sampled noise variables are fresh;
+the backward procedure has no clean-image input. The user's screenshot of
+DDPM Algorithms 3/4 (Sending/Receiving, Sec. 4.3) is a layout reference, not
+the forward-noising or reverse-generation algorithm reproduced here.
+No training or pretrained-model experiment is implied. The document has
+9 main pages, 1 reference page, and 9 appendix pages (19 total).
+
+## Figure 1 architecture diagram, November 9, 2026
+
+Figure 1 now uses only editable vector TikZ blocks and arrows. The forward
+lane explicitly shows the Gaussian kernel, beta schedule, fresh innovation,
+and progression from data to noise. The backward lane runs right to left:
+fresh Gaussian prior, current state, timestep-conditioned neural model,
+predicted mean/covariance, Gaussian sampling with a new random draw, previous
+state, and generated image. Outputs f_mu/f_Sigma follow the 2015 Gaussian
+framework in subsection 3.2; the caption points to DDPM's later noise-based
+mean parameterization in 3.4 and notes the final-step boundary convention.
+Sources are the already-checked original 2015 forward/reverse definitions
+and DDPM's inherited Gaussian construction. No specific U-Net architecture
+or trained-model output is claimed. The former RGB illustration is superseded;
+its files are retained but no longer referenced by Figure 1.
+
 ## Explicit loss decomposition, November 9, 2026
 
 Subsections 3.3-3.5 now introduce the original 2015 maximized bound K and

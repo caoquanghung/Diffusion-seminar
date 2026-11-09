@@ -591,3 +591,111 @@ The labels describe typical behavior rather than universal performance guarantee
 \end{center}
 \vspace{8pt}
 }]
+
+\pagecut
+\nobalance
+\twocolumn[{
+\section{Pseudocode for Forward and Backward Flows}\label{app:pseudocode}
+These algorithms make the Gaussian processes in
+Sections~\ref{sec:forward}--\ref{sec:reversemodel} explicit, using the
+2015 reverse-parameter formulation \cite{sohl2015diffusion}.
+All states lie in $\R^D$; each Gaussian noise draw is independent.
+The two procedures describe corruption and generation; the DDPM variant
+is distinguished below.
+\vspace{8pt}
+}]
+
+\subsection{Forward noising}
+\begin{algorithm}[H]
+\caption{Forward Gaussian diffusion}\label{alg:forward}
+\small
+\begin{algorithmic}[1]
+\Require Clean state $x_0$; schedule $\beta_1,\ldots,\beta_T$
+\Ensure Forward trajectory $(x_0,x_1,\ldots,x_T)$
+\For{$t=1,\ldots,T$}
+  \State Draw $\eps^{(t)}\sim\Normal(0,\Id)$
+  \State $\alpha_t\gets 1-\beta_t$
+  \State $x_t\gets\sqrt{\alpha_t}\,x_{t-1}
+                   +\sqrt{\beta_t}\,\eps^{(t)}$
+\EndFor
+\State \Return $(x_0,x_1,\ldots,x_T)$
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{What this computes.}
+Algorithm~\ref{alg:forward} applies the known Gaussian transition
+in Eq.~\eqref{eq:forward}. The schedule satisfies $0<\beta_t<1$;
+the original Gaussian framework may learn its rates, whereas the
+reported DDPM implementation fixes them. The forward transition
+itself does not evaluate a denoising network. A sufficiently long
+schedule makes the terminal distribution approximately standard
+Gaussian, not necessarily exactly Gaussian at finite $T$.
+
+\paragraph{Direct access to one timestep.}
+When only one noisy training input is required, the full loop is
+unnecessary. Compute $\ab_t=\prod_{j=1}^{t}(1-\beta_j)$ and draw
+\begin{equation*}
+x_t=\sqrt{\ab_t}\,x_0+\sqrt{1-\ab_t}\,\eps,
+\qquad\eps\sim\Normal(0,\Id).
+\end{equation*}
+This samples the same marginal $q(x_t\mid x_0)$ as
+Eq.~\eqref{eq:closed}; it does not recover the particular path generated
+by Algorithm~\ref{alg:forward}.
+
+\paragraph{Separate runs and separate noise.}
+Backward generation starts from a fresh prior draw, independently of
+the clean image and trajectory used in Algorithm~\ref{alg:forward}.
+The reverse noise $u_t$ is not the forward innovation $\eps^{(t)}$.
+Composing the learned reverse transitions produces a model sample;
+it does not guarantee recovery of the original $x_0$.
+
+\newpage
+\subsection{Backward sampling: the 2015 Gaussian model}
+\begin{algorithm}[H]
+\caption{Backward Gaussian sampling}
+\label{alg:reverse2015}
+\small
+\begin{algorithmic}[1]
+\Require $T$; trained $f_\mu,f_\Sigma$; first-step variance $\beta_1$
+\Ensure A generated state $x_0$
+\State Draw $x_T\sim\Normal(0,\Id)$
+\For{$t=T,T-1,\ldots,2$}
+  \State $\mu_t\gets f_\mu(x_t,t)$
+  \State $\Sigma_t\gets f_\Sigma(x_t,t)$
+  \State Draw $u_t\sim\Normal(0,\Id)$
+  \State $x_{t-1}\gets\mu_t+\Sigma_t^{1/2}u_t$
+\EndFor
+\State Draw $u_1\sim\Normal(0,\Id)$
+\State $x_0\gets\sqrt{1-\beta_1}\,x_1+\sqrt{\beta_1}\,u_1$
+\State \Return $x_0$
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{Learned intermediate steps.}
+The network receives the current noisy state and timestep, and
+predicts a reverse mean and positive covariance. For the original
+image model, $\Sigma_t$ is diagonal and its square root is computed
+elementwise. The random draw implements
+$p_\theta(x_{t-1}\mid x_t)=\Normal(\mu_t,\Sigma_t)$, as in
+Eq.~\eqref{eq:originalsampling}.
+
+\paragraph{The 2015 endpoint.}
+The last update uses the prescribed stationary Gaussian kernel
+\cite[App.~B.2]{sohl2015diffusion}, rather than another learned
+transition. Its formula and role in the original variational bound
+are given in Appendix~\ref{app:originalbound}.
+
+\paragraph{How DDPM changes the backward sampler.}
+DDPM \cite[Algorithm~2]{ho2020ddpm} computes $\mu_\theta$ from
+$\eps_\theta$ using Eq.~\eqref{eq:ddpmmean} and uses a fixed
+$\sigma_t^2\Id$ for the intermediate reverse covariance.
+The two choices, $\sigma_t^2=\beta_t$ and
+$\sigma_t^2=\tilde\beta_t$, are specified in
+Eq.~\eqref{eq:ddpmvariance}.
+Its update is $x_{t-1}=\mu_\theta(x_t,t)+\sigma_tu_t$ for
+$t=T,\ldots,1$, drawing $u_t\sim\Normal(0,\Id)$ when $t>1$
+and setting $u_1=0$ for the final update. Thus the 2015 endpoint in
+Algorithm~\ref{alg:reverse2015} must also be replaced when implementing
+DDPM. Forward noising remains Algorithm~\ref{alg:forward};
+Sections~\ref{sec:parameterization} and~\ref{sec:reverse} explain
+the parameterization and sampling changes.

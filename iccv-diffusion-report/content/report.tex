@@ -227,54 +227,96 @@ transforms Gaussian noise into samples approximating
 $p_{\rm data}$, without requiring a clean input image.
 
 
-Figure~\ref{fig:ddpm} summarizes the forward corruption process and the
-learned reverse sampling process: structure is progressively destroyed
-in the forward direction, while generation starts from noise and samples
-successive reverse transitions.
+Figure~\ref{fig:ddpm} shows the architecture of both flows: a Gaussian
+kernel corrupts each forward state, while a neural model parameterizes
+the reverse distribution from which the previous state is sampled.
+Appendix~\ref{app:pseudocode} gives step-by-step pseudocode for forward
+noising and the 2015 Gaussian reverse sampler
+(Algorithms~\ref{alg:forward} and~\ref{alg:reverse2015}).
 
 \begin{figure*}[t]
 \centering
 \begin{tikzpicture}[>=Stealth,x=1cm,y=1cm,
-  tile/.style={draw=black!18,rounded corners=2pt,inner sep=2pt,
-    line width=.6pt,fill=white},
-  stage/.style={font=\small,align=center},
+  state/.style={draw=black!35,fill=white,rounded corners=3pt,
+    minimum width=1.15cm,minimum height=.65cm,inner sep=3pt,
+    font=\small,align=center},
+  operation/.style={draw=forwardblue,fill=white,rounded corners=4pt,
+    minimum height=.98cm,inner sep=5pt,font=\small,align=center},
+  learned/.style={draw=reverseorange,fill=white,rounded corners=4pt,
+    minimum height=.98cm,inner sep=4pt,font=\small,align=center},
+  source/.style={font=\small,align=center,inner sep=2pt},
+  flow/.style={->,line width=1pt},
   every node/.style={outer sep=0pt}]
 \definecolor{forwardblue}{HTML}{247BA0}
-\definecolor{reverseorange}{HTML}{C26930}
-\path[use as bounding box] (0,-.55) rectangle (16.2,5.15);
-\fill[forwardblue!5,rounded corners=5pt] (0,3.98) rectangle (16.2,5.10);
-\node[anchor=west,font=\small\bfseries,text=forwardblue] at (.22,4.77)
-  {FORWARD: gradually destroy image structure};
-\node[anchor=east,font=\small,text=forwardblue] at (15.98,4.77)
-  {known Gaussian corruption $q$};
-\draw[->,forwardblue,line width=1.5pt] (.25,4.22) -- (15.95,4.22);
+\definecolor{reverseorange}{HTML}{B96532}
+\path[use as bounding box] (0,-.05) rectangle (16.2,6.7);
+\fill[forwardblue!5,rounded corners=5pt] (0,3.5) rectangle (16.2,6.65);
+\fill[reverseorange!6,rounded corners=5pt] (0,0) rectangle (16.2,3.15);
 
-\foreach \position/\frameTime/\stageSymbol/\description in {
-  1.65/0/{x_0}/{clean image},
-  5.95/100/{x_{t_a}}/{partly noisy},
-  10.25/300/{x_{t_b}}/{mostly noisy},
-  14.55/1000/{x_T}/{nearly Gaussian noise}} {
-  \node[tile] at (\position,2.65)
-    {\includegraphics[width=2.38cm]{figures/diffusion_overview/state_\frameTime.png}};
-  \node[stage] at (\position,1.08) {$\stageSymbol$\\[-1pt]\description};
-}
-\foreach \startX/\endX in {3.02/4.58,7.32/8.88,11.62/13.18} {
-  \draw[->,forwardblue!75,line width=1pt] (\startX,2.96) -- (\endX,2.96);
-  \draw[<-,reverseorange!85,line width=1pt] (\startX,2.32) -- (\endX,2.32);
-}
+% Forward: known stochastic transformation, with explicit external inputs.
+\node[anchor=west,font=\small\bfseries,text=forwardblue] at (.22,6.32)
+  {FORWARD FLOW: Gaussian corruption};
+\node[anchor=east,font=\small,text=forwardblue] at (15.98,6.32)
+  {repeat for $t=1,\ldots,T$};
+\node[state] (forwardClean) at (.85,4.67) {$x_0$};
+\node[state] (forwardPrevious) at (3.0,4.67) {$x_{t-1}$};
+\node[operation,minimum width=5.3cm] (forwardKernel) at (7.8,4.67)
+  {\textbf{Known Gaussian kernel}\\[3pt]
+   $q(x_t\mid x_{t-1})=\Normal(\sqrt{1-\beta_t}\,x_{t-1},\beta_t\Id)$};
+\node[state] (forwardCurrent) at (12.7,4.67) {$x_t$};
+\node[state] (forwardTerminal) at (15.3,4.67) {$x_T$};
+\node[source,text=forwardblue] (schedule) at (6.15,5.72)
+  {schedule $\beta_t$};
+\node[source,text=forwardblue] (forwardNoise) at (9.4,5.72)
+  {$\eps^{(t)}\sim\Normal(0,\Id)$};
+\draw[flow,forwardblue] (forwardClean) -- node[above,font=\small] {$\cdots$} (forwardPrevious);
+\draw[flow,forwardblue] (forwardPrevious) -- (forwardKernel);
+\draw[flow,forwardblue] (forwardKernel) -- (forwardCurrent);
+\draw[flow,forwardblue] (forwardCurrent) -- node[above,font=\small] {$\cdots$} (forwardTerminal);
+\draw[flow,forwardblue] (schedule.south) -- (6.15,5.16);
+\draw[flow,forwardblue] (forwardNoise.south) -- (9.4,5.16);
+\node[source,font=\footnotesize] at (.85,3.98) {clean data};
+\node[source,font=\footnotesize] at (15.3,3.98) {nearly noise};
 
-\fill[reverseorange!7,rounded corners=5pt] (0,-.42) rectangle (16.2,.68);
-\draw[<-,reverseorange,line width=1.5pt] (.25,.48) -- (15.95,.48);
-\node[anchor=west,font=\small\bfseries,text=reverseorange] at (.22,-.06)
-  {REVERSE: generate by denoising and sampling};
-\node[anchor=east,font=\small,text=reverseorange] at (15.98,-.06)
-  {learned transitions $p_\theta$; start from fresh noise};
+% Backward: right-to-left generation from an independently sampled prior.
+\node[anchor=west,font=\small\bfseries,text=reverseorange] at (.22,2.84)
+  {BACKWARD FLOW: learned reverse sampling};
+\node[anchor=east,font=\small,text=reverseorange] at (15.98,2.84)
+  {repeat for $t=T,\ldots,1$};
+\node[state] (reverseOutput) at (.85,1.1) {$x_0$};
+\node[state] (reversePrevious) at (2.9,1.1) {$x_{t-1}$};
+\node[learned,minimum width=2.05cm] (reverseSampler) at (5.05,1.1)
+  {\textbf{Gaussian sampler}\\[3pt]
+   $p_\theta(x_{t-1}\mid x_t)$};
+\node[learned,minimum width=1.65cm] (reverseParameters) at (7.7,1.1)
+  {parameters\\[3pt] $\mu_\theta,\Sigma_\theta$};
+\node[learned,minimum width=2.25cm] (reverseNetwork) at (10.3,1.1)
+  {\textbf{Neural model}\\[3pt] $f_\mu,\ f_\Sigma$};
+\node[state] (reverseCurrent) at (12.7,1.1) {$x_t$};
+\node[state] (reversePrior) at (15.3,1.1) {$x_T$};
+\node[source,text=reverseorange] (reverseNoise) at (5.05,2.15)
+  {$u_t\sim\Normal(0,\Id)$};
+\node[source,text=reverseorange] (timeInput) at (10.3,2.15)
+  {timestep $t$};
+\draw[flow,reverseorange] (reversePrior) -- node[above,font=\small] {$\cdots$} (reverseCurrent);
+\draw[flow,reverseorange] (reverseCurrent) -- (reverseNetwork);
+\draw[flow,reverseorange] (reverseNetwork) -- (reverseParameters);
+\draw[flow,reverseorange] (reverseParameters) -- (reverseSampler);
+\draw[flow,reverseorange] (reverseSampler) -- (reversePrevious);
+\draw[flow,reverseorange] (reversePrevious) -- node[above,font=\small] {$\cdots$} (reverseOutput);
+\draw[flow,reverseorange] (reverseNoise.south) -- (reverseSampler.north);
+\draw[flow,reverseorange] (timeInput.south) -- (reverseNetwork.north);
+\node[source,font=\footnotesize] at (.85,.38) {generated image};
+\node[source,font=\footnotesize] at (15.0,.38) {fresh $\Normal(0,\Id)$ draw};
 \end{tikzpicture}
-\caption{Two directions of diffusion, introduced in \cite{sohl2015diffusion}
-and retained in \cite{ho2020ddpm}. An original synthetic scene illustrates
-progressive Gaussian corruption (blue). Generation starts from fresh noise
-and samples learned reverse transitions (orange). Reverse arrows are
-conceptual: no trained-model output or exact recovery of this scene is implied.}\label{fig:ddpm}
+\caption{Architecture of the Gaussian diffusion flows
+\cite{sohl2015diffusion,ho2020ddpm}. Forward steps (blue) use the noise
+schedule and Gaussian innovations. Backward steps (orange) start from
+fresh noise; a neural model predicts reverse-distribution parameters and
+a Gaussian sampler produces the next state. The displayed neural outputs
+follow the 2015 formulation; DDPM's noise-based mean parameterization is
+introduced in Section~\ref{sec:parameterization}. The learned intermediate
+steps are shown; the final-step boundary is discussed in the text.}\label{fig:ddpm}
 \end{figure*}
 
 
@@ -436,20 +478,45 @@ Appendix~\ref{app:vlb} explains that boundary detail.
 
 
 \subsection{DDPM sampling and its score interpretation}\label{sec:reverse}\label{sec:scorebridge}
-After training, draw $x_T\sim\Normal(0,\Id)$ and run
-$t=T,T-1,\ldots,1$. At each step evaluate $\eps_\theta$, compute
-Eq.~\eqref{eq:ddpmmean}, and sample \cite[Algorithm~2]{ho2020ddpm}
+\paragraph{Choosing the reverse variance.}
+The 2015 sampler in Section~\ref{sec:reversemodel} learns both a mean
+and covariance at intermediate steps. In contrast, DDPM 2020 fixes
+$\Sigma_\theta=\sigma_t^2\Id$ for $t>1$; the variance is a predetermined
+function of the timestep, rather than a network output.
+Ho et al.\ investigate two choices \cite[Sec.~3.2]{ho2020ddpm}:
 \begin{equation}
-x_{t-1}=\mu_\theta(x_t,t)+\sigma_tu,\qquad u\sim\Normal(0,\Id).
+\begin{aligned}
+\sigma_t^2&=\beta_t
+\quad\text{or}\quad\sigma_t^2=\tilde\beta_t,\\
+\tilde\beta_t&=\frac{1-\ab_{t-1}}{1-\ab_t}\beta_t,
+\qquad t>1.
+\end{aligned}
+\label{eq:ddpmvariance}
+\end{equation}
+Here $\beta_t$ is the forward transition variance, whereas
+$\tilde\beta_t$ is the variance of the tractable posterior
+$q(x_{t-1}\mid x_t,x_0)$. The paper reports similar results for
+these two fixed choices. Their use does not require knowing $x_0$
+during generation, since both are computed from the schedule alone.
+
+\paragraph{Sampling with the chosen variance.}
+Draw $x_T\sim\Normal(0,\Id)$ and iterate backward. For $t>1$, evaluate
+$\eps_\theta$, compute $\mu_\theta$ from Eq.~\eqref{eq:ddpmmean},
+and sample \cite[Algorithm~2]{ho2020ddpm}
+\begin{equation}
+x_{t-1}=\mu_\theta(x_t,t)+\sigma_tu_t,
+\quad u_t\sim\Normal(0,\Id).
 \label{eq:reverse}
 \end{equation}
-Fresh sampling noise is used at intermediate steps; DDPM's final step
-omits it. Predicted noise determines the reverse \emph{mean}; $u$ is a
-new random draw. The algorithm does not simply subtract a noise vector
-from the current image, nor require a corrupted real image as input.
-The 2015 framework already supplied the prior-to-data reverse chain;
-DDPM changes the prediction target, variance choice, and training weights.
+Noise prediction determines the reverse \emph{mean}, while $\sigma_t$
+scales a fresh random draw and controls the transition's stochasticity.
+At $t=1$, DDPM sets $u_1=0$ and outputs $x_0=\mu_\theta(x_1,1)$.
+This noiseless sampling update differs from the 2015 stationary-kernel
+endpoint; it does not imply a zero-variance likelihood decoder.
+Appendices~\ref{app:vlb} and~\ref{app:pseudocode} explain these endpoint
+and sampler distinctions.
 
+\paragraph{Score interpretation.}
 There is also a score interpretation of this parameterization
 \cite[Sec.~3.2]{ho2020ddpm}. Let $q_t(x_t)$ be the marginal distribution
 of noisy data at timestep $t$. Then
