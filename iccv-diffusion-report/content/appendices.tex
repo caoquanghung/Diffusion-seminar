@@ -35,8 +35,8 @@ Figure~\ref{fig:ldm}\\
 6 & Speed, quality, prompt control, data, copyright, bias;
 explicit pixel/latent comparison &
 Tables~\ref{tab:colab-setup} and \ref{tab:comparison};
-Figure~\ref{fig:churches-samples}; Sections~\ref{sec:imagenet-results}
-and \ref{sec:ethics}\\
+Figure~\ref{fig:churches-samples}; Sections~\ref{sec:imagenet-results},
+\ref{sec:prompt-results}, and \ref{sec:ethics}\\
 \bottomrule
 \end{tabularx}
 \end{minipage}
@@ -85,28 +85,18 @@ The sequence is one sampled Markov path; identical seeds and library
 versions reproduce it. No image-generation checkpoint is involved.
 
 \subsection{Reproduce the Colab runs}
-The project includes the Colab notebook and run records in
-\texttt{code/colab/}. The notebook records checkpoint URLs and class IDs.
-The LSUN records contain the individual timings, peak allocation, seeds,
-and checkpoint hashes. The ImageNet record identifies the checkpoints
-and guidance settings. The five trajectories in Appendix~\ref{app:colab-traces}
-are saved outputs of those models. The runs used pretrained weights.
+The project includes the notebook and run records in \texttt{code/colab/}.
+The LSUN records contain timings, peak allocation, seeds, and checkpoint
+hashes. The ImageNet record gives the checkpoint URLs, class IDs, and
+guidance. Its saved trajectories are in Appendix~\ref{app:colab-traces}.
 
-\subsection{A proposed prompt and runtime study}
-Select and record exact checkpoint identifiers, revisions, dataset licenses,
-hardware, software versions, numerical precision, resolution, and batch
-size. Keep each fixed within a comparison and record warm-up policy.
-For latent models, measure text encoding, denoising, decoding, and
-end-to-end latency separately, and record peak allocated memory over the
-entire pipeline.
-
-Use paired prompts such as \emph{a red cube to the left of a blue sphere}
-and \emph{a green cube to the left of a blue sphere}; separately swap the
-spatial relation. Predefine at least 20 seeds per condition and inspect
-all samples. Vary sampling steps and guidance in separate sweeps.
-Report object presence, color binding, relation correctness, and diversity;
-do not select only attractive examples. This is a proposed evaluation
-design, not empirical evidence of a model's prompt capability.
+Run \path{sd14_prompt_control.py} in a Colab GPU cell.
+The corresponding JSON records the model revision, software versions,
+scheduler, exact prompts, and initial latent hash for each sample.
+The visual review CSV records the judgments for all 16 images.
+A requested color or spatial relation receives credit only when the
+corresponding vehicle is recognizable. The review marks ambiguous
+observations separately and skips attributes absent from the baseline.
 
 \subsection{Provenance and AI assistance}
 Figures~\ref{fig:ddpm}, \ref{fig:ldm}, and \ref{fig:attention} are original
@@ -682,3 +672,18 @@ space. LDM states are decoded from latent space for display.
 
 \clearpage
 \colabtrajectory{980}{Volcano}
+
+
+\clearpage
+\section{Full Text Prompt Comparison}\label{app:prompt-grid}
+Each row reuses its initial latent across the four prompts. The reference
+specifies colors and a spatial relation. The two edit columns each change
+one word in that reference. All seeds are shown.
+
+\begin{center}
+\captionsetup{hypcap=false}
+\includegraphics[width=.85\textwidth]{figures/colab/prompt/comparison.png}
+\captionof{figure}{All 16 Stable Diffusion v1.4 samples from the
+supplementary test in Section~\ref{sec:prompt-results}.}
+\label{fig:prompt-grid}
+\end{center}

@@ -1,0 +1,175 @@
+{
+  "model": "CompVis/stable-diffusion-v1-4",
+  "revision": "133a221b8aa7292a167afc5127cb63fb5005638b",
+  "gpu": "Tesla T4",
+  "torch": "2.14.1+cu130",
+  "diffusers": "0.35.2",
+  "transformers": "4.57.3",
+  "dtype": "fp16",
+  "resolution": [
+    512,
+    512
+  ],
+  "steps": 50,
+  "guidance_scale": 7.5,
+  "eta": 0.0,
+  "scheduler": {
+    "num_train_timesteps": 1000,
+    "beta_start": 0.00085,
+    "beta_end": 0.012,
+    "beta_schedule": "scaled_linear",
+    "trained_betas": null,
+    "clip_sample": false,
+    "set_alpha_to_one": false,
+    "steps_offset": 1,
+    "prediction_type": "epsilon",
+    "thresholding": false,
+    "dynamic_thresholding_ratio": 0.995,
+    "clip_sample_range": 1.0,
+    "sample_max_value": 1.0,
+    "timestep_spacing": "leading",
+    "rescale_betas_zero_snr": false,
+    "_use_default_values": [
+      "clip_sample_range",
+      "dynamic_thresholding_ratio",
+      "prediction_type",
+      "timestep_spacing",
+      "thresholding",
+      "sample_max_value",
+      "rescale_betas_zero_snr"
+    ],
+    "skip_prk_steps": true,
+    "_class_name": "DDIMScheduler",
+    "_diffusers_version": "0.7.0.dev0"
+  },
+  "samples": [
+    {
+      "seed": 2026,
+      "condition": "Baseline",
+      "prompt": "A bus and a car.",
+      "file": "2026_baseline.png",
+      "latent_sha256": "2149027551a5cd79d63fb5181eaa4eb0c0a15498e012e167e88162eef49ab2d3",
+      "flagged": false
+    },
+    {
+      "seed": 2026,
+      "condition": "Reference",
+      "prompt": "A red bus to the left of a blue car.",
+      "file": "2026_reference.png",
+      "latent_sha256": "2149027551a5cd79d63fb5181eaa4eb0c0a15498e012e167e88162eef49ab2d3",
+      "flagged": false
+    },
+    {
+      "seed": 2026,
+      "condition": "Change color",
+      "prompt": "A green bus to the left of a blue car.",
+      "file": "2026_change_color.png",
+      "latent_sha256": "2149027551a5cd79d63fb5181eaa4eb0c0a15498e012e167e88162eef49ab2d3",
+      "flagged": false
+    },
+    {
+      "seed": 2026,
+      "condition": "Change side",
+      "prompt": "A red bus to the right of a blue car.",
+      "file": "2026_change_side.png",
+      "latent_sha256": "2149027551a5cd79d63fb5181eaa4eb0c0a15498e012e167e88162eef49ab2d3",
+      "flagged": false
+    },
+    {
+      "seed": 2027,
+      "condition": "Baseline",
+      "prompt": "A bus and a car.",
+      "file": "2027_baseline.png",
+      "latent_sha256": "4e494828e07947536072f50884d350116d593179895c9684fb8a0ef907411e6a",
+      "flagged": false
+    },
+    {
+      "seed": 2027,
+      "condition": "Reference",
+      "prompt": "A red bus to the left of a blue car.",
+      "file": "2027_reference.png",
+      "latent_sha256": "4e494828e07947536072f50884d350116d593179895c9684fb8a0ef907411e6a",
+      "flagged": false
+    },
+    {
+      "seed": 2027,
+      "condition": "Change color",
+      "prompt": "A green bus to the left of a blue car.",
+      "file": "2027_change_color.png",
+      "latent_sha256": "4e494828e07947536072f50884d350116d593179895c9684fb8a0ef907411e6a",
+      "flagged": false
+    },
+    {
+      "seed": 2027,
+      "condition": "Change side",
+      "prompt": "A red bus to the right of a blue car.",
+      "file": "2027_change_side.png",
+      "latent_sha256": "4e494828e07947536072f50884d350116d593179895c9684fb8a0ef907411e6a",
+      "flagged": false
+    },
+    {
+      "seed": 2028,
+      "condition": "Baseline",
+      "prompt": "A bus and a car.",
+      "file": "2028_baseline.png",
+      "latent_sha256": "1c2bfe45d763392ea1854478c045ca8a8ee405384c106c16ad3dbff9ebeef008",
+      "flagged": false
+    },
+    {
+      "seed": 2028,
+      "condition": "Reference",
+      "prompt": "A red bus to the left of a blue car.",
+      "file": "2028_reference.png",
+      "latent_sha256": "1c2bfe45d763392ea1854478c045ca8a8ee405384c106c16ad3dbff9ebeef008",
+      "flagged": false
+    },
+    {
+      "seed": 2028,
+      "condition": "Change color",
+      "prompt": "A green bus to the left of a blue car.",
+      "file": "2028_change_color.png",
+      "latent_sha256": "1c2bfe45d763392ea1854478c045ca8a8ee405384c106c16ad3dbff9ebeef008",
+      "flagged": false
+    },
+    {
+      "seed": 2028,
+      "condition": "Change side",
+      "prompt": "A red bus to the right of a blue car.",
+      "file": "2028_change_side.png",
+      "latent_sha256": "1c2bfe45d763392ea1854478c045ca8a8ee405384c106c16ad3dbff9ebeef008",
+      "flagged": false
+    },
+    {
+      "seed": 2029,
+      "condition": "Baseline",
+      "prompt": "A bus and a car.",
+      "file": "2029_baseline.png",
+      "latent_sha256": "97742fff5d55d066e224729fcf577201ba10f004f282b711dcecedd057ae1c26",
+      "flagged": false
+    },
+    {
+      "seed": 2029,
+      "condition": "Reference",
+      "prompt": "A red bus to the left of a blue car.",
+      "file": "2029_reference.png",
+      "latent_sha256": "97742fff5d55d066e224729fcf577201ba10f004f282b711dcecedd057ae1c26",
+      "flagged": false
+    },
+    {
+      "seed": 2029,
+      "condition": "Change color",
+      "prompt": "A green bus to the left of a blue car.",
+      "file": "2029_change_color.png",
+      "latent_sha256": "97742fff5d55d066e224729fcf577201ba10f004f282b711dcecedd057ae1c26",
+      "flagged": false
+    },
+    {
+      "seed": 2029,
+      "condition": "Change side",
+      "prompt": "A red bus to the right of a blue car.",
+      "file": "2029_change_side.png",
+      "latent_sha256": "97742fff5d55d066e224729fcf577201ba10f004f282b711dcecedd057ae1c26",
+      "flagged": false
+    }
+  ]
+}
