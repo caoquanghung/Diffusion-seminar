@@ -1,5 +1,24 @@
 # Source and claim checks
 
+## DDPM-focused method revision, November 9, 2026
+
+This revision supersedes earlier subsection numbers recorded below. The
+standalone main-text review of the 2015 loss has been removed; its complete
+K/entropy/covariance treatment and minimized loss remain in Appendix C.5.
+Subsections 3.1-3.2 introduce the common forward/reverse framework and the end
+of 3.2 explicitly transitions to DDPM's variational training. The former 3.4
+is now 3.3 and has been expanded: complete L_VLB, meaning of all three terms,
+tractable training posterior, fixed-variance KL reduction, target posterior
+mean expressed in epsilon, predicted mean expressed in epsilon_theta, and
+the weighted noise-MSE coefficient obtained by subtracting the means.
+These are DDPM Sections 2-3, Eqs. 5-12; the complete algebra is also retained
+in Appendix C.6. New subsection 3.4 explains why dropping w_t changes relative
+timestep weights even though w_t does not depend on theta, and points to the
+published objective ablation rather than claiming universal optimality.
+Sampling/variance choices and the brief score interpretation are now 3.5;
+the scalar and five-level examples are 3.6/3.7. The main text remains 9 pages,
+followed by 1 reference page and 9 appendix pages (19 total).
+
 ## DDPM reverse variance choices, November 9, 2026
 
 Subsection 3.6 now explicitly contrasts the learned intermediate covariance
@@ -50,8 +69,8 @@ its files are retained but no longer referenced by Figure 1.
 
 Subsections 3.3-3.5 now introduce the original 2015 maximized bound K and
 the minimized loss -K, including the directed posterior-to-model KL and
-the schedule-dependent entropy term. Before any DDPM mean/noise
-parameterization, subsection 3.3 presents the complete prior, reverse-step,
+the schedule-dependent entropy term in subsection 3.3. Before any DDPM mean/noise
+parameterization, the start of subsection 3.4 presents the complete prior, reverse-step,
 and decoder decomposition with L_T, L_{t-1}, and L_0, following DDPM Eq. 5.
 The expectation is distributed over the three terms, so each label is an
 expected contribution. The user-supplied screenshot is DDPM Eq. 5, not a

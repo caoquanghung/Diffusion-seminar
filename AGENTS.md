@@ -32,32 +32,43 @@ Current deliverables:
 - `pdf/CS420_Diffusion_Report_ICCV2025.pdf`
 
 
-## Latest narrative revision (November 7, 2026)
+## Latest narrative revision (November 9, 2026)
 
-November 9 loss-flow update: 3.3 explicitly introduces the original maximized
-K and minimized L_2015=-K, then the full L_VLB decomposition into expected
-L_T, L_{t-1}, and L_0 before any DDPM parameterization changes. The screenshot
-provided by the user is DDPM Eq. 5; it is attributed accordingly and distinguished
-from the 2015 stationary-kernel endpoint/entropy convention. Section 3.4 changes
-only the intermediate terms via fixed variance, mean prediction, epsilon
-parameterization and explicit w_t. Section 3.5 explains the surrogate, its
-reweighting and endpoint approximation. Heavy derivations stay in Appendix C.
+The standalone 2015-loss subsection has been removed from main text. Its
+K, negative-bound loss and covariance/entropy details remain in Appendix C.5.
+The end of 3.2 states that DDPM inherits the forward/reverse construction
+and trains through variational inference. The former 3.4 is now 3.3:
+it introduces the full DDPM L_VLB decomposition, explains tractable posterior
+targets, fixes covariance, derives mean MSE, writes the target and predicted
+means in noise coordinates, and derives weighted noise MSE with explicit w_t.
+The simplified objective is now 3.4, including why dropping time-dependent
+weights changes the objective and the empirical quality/likelihood tradeoff.
+The screenshot of the three-part objective is DDPM Eq. 5 and is attributed
+accordingly. Heavy derivations stay in Appendix C.
 
-Subsection 3.6 explicitly compares the 2015 learned covariance with DDPM
+Subsection 3.5 explicitly compares the 2015 learned covariance with DDPM
 2020's fixed isotropic choices sigma_t^2=beta_t or tilde_beta_t for t>1.
 It defines the posterior-variance formula before sampling, notes the paper's
 similar-results finding, and separates predicted mean from fresh sampling
 noise. The final u_1=0 update is distinguished from decoder variance and
 the original 2015 endpoint. Appendix F references this main-text equation.
-Keep 3.4 focused on the fixed-variance assumption for the loss derivation.
+Keep 3.3 focused on the variational-to-noise derivation; 3.4 explains the
+simplified objective and 3.5 gives the concrete sampling variance choices.
 
 The user approved a broader DDPM/LDM flow. The guiding question is **How can learning to remove noise enable a model to generate new images?** The Introduction also states the learning objective: **Explain forward noising and reverse denoising, including why latent diffusion reduces computational demands.**
 
-Current main sections: (1) Introduction; (2) Background and Paper Review, with qualitative GAN/autoregressive/diffusion comparison still at 2.2 and historical context at 2.3; (3) Method: From the 2015 Framework to DDPM; (4) LDM: Latent Space and Efficient Generation, emphasizing VAE encoder/decoder and latent representation; (5) Results and Discussion; (6) Conclusion. The subtitle covers DDPM and LDM.
+Current main sections: (1) Introduction; (2) Background and Paper Review, with qualitative GAN/autoregressive/diffusion comparison still at 2.2 and historical context at 2.3; (3) Method: DDPM and the Diffusion Framework; (4) LDM: Latent Space and Efficient Generation, emphasizing VAE encoder/decoder and latent representation; (5) Results and Discussion; (6) Conclusion. The subtitle covers DDPM and LDM.
 
-The latest user-approved flow distinguishes origins: 3.1 forward Gaussian process/beta schedule, 3.2 learned reverse mean/covariance and sampling, and 3.3 variational loss all review Sohl-Dickstein et al. (2015), using `Human_note/original_method.md` checked against the original paper/supplement. Then 3.4 explains DDPM fixed variance and epsilon parameterization, 3.5 simplified loss, and 3.6 DDPM sampling plus the score interpretation. The 2015 network predicts mean and diagonal covariance, not epsilon; its Gaussian beta_2:T are learned with beta_1 fixed. Original entropy terms depend on beta and cannot be discarded when optimizing the schedule. Appendix C includes the original bound, covariance KL and stationary-kernel endpoint, distinguished from DDPM's final noise-free update.
+The first two subsections explain common Gaussian forward/reverse foundations,
+with historical credit to 2015 rather than year-prefixed titles. They retain
+the distinction that the original network predicts mean/covariance, not epsilon,
+and that its beta_2:T could be learned with beta_1 fixed. DDPM is the main
+method: 3.3 objective/parameterization, 3.4 simplified loss, 3.5 sampling and
+brief score interpretation, 3.6 scalar example, 3.7 five-level illustration.
+Original entropy terms depend on beta; their derivation and the stationary-kernel
+endpoint are kept in Appendix C, distinct from DDPM's final noise-free update.
 
-The general flow remains probabilistic: forward corruption -> reverse generative model -> variational objective -> noise prediction and L_simple -> sampling -> latent diffusion. Do not restore a standalone score-first main section. A brief score interpretation appears only after sampling, in 3.6. Optional score/Langevin/Gaussian-perturbation background is in Appendix C.2. DDPM/LDM do not explicitly compute the clean-data score; their noise predictions parameterize a noisy marginal score estimate (conditional latent score in conditional LDM). Equality with the true score is an ideal MSE-optimum statement, not an exact guarantee for an arbitrary trained network.
+The general flow remains probabilistic: forward corruption -> reverse generative model -> variational objective -> noise prediction and L_simple -> sampling -> latent diffusion. Do not restore a standalone score-first main section. A brief score interpretation appears only after sampling, in 3.5. Optional score/Langevin/Gaussian-perturbation background is in Appendix C.2. DDPM/LDM do not explicitly compute the clean-data score; their noise predictions parameterize a noisy marginal score estimate (conditional latent score in conditional LDM). Equality with the true score is an ideal MSE-optimum statement, not an exact guarantee for an arbitrary trained network.
 
 The former qualitative comparison Table 1 has been replaced by the user-supplied `figures/qualitative_comparison.png` in Appendix E (Figure 5). Subsection 2.2 keeps its prose and references that illustration. Do not restore the old table unless requested.
 
@@ -77,7 +88,7 @@ forward Gaussian kernel with beta/noise inputs, and backward neural model
 with timestep input, mean/covariance outputs, and Gaussian sampling.
 Backward generation runs right to left from a fresh prior draw. The neural
 outputs follow the 2015 framework; DDPM's later epsilon parameterization is
-introduced in 3.4, as noted in the caption. The former RGB mountain/cabin
+introduced in 3.3, as noted in the caption. The former RGB mountain/cabin
 illustration is superseded; `figures/diffusion_overview/` and
 `code/make_overview.py` remain historical assets but Figure 1 no longer uses
 them. Figure 2 remains the separate original grayscale house illustration.

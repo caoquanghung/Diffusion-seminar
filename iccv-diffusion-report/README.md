@@ -18,7 +18,7 @@ Edit scientific content in **content/report.tex**, appendices in **content/appen
 
 ## Evidence and reproducibility
 
-Subsection 3.6 explains both fixed reverse-variance choices from DDPM 2020
+Subsection 3.5 explains both fixed reverse-variance choices from DDPM 2020
 before its sampling update, contrasting them with the learned covariance
 in subsection 3.2. It distinguishes the final noise-free sampling update
 from the likelihood decoder and the original 2015 endpoint.
@@ -29,13 +29,14 @@ subsection 3.2. It explicitly handles the 2015 stationary-kernel endpoint and
 explains the changes needed for DDPM sampling. These algorithms are expository
 pseudocode, not evidence of a trained-model experiment.
 
-Subsection 3.3 introduces the minimized 2015 loss (-K) and then the full
-three-part variational loss (prior, intermediate reverse KLs, final decoder)
-using DDPM Eq. 5 notation. Subsections 3.4-3.5 transform the intermediate
-KLs into weighted noise MSE and then the simplified surrogate. The two
-papers' endpoint conventions remain distinct.
+The original 2015 bound and minimized loss (-K) are in Appendix C.5.
+Subsection 3.3 begins with DDPM's full three-part variational loss (prior,
+intermediate reverse KLs, final decoder), explains the posterior targets,
+then derives mean MSE and weighted noise MSE. Subsection 3.4 explains the
+simplified surrogate, reweighting and empirical benefit. The two papers'
+endpoint conventions remain distinct.
 
-Results distinguish original numerical/noising illustrations from published DDPM objective-ablation results and LDM inpainting measurements. No pretrained-generation, GPU-time, peak-memory, or prompt-control benchmark was run. Section 3.1-3.3 explains the 2015 Gaussian diffusion framework: forward process and beta schedule, learned reverse mean/covariance and sampling, and the original variational objective. Section 3.4-3.6 then distinguishes DDPM's fixed-variance/noise-prediction parameterization, simplified loss, sampling choices and brief score interpretation; score/Langevin background is optional material in Appendix C. The LDM section emphasizes latent space and VAE encoder/decoder roles. Cross-attention and guidance receive brief treatment. DSM, the original 2015 objective and covariance KL, DDPM variational-bound and reverse-mean derivations are in Appendix C; detailed VAE/attention/guidance material is in Appendix D. The user-supplied qualitative-comparison illustration is included at full text width in Appendix E and referenced from subsection 2.2. The original figure data and reproducibility code are retained.
+Results distinguish original numerical/noising illustrations from published DDPM objective-ablation results and LDM inpainting measurements. No pretrained-generation, GPU-time, peak-memory, or prompt-control benchmark was run. Subsections 3.1-3.2 introduce the forward/reverse Gaussian framework with historical attribution to 2015. Subsections 3.3-3.5 focus on DDPM's objective, fixed-variance/noise-prediction parameterization, simplified loss, sampling choices and brief score interpretation; score/Langevin background is optional material in Appendix C. The LDM section emphasizes latent space and VAE encoder/decoder roles. Cross-attention and guidance receive brief treatment. DSM, the original 2015 objective and covariance KL, DDPM variational-bound and reverse-mean derivations are in Appendix C; detailed VAE/attention/guidance material is in Appendix D. The user-supplied qualitative-comparison illustration is included at full text width in Appendix E and referenced from subsection 2.2. The original figure data and reproducibility code are retained.
 
 Compile locally with:
 
@@ -53,7 +54,7 @@ Gaussian corruption and backward neural parameter prediction plus sampling.
 It shows schedule/noise inputs, timestep conditioning, mean/covariance outputs,
 and the prior-to-image direction. Its source is at the end of subsection 3.2.
 The displayed network outputs follow the 2015 formulation; DDPM's later
-noise-prediction parameterization is explained in subsection 3.4. The earlier
+noise-prediction parameterization is explained in subsection 3.3. The earlier
 RGB scene tiles and `code/make_overview.py` are retained as historical assets
 and are no longer used by Figure 1. The separate five-level grayscale worked
 illustration and its original data remain in Figure 2.

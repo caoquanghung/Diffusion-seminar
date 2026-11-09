@@ -128,14 +128,15 @@ Rombach et al.\ \cite{rombach2022ldm} proposed Latent Diffusion Models
 including text-guided image generation.
 
 
-\section{Method: From the 2015 Framework to DDPM}\label{sec:ddpm}\label{sec:method}
-The first three subsections explain the Gaussian diffusion framework of
-Sohl-Dickstein et al.\ (2015) \cite{sohl2015diffusion}. We then isolate
-DDPM's choices of reverse parameterization and training objective
-\cite{ho2020ddpm}. We use $x_t$ and the later $\alpha_t,\ab_t$ notation
-throughout so that the two formulations can be compared directly.
+\section{Method: DDPM and the Diffusion Framework}\label{sec:ddpm}\label{sec:method}
+We first introduce the forward/reverse construction established by
+Sohl-Dickstein et al.\ \cite{sohl2015diffusion}, then focus on DDPM's
+variational objective, noise-prediction parameterization, simplified loss,
+and sampling \cite{ho2020ddpm}. We use DDPM's $x_t,\alpha_t,\ab_t$
+notation throughout. The original 2015 training bound is retained in
+Appendix~\ref{app:originalbound}.
 
-\subsection{2015: forward process, Gaussian noise, and schedule}\label{sec:forward}
+\subsection{Forward process, Gaussian noise, and schedule}\label{sec:forward}
 A clean image $x_0\in\R^D$ is gradually corrupted by a Gaussian Markov
 chain. The Gaussian branch of the 2015 model uses
 \cite[Sec.~2.1, Table~C.1]{sohl2015diffusion}
@@ -175,7 +176,7 @@ $\eps$ differs from an individual innovation $\eps^{(t)}$.
 For small $\ab_T$, the terminal distribution approaches standard normal;
 a finite schedule need not make that equality exact.
 
-\subsection{2015: learned reverse process and sampling}\label{sec:reversemodel}
+\subsection{Reverse model and sampling}\label{sec:reversemodel}
 
 Let $p_{\rm data}(x_0)$ denote the unknown data distribution.
 The original diffusion model learns a finite reverse Markov chain,
@@ -321,45 +322,17 @@ steps are shown; the final-step boundary is discussed in the text.}\label{fig:dd
 
 
 
-\subsection{2015: Variational Objective and Its Loss Terms}
-\label{sec:variational}
+DDPM inherits this forward/reverse construction and trains its reverse
+model using variational inference \cite{ho2020ddpm}.
 
-The learning objective is to maximize the probability assigned to real
-images. Since the exact likelihood integrates over all intermediate
-states, Sohl-Dickstein et al.\ optimize a variational lower bound
-\cite[Sec.~2.4]{sohl2015diffusion}:
-\begin{equation}
-\E_{p_{\rm data}}[\log p_\theta(x_0)]
-\geq K_{2015}
-= -\sum_{t=2}^{T}\mathcal{D}_t + C_\beta.
-\label{eq:originalbound}
-\end{equation}
-Equivalently, the loss to minimize is the \emph{negative} bound:
-\begin{align}
-\mathcal L_{2015}&=-K_{2015}
-=\sum_{t=2}^{T}\mathcal D_t-C_\beta,\nonumber\\
-\mathcal D_t&=\E_q\!\left[\KL\!\left(
-q(x_{t-1}\mid x_t,x_0)\|p_\theta(x_{t-1}\mid x_t)
-\right)\right].
-\label{eq:originaltrainingloss}
-\end{align}
-Here $\E_q$ averages over training images and the relevant forward
-states. The target posterior is tractable because $x_0$ is known:
-\begin{equation}
-q(x_{t-1}\mid x_t,x_0)
-=\Normal(\tilde\mu_t,\tilde\beta_t\Id),\qquad t>1.
-\label{eq:forwardposterior}
-\end{equation}
-Each KL penalizes errors in both the reverse mean and covariance.
-$C_\beta$ collects entropy terms under the original paper's normalization
-and endpoint convention. It is constant in the reverse-network weights
-for a fixed schedule, but must be retained when learning $\beta_t$.
-Appendix~\ref{app:originalbound} gives these terms and the Gaussian KL.
+\subsection{DDPM: From the Variational Objective to Noise Prediction}
+\label{sec:variational}\label{sec:parameterization}
 
-\paragraph{Three components of the variational loss.}
-To connect this framework to DDPM, write the negative-log-likelihood
-bound using DDPM's endpoint decoder and notation
-\cite[Eq.~5]{ho2020ddpm}:
+\paragraph{The complete training objective.}
+DDPM aims to assign high likelihood to real images. Computing
+$p_\theta(x_0)$ requires integrating over the entire latent trajectory,
+so training minimizes a variational upper bound on expected negative
+log likelihood \cite[Eq.~5]{ho2020ddpm}:
 \begin{equation}
 \begin{aligned}
 L_{\rm VLB}={}&
@@ -371,71 +344,86 @@ q(x_{t-1}\mid x_t,x_0)\|p_\theta(x_{t-1}\mid x_t)
 \end{aligned}
 \label{eq:vlbcomponents}
 \end{equation}
-The expectation is distributed over the terms for readability;
-$\E[-\log p_\theta(x_0)]\leq L_{\rm VLB}$.
-$L_T$ measures mismatch between terminal forward noise and the prior.
-$L_{t-1}$ matches each learned reverse transition to its posterior
-target. $L_0$ is the final image reconstruction/decoder likelihood loss.
-The 2015 formulation uses a prescribed stationary-kernel endpoint;
-its boundary contributions are incorporated in $C_\beta$.
-Thus Eq.~\eqref{eq:vlbcomponents} is DDPM's presentation of the inherited
-variational framework, rather than the original paper's literal formula.
-We next transform the intermediate $L_{t-1}$ terms.
+Here $\E_q$ averages over training images and the relevant forward
+states, and $\E[-\log p_\theta(x_0)]\leq L_{\rm VLB}$.
+$L_T$ matches the terminal forward distribution to the Gaussian prior;
+$L_{t-1}$ matches each intermediate reverse transition to a posterior
+target; and $L_0$ measures the final image decoder's reconstruction
+likelihood. These three terms describe the full likelihood bound before
+any choice of prediction target or loss reweighting.
+The original 2015 bound and its different endpoint convention are
+reviewed separately in Appendix~\ref{app:originalbound}.
 
-
-\subsection{DDPM: From Gaussian KL to Noise Prediction}
-\label{sec:parameterization}
-
-Starting from Eq.~\eqref{eq:vlbcomponents}, Ho et al.\
-\cite{ho2020ddpm} make two choices. First, they fix the forward schedule,
-so $L_T$ is constant during training, and fix the intermediate reverse
-covariance to $\Sigma_\theta=\sigma_t^2\Id$. The expected Gaussian KL
-$L_{t-1}$ then reduces to a weighted mean-matching error:
+\paragraph{Why the reverse-step targets are available.}
+The true reverse conditional $q(x_{t-1}\mid x_t)$ depends on the unknown
+data distribution. During training, however, the clean image $x_0$ is
+known, making the forward posterior tractable:
 \begin{equation}
-L_{t-1}=\E\left[
-\frac{\|\tilde{\mu}_t-\mu_\theta(x_t,t)\|_2^2}
-{2\sigma_t^2}
+q(x_{t-1}\mid x_t,x_0)
+=\Normal(\tilde\mu_t,\tilde\beta_t\Id),\qquad t>1.
+\label{eq:forwardposterior}
+\end{equation}
+Its coefficients follow from Gaussian conditioning and are given in
+Appendix~\ref{app:vlb}. The network receives only $x_t,t$, whereas the
+posterior target may use $x_0$. This produces computable supervision
+for the learned reverse transitions without evaluating the data density.
+
+\paragraph{Fixed variance turns Gaussian KL into mean matching.}
+DDPM fixes the forward schedule, so $L_T$ is independent of the denoiser
+parameters. It also fixes the intermediate reverse covariance to
+$\Sigma_\theta=\sigma_t^2\Id$; the two variance choices are discussed
+in Section~\ref{sec:reverse}. With this choice, the Gaussian covariance
+terms are constant in $\theta$, leaving \cite[Eq.~8]{ho2020ddpm}
+\begin{equation}
+L_{t-1}=\E_q\!\left[
+\frac{\|\tilde\mu_t-\mu_\theta(x_t,t)\|_2^2}{2\sigma_t^2}
 \right]+C.
 \label{eq:meanloss}
 \end{equation}
+Thus the intermediate training problem is to predict the posterior
+mean. The additive $C$ can be ignored when optimizing the network
+under the fixed schedule and variance assumptions. The endpoint
+likelihood $L_0$ remains a separate term of the full bound.
 
-Second, instead of predicting $\tilde{\mu}_t$ directly,
-DDPM exploits the closed-form forward process
-in Eq.~\eqref{eq:closed}, where
-$x_t=\sqrt{\bar{\alpha}_t}x_0+
-\sqrt{1-\bar{\alpha}_t}\eps$.
-Since the added Gaussian noise $\eps$ is known during
-training, the reverse mean can be parameterized using
-a noise-prediction network:
-\begin{equation}
-\mu_\theta(x_t,t)=\frac{1}{\sqrt{\alpha_t}}
-\left(x_t-\frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}
+\paragraph{Parameterize that mean through a noise predictor.}
+The forward marginal in Eq.~\eqref{eq:closed} lets us construct a noisy
+training example directly from $x_0$ and a known Gaussian draw $\eps$.
+Substituting
+$x_0=(x_t-\sqrt{1-\ab_t}\,\eps)/\sqrt{\ab_t}$ into the posterior
+mean gives \cite[Eqs.~10--11]{ho2020ddpm}
+\begin{align}
+\tilde\mu_t&=\frac{1}{\sqrt{\alpha_t}}
+\left(x_t-\frac{\beta_t}{\sqrt{1-\ab_t}}\eps\right),
+\label{eq:posteriormean-noise}\\
+\mu_\theta(x_t,t)&=\frac{1}{\sqrt{\alpha_t}}
+\left(x_t-\frac{\beta_t}{\sqrt{1-\ab_t}}
 \eps_\theta(x_t,t)\right).
 \label{eq:ddpmmean}
-\end{equation}
+\end{align}
+The second line replaces the known training noise by a learned
+prediction. Since $x_t$ is already an input, the network can predict
+$\eps$ instead of directly predicting $\tilde\mu_t$ and still define
+an entire reverse mean. At generation time, only $x_t,t$ and the learned
+predictor are needed; the clean image and training noise are unavailable.
 
-Substituting this parameterization into
-Eq.~\eqref{eq:meanloss} transforms the mean-matching
-objective into a weighted noise-prediction loss:
-\begin{equation}
-L_{t-1}=\E\left[
-w_t\|\eps-\eps_\theta(x_t,t)\|_2^2
-\right]+C.
-\label{eq:weightedloss}
-\end{equation}
-Here
-\begin{equation}
-w_t=\frac{\beta_t^2}{2\sigma_t^2\alpha_t(1-\bar\alpha_t)},
+\paragraph{The resulting weighted noise loss.}
+Subtracting these means cancels their shared $x_t$ term. The difference
+is $\beta_t/\sqrt{\alpha_t(1-\ab_t)}$ times
+$\eps_\theta(x_t,t)-\eps$. Squaring it in
+Eq.~\eqref{eq:meanloss} therefore gives \cite[Eq.~12]{ho2020ddpm}
+\begin{align}
+L_{t-1}&=\E_{x_0,\eps}\!\left[
+w_t\|\eps-\eps_\theta(x_t,t)\|_2^2\right]+C,
+\label{eq:weightedloss}\\
+w_t&=\frac{\beta_t^2}{2\sigma_t^2\alpha_t(1-\ab_t)},
 \qquad t>1.
 \label{eq:noiseweight}
-\end{equation}
-The additive $C$ is independent of $\theta$ under these fixed-variance
-choices. Appendix~\ref{app:vlb} gives the substitution in full.
-
-Thus, noise prediction does not replace the underlying
-variational framework. Instead, it provides an alternative
-parameterization of the reverse mean, connecting diffusion
-training to denoising score matching.
+\end{align}
+Noise prediction is therefore a parameterization of the reverse mean,
+not a replacement for the probabilistic model. With these weights,
+the loss still represents intermediate contributions to the variational
+bound. DDPM's subsequent removal of $w_t$ is a further objective choice,
+explained next. Appendix~\ref{app:vlb} contains the complete derivation.
 
 
 \subsection{DDPM: Simplified Noise-Prediction Objective}
@@ -456,13 +444,18 @@ $\eps\sim\Normal(0,\Id)$ are used to
 construct $x_t$. The network then learns to predict
 the injected noise from $x_t$ and $t$.
 
-Removing $w_t$ changes the relative importance of
-different noise levels. Ho et al.\ report that this
+Although $w_t$ is independent of $\theta$, it varies across timesteps.
+Dropping it therefore changes the relative importance of noise levels;
+it is not removal of one global constant from the full objective.
+Ho et al.\ report that this
 reweighting improves sample quality, particularly by
 reducing the emphasis on low-noise reconstruction,
 although optimizing the original variational bound
 provides better likelihood estimates
 \cite[Secs.~3.4, 4.1--4.2]{ho2020ddpm}.
+The benefit is empirical: Table~\ref{tab:ddpmobjective} reports the
+objective ablation, rather than establishing that unweighted MSE is
+universally optimal.
 
 The closed-form forward process also enables efficient training:
 each update evaluates only one randomly selected timestep.
