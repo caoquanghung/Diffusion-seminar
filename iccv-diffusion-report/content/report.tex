@@ -671,49 +671,97 @@ be combined without treating them as the same speedup.
 
 \section{Results and Discussion}\label{sec:results}
 
-\subsection{Experimental setup and sampling speed}\label{sec:tradeoffs}
-We ran pretrained diffusion checkpoints in Google Colab on an NVIDIA
-Tesla T4. The LSUN Churches run compares two unconditional generators at
-$256\times256$: Google DDPM in pixel space and CompVis LDM-KL-8 in latent
-space. Both used DDIM with 50 updates, $\eta=0$, float32, batch size one,
-and seeds 2026--2029. After one warm-up per model, we measured elapsed
-time from sampling the initial noise to producing an RGB tensor,
-synchronizing the GPU before recording the time. The timing includes the
-LDM decoder and excludes checkpoint loading and PNG export.
+\subsection{Experimental configuration}\label{sec:colab-setup}
+We ran inference with four released checkpoints. Table~\ref{tab:colab-setup}
+records the settings for the two tasks. The checkpoint URLs, class IDs,
+sampling code, and timing records are in Appendix~\ref{app:repro}.
+
+\begin{table*}[t]
+\centering\small
+\caption{Colab configuration for the two experiments. Both runs used
+pretrained weights, a Tesla T4 with PyTorch \texttt{2.14.1+cu130}, batch size
+one, $256\times256$ RGB output, and 50 DDIM updates with $\eta=0$.}
+\label{tab:colab-setup}
+\begin{tabularx}{\textwidth}{@{}p{0.20\textwidth}YY@{}}
+\toprule
+Setting & LSUN Churches & ImageNet\\
+\midrule
+Pixel checkpoint & Google \texttt{ddpm-ema-church-256} &
+OpenAI ADM \texttt{256x256\_diffusion.pt}\\
+Latent checkpoint & CompVis LDM-KL-8 (\texttt{lsun\_churches.zip}) &
+CompVis \texttt{cin256-v2} (VQ, $f=4$)\\
+Conditioning & Unconditional for both models &
+Class label for both models, with CFG $s=3.0$ for LDM\\
+Precision & FP32 for both models &
+ADM uses FP16 in the U-Net torso with FP32 diffusion states. LDM uses FP32\\
+Seeds and samples & Seeds 2026--2029, four timed images per model after warm-up &
+Seed 2026, one image per class and model for five shared classes\\
+Outputs analyzed & Sampling time, peak allocation, and visual quality &
+Final images and saved forward and reverse states\\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\subsection{Pixel versus latent diffusion on LSUN Churches}\label{sec:tradeoffs}
+We timed generation from the initial noise draw to the final RGB tensor,
+with GPU synchronization. The LDM timing includes its decoder. Model loading,
+one warm-up image per model, and PNG export are outside the timed interval.
+For visual quality, we inspect recognizable church features and the clarity
+of outlines and fine detail across all four timed samples.
 
 \begin{table}[t]
 \centering\small
-\caption{Our LSUN Churches comparison. Latency is the median of four
-images. Memory is peak CUDA tensor allocation reported by PyTorch.}
+\caption{Comparison on LSUN Churches under the settings in
+Table~\ref{tab:colab-setup}. Latency is the median of four images.
+Peak allocation is PyTorch's peak CUDA tensor allocation.}
 \label{tab:comparison}
-\begin{tabularx}{\columnwidth}{@{}Ycc@{}}
+\begin{tabularx}{\columnwidth}{@{}YYY@{}}
 \toprule
 Criterion & Pixel DDPM & LDM-KL-8\\
 \midrule
 Denoising state & $256\times256\times3$ & $32\times32\times4$\\
 Latency (s/image) & 6.10 & 2.44\\
 Peak allocation (GiB) & 0.75 & 1.68\\
+Visual quality & Clear steeple in seed 2028. Darker seed 2029 obscures details. &
+Clear facades in seeds 2027--2029. Seed 2026 shows a distant complex.\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-The latent pipeline achieved a $2.50\times$ speedup in median sampling
-time and used more peak tensor memory (Table~\ref{tab:comparison}).
-A smaller denoising state reduces the spatial grid processed at each
-update, while model weights, intermediate activations, and the decoder
-also contribute to memory. The checkpoints and software implementations
-differ, so the measurements compare these two pipelines under the
-recorded settings.
+\begin{figure}[t]
+\centering
+\setlength{\tabcolsep}{1pt}
+\begin{tabular}{@{}lcccc@{}}
+\small Seed & \scriptsize 2026 & \scriptsize 2027 & \scriptsize 2028 & \scriptsize 2029\\
+\raisebox{.08\columnwidth}{\small DDPM} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ddpm_2026.png} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ddpm_2027.png} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ddpm_2028.png} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ddpm_2029.png}\\
+\raisebox{.08\columnwidth}{\small LDM} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ldm_2026.png} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ldm_2027.png} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ldm_2028.png} &
+\includegraphics[width=.195\columnwidth]{figures/colab/churches/ldm_2029.png}\\
+\end{tabular}
+\caption{All eight timed LSUN Churches samples, grouped by seed. Each
+model draws its initial noise in its own state space.}
+\label{fig:churches-samples}
+\end{figure}
+
+The latent pipeline achieved a $2.50\times$ speedup by median latency
+and used more peak tensor memory (Table~\ref{tab:comparison}).
+Both produced recognizable church imagery
+(Figure~\ref{fig:churches-samples}). The sample count, checkpoints, and
+implementations limit conclusions to the tested pipelines.
 
 \subsection{ImageNet samples and denoising trajectories}
 \label{sec:imagenet-results}
-A separate run compared OpenAI's class-conditional ADM in pixel space
-with CompVis \texttt{cin256-v2}, a VQ-regularized LDM with a
-$64\times64\times3$ latent. Each model generated one $256\times256$
-image per class using seed 2026 and 50 deterministic DDIM updates
-($\eta=0$). Both used the same class IDs. LDM additionally used
-classifier-free guidance with scale $3.0$. Figure~\ref{fig:imagenet-grid}
-shows all ten final images.
+In the ImageNet run, ADM denoised an RGB state and CompVis denoised a
+$64\times64\times3$ latent. Figure~\ref{fig:imagenet-grid} shows all ten
+outputs for golden retriever, tabby cat, school bus, monarch butterfly,
+and volcano (Table~\ref{tab:colab-setup}). We assess recognizable class
+features and coherence of shape.
 
 \begin{figure*}[t]
 \centering
@@ -744,9 +792,7 @@ and add Gaussian noise using its schedule. The retriever's features
 gradually disappear. Appendix~\ref{app:colab-traces} shows both
 directions for all five labels.
 
-We assess these samples visually by looking for class features and
-coherent shapes. Both bus samples show yellow bodies and rows of
-windows. The volcano appears as a lava scene in ADM and as a slope
+Both bus samples show yellow bodies and rows of windows. The volcano appears as a lava scene in ADM and as a slope
 with a plume in LDM. The different outputs illustrate variation
 under the same label. One sample per class and different guidance
 settings limit the comparison to the examples shown.
@@ -768,22 +814,28 @@ fixed isotropic variance. The reported NLL upper bound changes from
 $3.70$ to $3.75$ bits per dimension.
 
 \FloatBarrier
+\balance
 \subsection{Prompt control, training data, copyright, and bias}
 \label{sec:ethics}
-\textbf{Prompt-based control.} A text prompt can specify a subject,
-attributes, or spatial relations. In a text-conditioned diffusion model,
-cross-attention lets image features use information from the prompt.
-Classifier-free guidance can strengthen conditioning at the cost of
-diversity \cite{rombach2022ldm,ho2022cfg}. Our ImageNet run tests generation
-from class labels. Free-form attributes and relations require a separate
-prompt-adherence evaluation.
+\textbf{Prompt-based control.} A text prompt such as \emph{a red bus beside
+a blue car} specifies objects, attributes, and a spatial relation.
+Cross-attention supplies the text condition to the denoiser. Classifier-free
+guidance can strengthen conditioning at the cost of diversity
+\cite{rombach2022ldm,ho2022cfg}. LSUN generation was unconditional. ImageNet
+conditioning used class IDs, so our samples show class control only.
+A prompt-adherence test would check object presence, color binding, and
+the requested relation over repeated seeds.
 
-\textbf{Training data and bias.} Dataset coverage and, for text-to-image
-models, caption quality affect which subjects and relations a model
-learns. Our checkpoints cover church imagery or the ImageNet label
-vocabulary. Bianchi et al.~\cite{bianchi2023bias} found demographic stereotypes
-in outputs for ordinary prompts. Our five classes and four church seeds
-provide too little coverage for a bias audit.
+\textbf{Training data.} The church checkpoints specialize in church imagery.
+The ImageNet checkpoints use a fixed class vocabulary. Dataset coverage
+limits the evidence a model sees for rare subjects and their variations.
+In text-to-image training, captions also determine which attributes and
+relations receive language supervision.
+
+\textbf{Bias.} Bianchi et al.~\cite{bianchi2023bias} found demographic
+stereotypes in images generated from ordinary prompts. Measuring this
+effect would require comparable prompts and multiple seeds across groups.
+Our Colab runs contain no such group comparison.
 
 \textbf{Copyright and memorization.} Carlini et al.~\cite{carlini2023extract}
 extracted memorized training images from diffusion models. This motivates
