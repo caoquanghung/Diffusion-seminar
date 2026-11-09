@@ -1,6 +1,6 @@
 # Repository memory and agent handoff
 
-Last updated: 2026-11-07 (Asia/Ho_Chi_Minh).
+Last updated: 2026-11-09 (Asia/Ho_Chi_Minh).
 
 ## Purpose and current state
 
@@ -33,6 +33,15 @@ Current deliverables:
 
 
 ## Latest narrative revision (November 7, 2026)
+
+November 9 loss-flow update: 3.3 explicitly introduces the original maximized
+K and minimized L_2015=-K, then the full L_VLB decomposition into expected
+L_T, L_{t-1}, and L_0 before any DDPM parameterization changes. The screenshot
+provided by the user is DDPM Eq. 5; it is attributed accordingly and distinguished
+from the 2015 stationary-kernel endpoint/entropy convention. Section 3.4 changes
+only the intermediate terms via fixed variance, mean prediction, epsilon
+parameterization and explicit w_t. Section 3.5 explains the surrogate, its
+reweighting and endpoint approximation. Heavy derivations stay in Appendix C.
 
 The user approved a broader DDPM/LDM flow. The guiding question is **How can learning to remove noise enable a model to generate new images?** The Introduction also states the learning objective: **Explain forward noising and reverse denoising, including why latent diffusion reduces computational demands.**
 

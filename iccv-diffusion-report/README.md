@@ -18,6 +18,12 @@ Edit scientific content in **content/report.tex**, appendices in **content/appen
 
 ## Evidence and reproducibility
 
+Subsection 3.3 introduces the minimized 2015 loss (-K) and then the full
+three-part variational loss (prior, intermediate reverse KLs, final decoder)
+using DDPM Eq. 5 notation. Subsections 3.4-3.5 transform the intermediate
+KLs into weighted noise MSE and then the simplified surrogate. The two
+papers' endpoint conventions remain distinct.
+
 Results distinguish original numerical/noising illustrations from published DDPM objective-ablation results and LDM inpainting measurements. No pretrained-generation, GPU-time, peak-memory, or prompt-control benchmark was run. Section 3.1-3.3 explains the 2015 Gaussian diffusion framework: forward process and beta schedule, learned reverse mean/covariance and sampling, and the original variational objective. Section 3.4-3.6 then distinguishes DDPM's fixed-variance/noise-prediction parameterization, simplified loss, sampling choices and brief score interpretation; score/Langevin background is optional material in Appendix C. The LDM section emphasizes latent space and VAE encoder/decoder roles. Cross-attention and guidance receive brief treatment. DSM, the original 2015 objective and covariance KL, DDPM variational-bound and reverse-mean derivations are in Appendix C; detailed VAE/attention/guidance material is in Appendix D. The user-supplied qualitative-comparison illustration is included at full text width in Appendix E and referenced from subsection 2.2. The original figure data and reproducibility code are retained.
 
 Compile locally with:

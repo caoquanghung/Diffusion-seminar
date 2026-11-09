@@ -5,24 +5,36 @@
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
-\bibitem[Bianchi et~al.(2023)Bianchi, Kalluri, Durmus, Ladhak, Cheng, Nozza, Hashimoto, Jurafsky, Zou, and Caliskan]{bianchi2023bias}
-Federico Bianchi, Pratyusha Kalluri, Esin Durmus, Faisal Ladhak, Myra Cheng, Debora Nozza, Tatsunori Hashimoto, Dan Jurafsky, James Zou, and Aylin Caliskan.
-\newblock Easily accessible text-to-image generation amplifies demographic stereotypes at large scale.
-\newblock In \emph{Proceedings of the ACM Conference on Fairness, Accountability, and Transparency}, 2023.
+\bibitem[Bianchi et~al.(2023)Bianchi, Kalluri, Durmus, Ladhak, Cheng, Nozza,
+  Hashimoto, Jurafsky, Zou, and Caliskan]{bianchi2023bias}
+Federico Bianchi, Pratyusha Kalluri, Esin Durmus, Faisal Ladhak, Myra Cheng,
+  Debora Nozza, Tatsunori Hashimoto, Dan Jurafsky, James Zou, and Aylin
+  Caliskan.
+\newblock Easily accessible text-to-image generation amplifies demographic
+  stereotypes at large scale.
+\newblock In \emph{Proceedings of the ACM Conference on Fairness,
+  Accountability, and Transparency}, 2023.
 
-\bibitem[Carlini et~al.(2023)Carlini, Hayes, Nasr, Jagielski, Sehwag, Tram{\`e}r, Balle, Ippolito, and Wallace]{carlini2023extract}
-Nicholas Carlini, Jamie Hayes, Milad Nasr, Matthew Jagielski, Vikash Sehwag, Florian Tram{\`e}r, Borja Balle, Daphne Ippolito, and Eric Wallace.
+\bibitem[Carlini et~al.(2023)Carlini, Hayes, Nasr, Jagielski, Sehwag,
+  Tram{\`e}r, Balle, Ippolito, and Wallace]{carlini2023extract}
+Nicholas Carlini, Jamie Hayes, Milad Nasr, Matthew Jagielski, Vikash Sehwag,
+  Florian Tram{\`e}r, Borja Balle, Daphne Ippolito, and Eric Wallace.
 \newblock Extracting training data from diffusion models.
 \newblock In \emph{32nd USENIX Security Symposium}, 2023.
 
-\bibitem[Goodfellow et~al.(2014)Goodfellow, Pouget-Abadie, Mirza, Xu, Warde-Farley, Ozair, Courville, and Bengio]{goodfellow2014gan}
-Ian Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing Xu, David Warde-Farley, Sherjil Ozair, Aaron Courville, and Yoshua Bengio.
+\bibitem[Goodfellow et~al.(2014)Goodfellow, Pouget-Abadie, Mirza, Xu,
+  Warde-Farley, Ozair, Courville, and Bengio]{goodfellow2014gan}
+Ian Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing Xu, David Warde-Farley,
+  Sherjil Ozair, Aaron Courville, and Yoshua Bengio.
 \newblock Generative adversarial nets.
 \newblock In \emph{Advances in Neural Information Processing Systems}, 2014.
 
-\bibitem[Heusel et~al.(2017)Heusel, Ramsauer, Unterthiner, Nessler, and Hochreiter]{heusel2017fid}
-Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, and Sepp Hochreiter.
-\newblock {GANs} trained by a two time-scale update rule converge to a local nash equilibrium.
+\bibitem[Heusel et~al.(2017)Heusel, Ramsauer, Unterthiner, Nessler, and
+  Hochreiter]{heusel2017fid}
+Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, and Sepp
+  Hochreiter.
+\newblock {GANs} trained by a two time-scale update rule converge to a local
+  nash equilibrium.
 \newblock In \emph{Advances in Neural Information Processing Systems}, 2017.
 
 \bibitem[Ho and Salimans(2022)]{ho2022cfg}
@@ -34,12 +46,14 @@ Jonathan Ho and Tim Salimans.
 \bibitem[Ho et~al.(2020)Ho, Jain, and Abbeel]{ho2020ddpm}
 Jonathan Ho, Ajay Jain, and Pieter Abbeel.
 \newblock Denoising diffusion probabilistic models.
-\newblock In \emph{Advances in Neural Information Processing Systems}, pages 6840--6851, 2020.
+\newblock In \emph{Advances in Neural Information Processing Systems}, pages
+  6840--6851, 2020.
 
 \bibitem[{IEEE}(2025)]{template}
 {IEEE}.
 \newblock {ICCV 2025 Author Kit}, 2025.
-\newblock Official author kit; style and bibliography files distributed with the project.
+\newblock Official author kit; style and bibliography files distributed with
+  the project.
 
 \bibitem[Kingma and Welling(2014)]{kingma2014vae}
 Diederik~P. Kingma and Max Welling.
@@ -49,23 +63,32 @@ Diederik~P. Kingma and Max Welling.
 \bibitem[{OpenAI}(2026)]{codex}
 {OpenAI}.
 \newblock Codex, 2026.
-\newblock AI assistance for drafting, LaTeX, code, and source checking; see Appendix B.
+\newblock AI assistance for drafting, LaTeX, code, and source checking; see
+  Appendix B.
 
-\bibitem[Rombach et~al.(2022)Rombach, Blattmann, Lorenz, Esser, and Ommer]{rombach2022ldm}
-Robin Rombach, Andreas Blattmann, Dominik Lorenz, Patrick Esser, and Bj{\"o}rn Ommer.
+\bibitem[Rombach et~al.(2022)Rombach, Blattmann, Lorenz, Esser, and
+  Ommer]{rombach2022ldm}
+Robin Rombach, Andreas Blattmann, Dominik Lorenz, Patrick Esser, and Bj{\"o}rn
+  Ommer.
 \newblock High-resolution image synthesis with latent diffusion models.
-\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, 2022.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision
+  and Pattern Recognition}, 2022.
 \newblock arXiv v2, April 2022; includes supplementary material.
 
-\bibitem[Schuhmann et~al.(2022)Schuhmann, Beaumont, Vencu, Gordon, Wightman, Cherti, et~al.]{schuhmann2022laion}
-Christoph Schuhmann, Romain Beaumont, Richard Vencu, Cade Gordon, Ross Wightman, Mehdi Cherti, et~al.
-\newblock {LAION-5B}: An open large-scale dataset for training next generation image-text models.
+\bibitem[Schuhmann et~al.(2022)Schuhmann, Beaumont, Vencu, Gordon, Wightman,
+  Cherti, et~al.]{schuhmann2022laion}
+Christoph Schuhmann, Romain Beaumont, Richard Vencu, Cade Gordon, Ross
+  Wightman, Mehdi Cherti, et~al.
+\newblock {LAION-5B}: An open large-scale dataset for training next generation
+  image-text models.
 \newblock In \emph{Advances in Neural Information Processing Systems}, 2022.
 
-\bibitem[Sohl-Dickstein et~al.(2015)Sohl-Dickstein, Weiss, Maheswaranathan, and Ganguli]{sohl2015diffusion}
+\bibitem[Sohl-Dickstein et~al.(2015)Sohl-Dickstein, Weiss, Maheswaranathan, and
+  Ganguli]{sohl2015diffusion}
 Jascha Sohl-Dickstein, Eric Weiss, Niru Maheswaranathan, and Surya Ganguli.
 \newblock Deep unsupervised learning using nonequilibrium thermodynamics.
-\newblock In \emph{Proceedings of the 32nd International Conference on Machine Learning}, pages 2256--2265, 2015.
+\newblock In \emph{Proceedings of the 32nd International Conference on Machine
+  Learning}, pages 2256--2265, 2015.
 
 \bibitem[Song et~al.(2021)Song, Meng, and Ermon]{song2021ddim}
 Jiaming Song, Chenlin Meng, and Stefano Ermon.
@@ -79,23 +102,30 @@ Yang Song and Stefano Ermon.
 
 \bibitem[{U.S. Copyright Office}(2025)]{usco2025training}
 {U.S. Copyright Office}.
-\newblock Copyright and artificial intelligence, part 3: Generative {AI} training.
+\newblock Copyright and artificial intelligence, part 3: Generative {AI}
+  training.
 \newblock Technical report, U.S. Copyright Office, 2025.
-\newblock Pre-publication version; consulted November 5, 2026. A U.S. policy analysis, not a statement of Vietnamese law.
+\newblock Pre-publication version; consulted November 5, 2026. A U.S. policy
+  analysis, not a statement of Vietnamese law.
 
-\bibitem[van~den Oord et~al.(2016)van~den Oord, Kalchbrenner, and Kavukcuoglu]{oord2016pixelrnn}
+\bibitem[van~den Oord et~al.(2016)van~den Oord, Kalchbrenner, and
+  Kavukcuoglu]{oord2016pixelrnn}
 A{\"a}ron van~den Oord, Nal Kalchbrenner, and Koray Kavukcuoglu.
 \newblock Pixel recurrent neural networks.
-\newblock In \emph{Proceedings of the 33rd International Conference on Machine Learning}, pages 1747--1756, 2016.
+\newblock In \emph{Proceedings of the 33rd International Conference on Machine
+  Learning}, pages 1747--1756, 2016.
 
-\bibitem[Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser, and Polosukhin]{vaswani2017attention}
-Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan~N. Gomez, {\L}ukasz Kaiser, and Illia Polosukhin.
+\bibitem[Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez,
+  Kaiser, and Polosukhin]{vaswani2017attention}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
+  Aidan~N. Gomez, {\L}ukasz Kaiser, and Illia Polosukhin.
 \newblock Attention is all you need.
 \newblock In \emph{Advances in Neural Information Processing Systems}, 2017.
 
 \bibitem[Vincent(2011)]{vincent2011dsm}
 Pascal Vincent.
 \newblock A connection between score matching and denoising autoencoders.
-\newblock \emph{Neural Computation}, 23\penalty0 (7):\penalty0 1661--1674, 2011.
+\newblock \emph{Neural Computation}, 23\penalty0 (7):\penalty0 1661--1674,
+  2011.
 
 \end{thebibliography}

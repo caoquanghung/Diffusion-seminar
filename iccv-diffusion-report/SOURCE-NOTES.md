@@ -1,5 +1,22 @@
 # Source and claim checks
 
+## Explicit loss decomposition, November 9, 2026
+
+Subsections 3.3-3.5 now introduce the original 2015 maximized bound K and
+the minimized loss -K, including the directed posterior-to-model KL and
+the schedule-dependent entropy term. Before any DDPM mean/noise
+parameterization, subsection 3.3 presents the complete prior, reverse-step,
+and decoder decomposition with L_T, L_{t-1}, and L_0, following DDPM Eq. 5.
+The expectation is distributed over the three terms, so each label is an
+expected contribution. The user-supplied screenshot is DDPM Eq. 5, not a
+literal 2015 equation; the original stationary-kernel endpoint is explicitly
+distinguished from DDPM's learned decoder. Subsection 3.4 transforms only
+the intermediate KL terms, states the fixed-schedule/variance assumptions,
+and gives w_t explicitly. Subsection 3.5 distinguishes the simplified
+surrogate from the full likelihood bound and explains the t=1 boundary.
+Checks: Sohl-Dickstein et al., Sec. 2.4 and Appendix B; Ho et al., Secs. 2-3,
+Eqs. 5, 8-14. Proof details remain in Appendix C.
+
 ## Figure 1 visual revision, November 7, 2026
 
 The first Figure 1 reference and its source block now follow the reverse-process

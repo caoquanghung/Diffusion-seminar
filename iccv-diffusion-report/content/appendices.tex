@@ -158,6 +158,10 @@ image, noisy marginal, and score in Appendix~\ref{app:scorebackground}; $s$ ther
 is a vector field, distinct from the scalar CFG scale\\
 $K_{2015},\mathcal D_t,C_\beta$ & Original log-likelihood lower bound,
 expected posterior KL, and schedule-dependent entropy terms\\
+$\mathcal L_{2015},L_{\rm VLB}$ & Minimized negative 2015 bound and full
+DDPM variational negative-log-likelihood bound, in nats\\
+$L_T,L_{t-1},L_0$ & Expected prior KL, intermediate posterior-to-model KL,
+and final decoder negative log likelihood, in nats\\
 $w_t,\tilde\beta_t,\tilde\mu_t$ & Positive loss weight; forward-posterior
 variance and mean, for $t>1$; see Appendix~\ref{app:vlb}\\
 $\Normal(\mu,\Sigma),\Id$ & Gaussian with mean $\mu$ and covariance $\Sigma$;
@@ -372,6 +376,8 @@ q(x_{1:T}\mid x_0)&=\prod_{t=1}^T q(x_t\mid x_{t-1}).
 \end{align}
 Jensen's inequality bounds negative log likelihood by
 $L=\E_q[\log q(x_{1:T}\mid x_0)-\log p_\theta(x_{0:T})]$.
+Here $L$ is the $L_{\rm VLB}$ introduced in
+Eq.~\eqref{eq:vlbcomponents}.
 Rearranging gives
 \begin{equation}
 \begin{aligned}
