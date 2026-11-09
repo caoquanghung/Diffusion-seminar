@@ -1,0 +1,65 @@
+{
+  "completed": [
+    {
+      "model": "ADM",
+      "label": "Golden retriever",
+      "class_id": 207
+    },
+    {
+      "model": "LDM",
+      "label": "Golden retriever",
+      "class_id": 207
+    },
+    {
+      "model": "ADM",
+      "label": "Tabby cat",
+      "class_id": 281
+    },
+    {
+      "model": "LDM",
+      "label": "Tabby cat",
+      "class_id": 281
+    },
+    {
+      "model": "ADM",
+      "label": "School bus",
+      "class_id": 779
+    },
+    {
+      "model": "LDM",
+      "label": "School bus",
+      "class_id": 779
+    },
+    {
+      "model": "ADM",
+      "label": "Monarch butterfly",
+      "class_id": 323
+    },
+    {
+      "model": "LDM",
+      "label": "Monarch butterfly",
+      "class_id": 323
+    },
+    {
+      "model": "ADM",
+      "label": "Volcano",
+      "class_id": 980
+    },
+    {
+      "model": "LDM",
+      "label": "Volcano",
+      "class_id": 980
+    }
+  ],
+  "gpu": "Tesla T4",
+  "torch": "2.14.1+cu130",
+  "checkpoints": {
+    "ADM": "https://openaipublic.blob.core.windows.net/diffusion/jul-2021/256x256_diffusion.pt",
+    "LDM": "https://ommer-lab.com/files/latent-diffusion/nitro/cin/model.ckpt"
+  },
+  "guidance": {
+    "ADM": "class conditioning",
+    "LDM": "classifier-free guidance 3.0"
+  },
+  "trained_here": false
+}

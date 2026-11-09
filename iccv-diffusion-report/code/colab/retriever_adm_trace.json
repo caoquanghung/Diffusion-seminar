@@ -1,0 +1,26 @@
+{
+  "label": "Golden retriever",
+  "class_id": 207,
+  "model": "ADM",
+  "seed": 2026,
+  "eta": 0,
+  "reverse_steps": 50,
+  "reverse_marks": [
+    0,
+    10,
+    20,
+    30,
+    40,
+    50
+  ],
+  "forward_marks": [
+    0,
+    50,
+    150,
+    300,
+    600,
+    1000
+  ],
+  "inspected_step": 25,
+  "inspected_timestep": 500
+}

@@ -1,0 +1,41 @@
+{
+  "sampler": "DDIM",
+  "steps": 50,
+  "eta": 0,
+  "backend": "Diffusers 0.35.2",
+  "seeds": [
+    2026,
+    2027,
+    2028,
+    2029
+  ],
+  "seconds_per_seed": [
+    5.994147631000033,
+    6.202372870999966,
+    6.086761860000024,
+    6.110256669000023
+  ],
+  "median_seconds": 6.098509264500024,
+  "setup_seconds": 27.838430184999993,
+  "peak_cuda_allocated_bytes": 806035968,
+  "checkpoint_files": [
+    {
+      "url": "https://huggingface.co/google/ddpm-ema-church-256/resolve/main/config.json",
+      "file": "ddpm/config.json",
+      "bytes": 790,
+      "sha256": "32b2f0534ffcea4231d844a85087e1fd67d8f4d067e41c2149c38b079d8afaf5"
+    },
+    {
+      "url": "https://huggingface.co/google/ddpm-ema-church-256/resolve/main/scheduler_config.json",
+      "file": "ddpm/scheduler_config.json",
+      "bytes": 256,
+      "sha256": "af2d0e17f61f358ffe9e671f285334b9a01c3bc8740834e3709b1efd5a4cdae5"
+    },
+    {
+      "url": "https://huggingface.co/google/ddpm-ema-church-256/resolve/main/diffusion_pytorch_model.bin",
+      "file": "ddpm/diffusion_pytorch_model.bin",
+      "bytes": 454853117,
+      "sha256": "0825f31de9d51f6b94f8080233432e77ee5aa9a185b7172a1fd9863916444847"
+    }
+  ]
+}
