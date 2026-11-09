@@ -1,0 +1,17 @@
+seed,condition,both_vehicles_clear,requested_bus_color,blue_passenger_car,requested_relation,visual_observation
+2026,Baseline,unclear,n/a,n/a,n/a,Two buses. A white vehicle is clipped at the left edge.
+2026,Reference,unclear,yes,no,unclear,Red bus and blue bus. Any visible car is small or clipped and is not blue.
+2026,Change color,no,yes,no,no,Green bus without a clearly identifiable passenger car.
+2026,Change side,no,yes,no,no,Red bus remains on the left of a blue bus.
+2027,Baseline,yes,n/a,n/a,n/a,Dark bus and white passenger car.
+2027,Reference,yes,yes,yes,yes,Red bus is left of a blue passenger car.
+2027,Change color,no,yes,no,no,Two green buses and no clear passenger car.
+2027,Change side,yes,yes,yes,no,Red bus is still left of the blue passenger car.
+2028,Baseline,no,n/a,n/a,n/a,Two buses and no clear passenger car.
+2028,Reference,yes,yes,yes,no,Red bus is right of the blue passenger van. Extra red car in the foreground.
+2028,Change color,no,yes,no,no,Green bus with a blue lower stripe. No clear passenger car.
+2028,Change side,yes,yes,yes,yes,"Red bus is right of the blue passenger van, as in the reference. Extra red car."
+2029,Baseline,no,n/a,n/a,n/a,Only a bus is clear.
+2029,Reference,no,unclear,no,no,Red and blue are both prominent on the main bus. Second vehicle looks like a bus.
+2029,Change color,no,yes,no,no,Main bus is green. No clear passenger car.
+2029,Change side,no,unclear,no,no,"Two red-and-blue buses, without a clear passenger car."

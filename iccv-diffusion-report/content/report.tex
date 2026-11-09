@@ -700,9 +700,36 @@ The encoder is needed to form training representations, whereas the
 decoder converts a generated representation into pixels.
 Figure~\ref{fig:ldm} makes these roles explicit.
 
-\begin{figure*}[t]
+\subsection{Conditioning and the complete pipeline}\label{sec:attention}\label{sec:cfg}
+LDM uses cross-attention to make denoising depend on a condition such as
+text \cite[Sec.~3.3]{rombach2022ldm}. Spatial image features supply
+queries; prompt-token embeddings supply keys and values. Learned
+attention weights retrieve text information useful for the current
+features. Thus a prompt changes the denoising predictions throughout
+the sampling loop; it is not pasted onto the decoded image.
+The matrix formulation and an optional toy calculation are confined to
+Appendix~\ref{app:attention}.
+
+Classifier-free guidance can strengthen conditional influence by using
+$\eps_u+s(\eps_c-\eps_u)$, where $\eps_u,\eps_c$ are unconditional and
+conditional predictions and $s\ge0$ is the guidance scale
+\cite{ho2022cfg}. Here $s=1$ is ordinary conditional sampling.
+Stronger guidance can trade diversity for conditional fidelity; it does
+not guarantee correct counting, spatial relations, or attribute binding.
+Standard CFG uses two denoiser evaluations per step. Details are in
+Appendix~\ref{app:cfg}.
+
+DDPM uses iterative denoising to generate images. LDM makes each
+denoising step cheaper by using a compressed representation. Faster
+samplers such as DDIM reduce the number of evaluations \cite{song2021ddim}.
+A latent model can combine both approaches.
+
+% Keep the final LDM diagram and the experiment setup together.
+\twocolumn[{%
+\noindent\begin{minipage}{\textwidth}
+\captionsetup{hypcap=false}
 \centering
-\begin{tikzpicture}[>=Stealth,x=1.15cm,
+\begin{tikzpicture}[>=Stealth,x=1.15cm,y=.82cm,
 box/.style={draw=hcmusblue,rounded corners,fill=lightblue,
   align=center,font=\small,minimum height=1cm},
 note/.style={font=\small,align=center}]
@@ -729,82 +756,86 @@ note/.style={font=\small,align=center}]
 \node[box,fill=lightgreen,minimum width=2.6cm] (gentext) at (4,-2.9) {Same prompt tokens\\$\tau_\eta(y)$};
 \draw[->,thick] (gentext.north)--(den.south);
 \end{tikzpicture}
-\caption{Original latent diffusion pipeline, based on
+\captionof{figure}{Original latent diffusion pipeline, based on
 \cite[Fig.~3 and Sec.~3]{rombach2022ldm}. The VAE is learned first and
 frozen for diffusion training; its decoder runs after the denoising loop.
 Pure text-to-image generation does not require a real input image or the
 image encoder.}\label{fig:ldm}
-\end{figure*}
-
-\subsection{Conditioning and the complete pipeline}\label{sec:attention}\label{sec:cfg}
-LDM uses cross-attention to make denoising depend on a condition such as
-text \cite[Sec.~3.3]{rombach2022ldm}. Spatial image features supply
-queries; prompt-token embeddings supply keys and values. Learned
-attention weights retrieve text information useful for the current
-features. Thus a prompt changes the denoising predictions throughout
-the sampling loop; it is not pasted onto the decoded image.
-The matrix formulation and an optional toy calculation are confined to
-Appendix~\ref{app:attention}.
-
-Classifier-free guidance can strengthen conditional influence by using
-$\eps_u+s(\eps_c-\eps_u)$, where $\eps_u,\eps_c$ are unconditional and
-conditional predictions and $s\ge0$ is the guidance scale
-\cite{ho2022cfg}. Here $s=1$ is ordinary conditional sampling.
-Stronger guidance can trade diversity for conditional fidelity; it does
-not guarantee correct counting, spatial relations, or attribute binding.
-Standard CFG uses two denoiser evaluations per step. Details are in
-Appendix~\ref{app:cfg}.
-
-The two papers therefore address complementary questions: DDPM learns
-how iterative denoising can generate an image distribution; LDM learns
-a representation in which that iteration is less expensive. Compression
-reduces repeated spatial work. Faster samplers such as DDIM instead
-reduce the number of evaluations \cite{song2021ddim}; the two ideas can
-be combined without treating them as the same speedup.
-
+\end{minipage}\par\medskip
 \section{Results and Discussion}\label{sec:results}
 
 \subsection{Experimental configuration}\label{sec:colab-setup}
-We ran inference with four released checkpoints. Table~\ref{tab:colab-setup}
-records the settings for the two tasks. The checkpoint URLs, class IDs,
-sampling code, and timing records are in Appendix~\ref{app:repro}.
+Table~\ref{tab:colab-setup} summarizes the three pretrained inference
+runs. LSUN Churches is our pixel-versus-latent comparison. ImageNet
+shows intermediate denoising states for both representations. Stable
+Diffusion v1.4 adds a small text-conditioning demonstration
+\cite{compvis2022sd14}. Appendix~\ref{app:repro} gives the run records.
 
-\begin{table*}[t]
+\noindent\begin{minipage}{\textwidth}
+\captionsetup{hypcap=false}
 \centering\small
-\caption{Colab configuration for the two experiments. Both runs used
-pretrained weights, a Tesla T4 with PyTorch \texttt{2.14.1+cu130}, batch size
-one, $256\times256$ RGB output, and 50 DDIM updates with $\eta=0$.}
+\captionof{table}{Colab settings. All runs used a Tesla T4, PyTorch
+\texttt{2.14.1+cu130}, FP16 or FP32 as listed, batch size one,
+and 50 DDIM updates with $\eta=0$.}
 \label{tab:colab-setup}
-\begin{tabularx}{\textwidth}{@{}p{0.20\textwidth}YY@{}}
+\begin{tabularx}{\textwidth}{@{}p{0.16\textwidth}YYY@{}}
 \toprule
-Setting & LSUN Churches & ImageNet\\
+Setting & LSUN Churches & ImageNet & Text prompt demo\\
 \midrule
 Pixel checkpoint & Google \texttt{ddpm-ema-church-256} &
-OpenAI ADM \texttt{256x256\_diffusion.pt}\\
+OpenAI ADM \texttt{256x256\_diffusion.pt} & ---\\
 Latent checkpoint & CompVis LDM-KL-8 (\texttt{lsun\_churches.zip}) &
-CompVis \texttt{cin256-v2} (VQ, $f=4$)\\
-Conditioning & Unconditional for both models &
-Class label for both models, with CFG $s=3.0$ for LDM\\
-Precision & FP32 for both models &
-ADM uses FP16 in the U-Net torso with FP32 diffusion states. LDM uses FP32\\
-Seeds and samples & Seeds 2026--2029, four timed images per model after warm-up &
-Seed 2026, one image per class and model for five shared classes\\
-Outputs analyzed & Sampling time, peak allocation, and visual quality &
-Final images and saved forward and reverse states\\
+CompVis \texttt{cin256-v2} (VQ, $f=4$) & CompVis Stable Diffusion v1.4\\
+RGB output & $256\times256$ & $256\times256$ & $512\times512$\\
+Conditioning & Unconditional &
+Class ID. LDM uses CFG $s=3.0$ & Text. CFG $s=7.5$\\
+Precision & FP32 for both &
+ADM FP16 U-Net torso and FP32 states. LDM FP32 & FP16\\
+Seeds and samples & 2026--2029, four timed images per checkpoint &
+2026, one image per class for each checkpoint across five classes &
+2026--2029, four prompts per seed (16 images)\\
+Recorded evidence & Latency, peak allocation, and images &
+Final images and forward and reverse states &
+Final images and visual prompt checks\\
 \bottomrule
 \end{tabularx}
-\end{table*}
+\end{minipage}\par\medskip
+\noindent
+\begin{minipage}[t]{.48\textwidth}
+\vspace{0pt}
+For LSUN, we timed each sample from the initial noise draw to the final
+RGB tensor with GPU synchronization. The timed interval includes the
+latent decoder and excludes checkpoint loading, one warm-up image per
+model, and PNG export. For ImageNet, we saved intermediate reverse
+states and ran a separate Gaussian forward pass from each final state.
+We decoded latent states for display.
+\end{minipage}\hfill
+\begin{minipage}[t]{.48\textwidth}
+\vspace{0pt}
+For the text demo, the baseline asks for a bus and a car. The reference
+asks for a red bus to the left of a blue car. Two edits change only
+\emph{red} to \emph{green} or \emph{left} to \emph{right}. Within each
+seed, all four prompts start from a copy of the same Gaussian latent.
+Stable Diffusion encodes each prompt, supplies the text embeddings to
+the denoiser through cross-attention, applies classifier-free guidance,
+and decodes the final latent to RGB \cite{rombach2022ldm,ho2022cfg}.
+We visually checked the two vehicles, the requested colors, and the
+relative position. The baseline specifies only which vehicles to show.
+\end{minipage}
+}]
 
+% Keep the LSUN comparison and the ImageNet sample grid in reading order.
+\onecolumn
 \subsection{Pixel versus latent diffusion on LSUN Churches}\label{sec:tradeoffs}
-We timed generation from the initial noise draw to the final RGB tensor,
-with GPU synchronization. The LDM timing includes its decoder. Model loading,
-one warm-up image per model, and PNG export are outside the timed interval.
-For visual quality, we inspect recognizable church features and the clarity
-of outlines and fine detail across all four timed samples.
-
-\begin{table}[t]
+Table~\ref{tab:comparison} compares speed, memory, and visual quality
+on the same task. We inspected recognizable church features, outlines,
+and fine detail across all four timed samples per model.
+\par\smallskip\noindent
+\begin{minipage}[t]{.48\textwidth}
+\vspace{0pt}
+\captionsetup{hypcap=false}
 \centering\small
-\caption{Comparison on LSUN Churches under the settings in
+\captionof{table}{Comparison on LSUN Churches under the settings in
 Table~\ref{tab:colab-setup}. Latency is the median of four images.
 Peak allocation is PyTorch's peak CUDA tensor allocation.}
 \label{tab:comparison}
@@ -819,9 +850,10 @@ Visual quality & Clear steeple in seed 2028. Darker seed 2029 obscures details. 
 Clear facades in seeds 2027--2029. Seed 2026 shows a distant complex.\\
 \bottomrule
 \end{tabularx}
-\end{table}
-
-\begin{figure}[t]
+\end{minipage}\hfill
+\begin{minipage}[t]{.48\textwidth}
+\vspace{0pt}
+\captionsetup{hypcap=false}
 \centering
 \setlength{\tabcolsep}{1pt}
 \begin{tabular}{@{}lcccc@{}}
@@ -837,11 +869,11 @@ Clear facades in seeds 2027--2029. Seed 2026 shows a distant complex.\\
 \includegraphics[width=.195\columnwidth]{figures/colab/churches/ldm_2028.png} &
 \includegraphics[width=.195\columnwidth]{figures/colab/churches/ldm_2029.png}\\
 \end{tabular}
-\caption{All eight timed LSUN Churches samples, grouped by seed. Each
+\captionof{figure}{All eight timed LSUN Churches samples, grouped by seed. Each
 model draws its initial noise in its own state space.}
 \label{fig:churches-samples}
-\end{figure}
-
+\end{minipage}
+\par\smallskip
 The latent pipeline achieved a $2.50\times$ speedup by median latency
 and used more peak tensor memory (Table~\ref{tab:comparison}).
 Both produced recognizable church imagery
@@ -856,25 +888,17 @@ outputs for golden retriever, tabby cat, school bus, monarch butterfly,
 and volcano (Table~\ref{tab:colab-setup}). We assess recognizable class
 features and coherence of shape.
 
-\begin{figure*}[t]
+\noindent\begin{minipage}{\textwidth}
+\captionsetup{hypcap=false}
 \centering
-\includegraphics[width=0.94\textwidth]{figures/colab/imagenet_comparison.png}
-\caption{Our ImageNet samples for five shared class labels. The top row
+\includegraphics[width=0.72\textwidth]{figures/colab/imagenet_comparison.png}
+\captionof{figure}{Our ImageNet samples for five shared class labels. The top row
 uses pixel-space ADM and the bottom row uses latent diffusion.}
 \label{fig:imagenet-grid}
-\end{figure*}
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.76\textwidth]{figures/colab/retriever_step25.png}
-\caption{Inside DDIM update 25 for the golden retriever. Read each row
-from the noisy input through the predicted noise and clean estimate to
-the updated state. ADM noise is displayed in RGB. The LDM heatmap
-shows the root mean square of the guided noise across latent channels.
-The other LDM panels show decoded states.}
-\label{fig:imagenet-step}
-\end{figure*}
-
+\end{minipage}
+\par\smallskip\noindent
+\begin{minipage}[t]{.54\textwidth}
+\vspace{0pt}
 Reverse sampling starts from a Gaussian draw. At each update the
 denoiser predicts noise, the sampler estimates the clean state, and
 that estimate helps compute the next state. At update 25, the clean
@@ -884,12 +908,32 @@ In a separate forward pass, we start from each model's final state
 and add Gaussian noise using its schedule. The retriever's features
 gradually disappear. Appendix~\ref{app:colab-traces} shows both
 directions for all five labels.
-
+\end{minipage}\hfill
+\begin{minipage}[t]{.42\textwidth}
+\vspace{0pt}
 Both bus samples show yellow bodies and rows of windows. The volcano appears as a lava scene in ADM and as a slope
 with a plume in LDM. The different outputs illustrate variation
 under the same label. One sample per class and different guidance
 settings limit the comparison to the examples shown.
+\end{minipage}
 
+% Finish the ImageNet evidence before the supplementary prompt study.
+\twocolumn[{%
+\noindent
+\begin{minipage}[t]{.50\textwidth}
+\vspace{0pt}
+\captionsetup{hypcap=false}
+\centering
+\includegraphics[width=\linewidth]{figures/colab/retriever_step25.png}
+\captionof{figure}{Inside DDIM update 25 for the golden retriever. Read each row
+from the noisy input through the predicted noise and clean estimate to
+the updated state. ADM noise is displayed in RGB. The LDM heatmap
+shows the root mean square of the guided noise across latent channels.
+The other LDM panels show decoded states.}
+\label{fig:imagenet-step}
+\end{minipage}\hfill
+\begin{minipage}[t]{.46\textwidth}
+\vspace{0pt}
 \subsection{Published evidence on quality and speed}\label{sec:benchmark}
 For a quantitative comparison within one task, Rombach
 et al.~\cite[Table~6]{rombach2022ldm} report $0.26$ versus $0.97$
@@ -905,38 +949,53 @@ report training-reference FID of $13.51$ for the variational objective
 and $3.17$ for the simplified objective with epsilon prediction and
 fixed isotropic variance. The reported NLL upper bound changes from
 $3.70$ to $3.75$ bits per dimension.
+\end{minipage}\par\medskip
+}]
 
-\FloatBarrier
 \balance
-\subsection{Prompt control, training data, copyright, and bias}
-\label{sec:ethics}
-\textbf{Prompt-based control.} A text prompt such as \emph{a red bus beside
-a blue car} specifies objects, attributes, and a spatial relation.
-Cross-attention supplies the text condition to the denoiser. Classifier-free
-guidance can strengthen conditioning at the cost of diversity
-\cite{rombach2022ldm,ho2022cfg}. LSUN generation was unconditional. ImageNet
-conditioning used class IDs, so our samples show class control only.
-A prompt-adherence test would check object presence, color binding, and
-the requested relation over repeated seeds.
+\noindent\begin{minipage}{\columnwidth}
+\subsection{Supplementary text prompt results}\label{sec:prompt-results}
+Changing the requested bus color produced a green bus at all four
+seeds. None of those images clearly showed the requested blue passenger
+car. Changing the requested side yielded no clear left-to-right reversal
+within a seed. At seed 2027, the reference image shows a red bus left
+of a blue car. The color edit produces two green buses, and the side
+edit leaves the red bus on the left (Figure~\ref{fig:prompt-pair}).
+The four seeds show how attribute changes can succeed while object
+identity or spatial relations fail. Appendix~\ref{app:prompt-grid}
+contains all 16 images.
 
-\textbf{Training data.} The church checkpoints specialize in church imagery.
-The ImageNet checkpoints use a fixed class vocabulary. Dataset coverage
-limits the evidence a model sees for rare subjects and their variations.
-In text-to-image training, captions also determine which attributes and
-relations receive language supervision.
+\par\medskip\noindent
+\begin{minipage}{\columnwidth}
+\centering
+\setlength{\tabcolsep}{1pt}
+\begin{tabular}{@{}ccc@{}}
+\small Reference & \small Change color & \small Change side\\[2pt]
+\includegraphics[width=.32\columnwidth]{figures/colab/prompt/2027_reference.png} &
+\includegraphics[width=.32\columnwidth]{figures/colab/prompt/2027_change_color.png} &
+\includegraphics[width=.32\columnwidth]{figures/colab/prompt/2027_change_side.png}
+\end{tabular}
+\captionsetup{hypcap=false}
+\captionof{figure}{Seed 2027 with the same initial latent. The bus
+changes to green in the middle image and stays on the left in the
+rightmost image.}
+\label{fig:prompt-pair}
+\end{minipage}\par\medskip
 
-\textbf{Bias.} Bianchi et al.~\cite{bianchi2023bias} found demographic
-stereotypes in images generated from ordinary prompts. Measuring this
-effect would require comparable prompts and multiple seeds across groups.
-Our Colab runs contain no such group comparison.
+\end{minipage}\par\medskip
 
-\textbf{Copyright and memorization.} Carlini et al.~\cite{carlini2023extract}
-extracted memorized training images from diffusion models. This motivates
-documenting data provenance and checking for close matches to training
-images. Permissions for training materials and rights in generated outputs
-are separate questions. The U.S. Copyright Office report discusses
-training under U.S. copyright law \cite{usco2025training}.
-
+\subsection{Training data, copyright, and bias}\label{sec:ethics}
+Training data limits the subjects and variations a model learns.
+The church checkpoints specialize in church imagery, and ImageNet
+conditioning uses a fixed class vocabulary. Text-conditioned models
+also depend on the attributes and relations described in captions.
+Bianchi et al.~\cite{bianchi2023bias} found demographic stereotypes
+in outputs from ordinary prompts. The vehicle prompts in our demo
+do not assess demographic bias. Carlini et al.~\cite{carlini2023extract}
+extracted memorized training images from diffusion models. Data provenance
+and potential reproduction matter for copyright. The U.S. Copyright
+Office discusses use of protected works in training under U.S. law
+\cite{usco2025training}.
 \section{Conclusion}\label{sec:conclusion}
 Learning to remove noise enables generation by fitting a sequence of
 reverse conditional distributions. The 2015 diffusion framework supplies
@@ -956,5 +1015,5 @@ LDM preserves this denoising principle in a learned representation.
 The ImageNet traces show recognizable structure emerging in both spaces.
 In our LSUN Churches run, the latent pipeline had lower sampling latency
 and higher peak tensor allocation. These measurements apply to the tested
-checkpoints. Text control and the effects of training data require
-evaluation beyond class-conditioned image examples.
+checkpoints. The supplementary text demonstration shows changes in
+bus color and persistent failures on object identity and spatial layout.

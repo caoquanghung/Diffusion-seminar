@@ -9,6 +9,14 @@ run. Its step-25 noise panel shows RGB epsilon for ADM and channel RMS
 of guided epsilon for CompVis. The adjacent states for CompVis are
 decoded images. The five paired samples support qualitative observations.
 
+The supplementary text demo uses CompVis Stable Diffusion v1.4 and
+identical initial latents across the four prompts within a seed. Its
+checkpoint revision, scheduler, prompts, and latent hashes are in
+`code/colab/sd14_prompt_run.json`. The manual review of all 16 images is
+in `code/colab/sd14_prompt_review.csv`. These observations concern the
+tested prompts and seeds. LSUN Churches provides the pixel-versus-latent
+speed comparison.
+
 ## Explicit score-based model attribution, November 9, 2026
 
 The score paragraph in subsection 3.3 now explicitly cites Song and Ermon
