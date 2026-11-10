@@ -1,48 +1,81 @@
 \begin{abstract}
 How can learning to remove noise enable a model to generate new images?
-This report explains how Gaussian forward corruption, a learned reverse
-model, and noise-prediction training define an iterative generator. We review
-two complementary papers: Denoising Diffusion Probabilistic Models (DDPM)
-establishes a practical pixel-space formulation, while Latent Diffusion
-Models (LDM) moves denoising into a learned compressed representation.
-We introduce the original 2015 diffusion framework, then distinguish
-DDPM's noise-prediction parameterization from direct reverse-parameter
-estimation. Starting from the variational objective, we
-explain DDPM's simplified loss, distinguish training from sampling,
-and illustrate forward noising with a complete
-scalar calculation and an original five-level image sequence. With
-pretrained checkpoints, we measure median sampling times of $6.10$~s
-for pixel DDPM and $2.44$~s for LDM on LSUN Churches under our settings.
-Across five ImageNet classes, saved intermediate states show how image
-structure emerges during denoising. We discuss these observations alongside
-published evidence on quality, efficiency, and conditioning.
+We study this question through two papers. Denoising Diffusion
+Probabilistic Models (DDPM) corrupt images with Gaussian noise, train a
+network to predict that noise, and generate by denoising pure noise over
+many small steps. Latent Diffusion Models (LDM) run the same process in
+the compressed latent space of an autoencoder, which makes each step
+cheaper, and condition it on text or other inputs through
+cross-attention. We derive the forward process, DDPM's variational
+objective, and its simplified noise-prediction loss, and illustrate
+forward noising with a worked one-dimensional calculation and a
+five-level image sequence. With pretrained checkpoints and no training of
+our own, we compare pixel and latent generators on LSUN Churches (50 DDIM
+steps, one T4 GPU). The latent model needs a median $2.44$~s per image
+versus $6.10$~s, but its peak tensor allocation is higher, $1.68$ versus
+$0.75$~GiB. Saved trajectories for five ImageNet classes show structure
+emerging as noise is removed, and a small Stable Diffusion test shows that
+a prompt edit can change an object's color without reversing its
+left--right position. We relate these observations to published
+results and to limits set by training data, copyright, and bias.
 \end{abstract}
 
 \section{Introduction}\label{sec:intro}
-Adding noise destroys image structure, yet learning to remove it can
-support generation. Across many images and noise levels, a denoiser
-learns shared statistical structure. A generative process uses this
-information to produce samples rather than recover one particular
-corrupted photograph.
+Generating a realistic image requires a model of the whole distribution
+of natural images, including shape, texture, lighting, and spatial layout.
+Diffusion models approach this task from an unusual direction. They first
+destroy image structure by gradually adding Gaussian noise, and then learn
+to undo the corruption \cite{sohl2015diffusion,ho2020ddpm}. Latent
+diffusion extends the idea to compressed representations and underlies
+text-to-image systems such as Stable Diffusion
+\cite{rombach2022ldm,compvis2022sd14}.
 
-Our guiding question is: \emph{How can learning to remove noise enable a
-model to generate new images?} Our learning objective is to \emph{explain
-forward noising and reverse denoising, including why latent diffusion
-reduces computational demands}. These goals organize the report around
-two complementary papers. DDPM \cite{ho2020ddpm} develops the earlier diffusion framework
-\cite{sohl2015diffusion} through effective noise-prediction training.
-LDM \cite{rombach2022ldm} asks how to retain that process while reducing
-repeated computation at image resolution.
+\smallskip\noindent\textbf{Learning objective.} Explain forward noising
+and reverse denoising, including why latent diffusion reduces
+computational demands.
 
-We first explain the 2015 probabilistic construction: forward corruption,
-a learned reverse model, sampling, and variational training. We then
-isolate DDPM's noise-prediction parameterization and simplified objective. A brief score-matching connection follows the method rather
-than serving as its prerequisite. We then examine LDM's encoder, decoder,
-and latent representation.
-Our experiments time pretrained pixel and latent generators on LSUN
-Churches and trace sampling and forward noising across five ImageNet
-classes. We compare the observations with published results and discuss
-the scope of class labels and text prompts.
+\smallskip\noindent\textbf{Guiding question.} How can learning to remove
+noise enable a model to generate new images?
+
+\smallskip\noindent\textbf{From denoising to generation.}
+A denoiser repairs a given corrupted image, whereas a generator must
+produce an image that never existed. A bridge exists because the
+corruption is a known Gaussian process: it supplies training pairs at
+every noise level, and a network trained on them learns statistical
+structure shared across many images. Running the network from pure noise
+then yields a new sample, provided that generation is split into many
+small steps. A single network trained with squared error to map pure noise
+to an image would output the conditional mean, approximately the average
+training image, because $x_T$ carries almost no information about $x_0$
+(Appendix~\ref{app:dsm}); small stochastic reverse steps avoid this.
+
+\smallskip\noindent\textbf{Papers and scope.}
+We center the report on two papers. DDPM \cite{ho2020ddpm} makes the 2015
+diffusion framework \cite{sohl2015diffusion} practical by training a
+network to predict the added noise, but it denoises at full image
+resolution, so every sampling step is expensive. LDM
+\cite{rombach2022ldm} runs the process in the latent space of a
+separately trained autoencoder and adds cross-attention so that the
+denoiser can be conditioned on text and other inputs.
+
+\smallskip\noindent\textbf{Papers versus our own work.}
+From the papers, we synthesize the forward/reverse construction, DDPM's
+objective and score interpretation, and LDM's two-stage design; published
+numbers are attributed to their sources (Section~\ref{sec:benchmark}).
+Our own material is a worked one-dimensional forward step, a five-level
+noising sequence of a synthetic image, and experiments with pretrained
+checkpoints: a timing and memory comparison of pixel and latent
+generators on LSUN Churches, denoising trajectories for five ImageNet
+classes, and a small prompt-control test with Stable Diffusion v1.4. These
+experiments use few samples and measure neither FID nor bias, so they are
+illustrations rather than benchmarks.
+
+\smallskip\noindent\textbf{Organization.}
+Section~\ref{sec:background} gives background, Section~\ref{sec:ddpm}
+develops DDPM with two worked examples, and Section~\ref{sec:ldm}
+explains LDM. Section~\ref{sec:results} reports our experiments and
+published evidence and discusses limits from training data, copyright,
+and bias; Section~\ref{sec:conclusion} concludes.
 
 \section{Background and Paper Review}\label{sec:background}
 
@@ -73,22 +106,7 @@ requiring repeated network evaluations during sampling.
 Figure~\ref{fig:families} in Appendix~\ref{app:familycomparison}
 compares the generative mechanisms of these three families.
 
-
-
-
-% \subsection{Historical context: diffusion and score-based modeling}\label{sec:history}
-% Sohl-Dickstein et al.\ \cite{sohl2015diffusion} introduced a tractable
-% probabilistic construction that gradually corrupts data and learns a
-% reverse process. Song and Ermon \cite{song2019score} developed a
-% score-based route: estimate gradients of noisy data distributions at
-% multiple noise levels and generate samples using annealed Langevin
-% dynamics. DDPM connects diffusion modeling to denoising score matching
-% through its noise-prediction parameterization \cite{ho2020ddpm}.
-% LDM later changes the representation on which diffusion operates
-% \cite{rombach2022ldm}.
-
-
-\subsection{Historical context}
+\subsection{Historical context}\label{sec:history}
 
 The foundations of diffusion-based generative modeling were established
 by Sohl-Dickstein et al.\ \cite{sohl2015diffusion}, who introduced a
@@ -126,6 +144,49 @@ in substantial training and sampling costs. To address this limitation,
 Rombach et al.\ \cite{rombach2022ldm} proposed Latent Diffusion Models
 (LDM). This architecture incorporates cross-attention mechanisms to support flexible conditioning,
 including text-guided image generation.
+LDM builds this latent space with a variational autoencoder, reviewed next.
+
+\subsection{Variational autoencoders}\label{sec:vae-background}
+A variational autoencoder (VAE) \cite{kingma2014vae} is a latent-variable
+generative model. It assumes that an image $x_0\in\R^D$ is produced from
+a latent vector $\tilde z$ drawn from a simple prior:
+\begin{equation}
+p(\tilde z)=\Normal(0,\Id),\qquad x_0\sim p_\psi(x_0\mid\tilde z),
+\label{eq:vaegen}
+\end{equation}
+where the \emph{decoder} $p_\psi$ is a neural network with parameters
+$\psi$. The likelihood
+$p_\psi(x_0)=\int p(\tilde z)\,p_\psi(x_0\mid\tilde z)\,d\tilde z$ is
+intractable, so an \emph{encoder} with parameters $\phi$ approximates the
+posterior over latents:
+\begin{align}
+q_\phi(\tilde z\mid x_0)
+ &=\Normal\!\left(\mu_\phi(x_0),\diag(\sigma_\phi^2(x_0))\right),\nonumber\\
+\tilde z&=\mu_\phi(x_0)+\sigma_\phi(x_0)\odot\xi,\quad
+\xi\sim\Normal(0,\Id).\label{eq:vaeenc}
+\end{align}
+The encoder outputs latent means $\mu_\phi$ and positive standard
+deviations $\sigma_\phi$; $\diag$ forms a diagonal covariance and $\odot$
+denotes elementwise multiplication. This reparameterization places the
+randomness in $\xi$, so gradients flow through the sampled latent.
+Encoder and decoder are trained jointly by minimizing the negative
+evidence lower bound (ELBO):
+\begin{equation}
+\begin{aligned}
+\mathcal J_{\rm VAE}
+&=\E_{q_\phi(\tilde z\mid x_0)}[-\log p_\psi(x_0\mid\tilde z)]\\
+&\quad+\KL\!\left(q_\phi(\tilde z\mid x_0)\,\|\,\Normal(0,\Id)\right)
+\ \ge\ -\log p_\psi(x_0).
+\end{aligned}\label{eq:elbo}
+\end{equation}
+The first term rewards reconstruction; the KL term pulls every encoding
+toward the prior, so that decoding a fresh draw $\tilde z\sim\Normal(0,\Id)$
+generates a new image. With a Gaussian decoder, the reconstruction term is
+a pixel-wise squared error; such pixel losses tend to average over
+plausible fine details and yield blurry images \cite[Sec.~3.1]{rombach2022ldm}.
+The diffusion bound of Section~\ref{sec:variational} follows the same
+variational idea, with the noisy states $x_{1:T}$ as latents and a fixed,
+rather than learned, encoder $q$.
 
 
 \section{Method: DDPM and the Diffusion Framework}\label{sec:ddpm}\label{sec:method}
@@ -202,10 +263,9 @@ $f_\mu$ and $f_\Sigma$ parameterize the mean
 $\mu_\theta(x_t,t)$ and covariance $\Sigma_\theta(x_t,t)$,
 respectively. The mean specifies the expected previous state,
 while the covariance captures uncertainty in the reverse transition.
-Unlike DDPM's later noise-prediction parameterization, the original
-model directly estimates these reverse-distribution parameters.
-The DDPM formulation is discussed in
-Section~\ref{sec:parameterization}.
+Unlike DDPM's noise-prediction parameterization
+(Section~\ref{sec:parameterization}), the original model directly
+estimates these reverse-distribution parameters.
 
 To generate a sample, the model draws
 $x_T\sim\Normal(0,\Id)$ and iteratively applies the
@@ -314,17 +374,9 @@ noising and the 2015 Gaussian reverse sampler
 \cite{sohl2015diffusion,ho2020ddpm}. Forward steps (blue) use the noise
 schedule and Gaussian innovations. Backward steps (orange) start from
 fresh noise; a neural model predicts reverse-distribution parameters and
-a Gaussian sampler produces the next state. The displayed neural outputs
-follow the 2015 formulation; DDPM's noise-based mean parameterization is
-introduced in Section~\ref{sec:parameterization}. The learned intermediate
+a Gaussian sampler produces the next state. The learned intermediate
 steps are shown; the final-step boundary is discussed in the text.}\label{fig:ddpm}
 \end{figure*}
-
-
-
-DDPM inherits this forward/reverse construction and trains its reverse
-model using variational inference \cite{ho2020ddpm}.
-
 
 \subsection{DDPM: From Variational Training to Noise and Score Prediction}
 \label{sec:variational}
@@ -334,8 +386,8 @@ model using variational inference \cite{ho2020ddpm}.
 \label{sec:scorebridge}
 
 \paragraph{Variational training and Gaussian posterior targets.}
-DDPM follows the likelihood-based formulation of the original
-diffusion model. Since computing $p_\theta(x_0)$ requires
+DDPM inherits the forward/reverse construction above and its
+likelihood-based training \cite{ho2020ddpm}. Since computing $p_\theta(x_0)$ requires
 marginalizing over all intermediate states, training minimizes
 a variational upper bound on the negative log likelihood
 \cite[Eq.~5]{ho2020ddpm}:
@@ -385,12 +437,8 @@ the covariance terms that become constant under this assumption.
 
 \paragraph{From mean prediction to noise prediction.}
 Rather than predicting this mean directly, DDPM exploits
-the closed-form forward marginal
-$x_t=\sqrt{\bar{\alpha}_t}x_0+
-\sqrt{1-\bar{\alpha}_t}\eps$,
-where $\eps\sim\Normal(0,\Id)$.
-The closed-form forward marginal is derived in
-Appendix~\ref{app:forwardmarginal}.
+the closed-form marginal of Eq.~\eqref{eq:closed}
+(Appendix~\ref{app:forwardmarginal}).
 Substituting the expression for $x_0$ into the Gaussian
 posterior mean gives \cite[Eqs.~10--11]{ho2020ddpm}:
 \begin{align}
@@ -413,11 +461,8 @@ parameterization of the reverse mean, rather than a
 different probabilistic model.
 
 \paragraph{Connection to denoising score matching.}
-This parameterization also connects DDPM to the score-based generative
-model proposed by Song and Ermon~\cite{song2019score}. Their
-noise-conditional score network learns scores at multiple Gaussian
-noise levels and generates samples using annealed Langevin dynamics.
-The score of the noisy
+This parameterization also connects DDPM to score-based generative
+modeling (Section~\ref{sec:history}) \cite{song2019score}. The score of the noisy
 data distribution $q_t(x_t)$ is defined as
 $\nabla_{x_t}\log q_t(x_t)$, which points toward regions
 of increasing probability density.
@@ -483,11 +528,8 @@ w_t
 \label{eq:noiseweight}
 \end{align}
 This weighted noise-prediction objective corresponds
-to the intermediate terms of the variational bound.
-It also has a denoising score-matching interpretation,
-since predicting noise is equivalent to estimating the
-score at each noise level, with a noise-level-dependent rescaling
-of the score loss as shown in Appendix~\ref{app:dsm}.
+to the intermediate terms of the variational bound; at each noise level
+it is a rescaled score-matching loss (Appendix~\ref{app:dsm}).
 
 DDPM further simplifies training by dropping the
 timestep-dependent weights:
@@ -508,17 +550,14 @@ on different noise levels. Ho et al.\ report improved
 sample quality under this simplified objective, while
 the original variational objective provides better
 likelihood-based codelengths
-\cite[Secs.~3.4, 4.1--4.2]{ho2020ddpm}.
-This is an empirical trade-off rather than a general
-guarantee that unweighted MSE is optimal.
+\cite[Secs.~3.4, 4.1--4.2]{ho2020ddpm}, an empirical
+trade-off rather than a general guarantee.
 
-Importantly, $L_{\rm simple}$ is a surrogate objective,
-not the complete variational bound. The exact bound
-retains the endpoint decoder term $L_0$, while the
-simplified objective uses noise regression at all
-timesteps, including $t=1$.
+Note that $L_{\rm simple}$ is a surrogate, not the
+complete bound: it omits the decoder term $L_0$ and
+regresses noise at all timesteps, including $t=1$.
 
-\paragraph{Reverse sampling and score interpretation.}
+\paragraph{Reverse sampling.}
 Once trained, the same noise predictor determines the
 reverse sampling process. DDPM uses a fixed reverse
 variance, with two choices investigated by Ho et al.\
@@ -546,18 +585,8 @@ At $t=1$, the original DDPM sampler sets the added
 noise to zero and outputs $\mu_\theta(x_1,1)$.
 Appendix~\ref{app:pseudocode} gives forward/backward pseudocode and
 distinguishes this endpoint from the original 2015 sampler.
-
-Using the score-based expression of $\mu_\theta$,
-each reverse step combines a learned direction toward
-higher noisy-data density with a stochastic perturbation.
-This resembles Langevin dynamics and connects DDPM
-sampling to score-based generation.
-
-Overall, DDPM unifies variational diffusion training,
-noise prediction, and score estimation within a single
-reverse-process parameterization. The network predicts
-Gaussian noise, implicitly estimates the score, and uses
-that estimate to construct the reverse transition mean.
+In score form, each step adds a learned density-increasing direction
+and fresh noise, resembling Langevin dynamics.
 
 
 \subsection{A complete one-dimensional calculation}\label{sec:scalar}
@@ -578,44 +607,24 @@ $\E[\eps]=0$. The realization $0.600833$ differs from that expectation;
 the conditional variance is $\beta_1$.
 
 \subsection{Five noise levels on an original small image}\label{sec:noise}
-Our original $28\times28$ geometric house has foreground $+1$ and
-background $-1$, without an external dataset.
-The script \texttt{code/make\_figures.py} simulates one Markov trajectory
-using Eq.~\eqref{eq:forward} with independent noise at every step.
-It uses NumPy's default generator, seed $420$, $T=1000$, and
-the linear schedule $\beta_t=10^{-4}+(t-1)(0.02-10^{-4})/999$,
-following DDPM's schedule choice \cite[Sec.~4]{ho2020ddpm}.
+We apply Eq.~\eqref{eq:forward} step by step to a synthetic
+$28\times28$ image of a house, with foreground $+1$ and background $-1$.
+Following DDPM \cite[Sec.~4]{ho2020ddpm}, we use $T=1000$ and a linear
+schedule increasing from $\beta_1=10^{-4}$ to $\beta_T=0.02$.
+Figure~\ref{fig:noise} shows one sampled trajectory at five timesteps.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/noise_sequence.pdf}
-\caption{Original forward-noising illustration at five timesteps.
-The same trajectory is shown throughout. Values are clipped to $[-1,1]$
-only for display; stored arrays and calculations remain unclipped.
-The equation and schedule follow \cite{ho2020ddpm}.}\label{fig:noise}
+\caption{Forward noising of a synthetic house image along one trajectory.
+Values are clipped to $[-1,1]$ for display only.}\label{fig:noise}
 \end{figure*}
 
-\begin{table*}[t]
-\centering\small
-\caption{Coefficients computed by the supplied script. Signal and noise
-columns refer to Eq.~\eqref{eq:closed}, not measured image quality.}
-\label{tab:noise}
-\begin{tabular}{@{}rrrrr@{}}
-\toprule
-$t$ & $\ab_t$ & Signal $\sqrt{\ab_t}$ & Noise SD $\sqrt{1-\ab_t}$ &
-$\ab_t/(1-\ab_t)$\\
-\midrule
-0 & 1.000000 & 1.000000 & 0.000000 & $\infty$\\
-50 & 0.971016 & 0.985401 & 0.170248 & 33.5015\\
-200 & 0.659039 & 0.811812 & 0.583919 & 1.9329\\
-500 & 0.078587 & 0.280334 & 0.959902 & 0.0853\\
-1000 & 0.000040 & 0.006353 & 0.999980 & 0.000040\\
-\bottomrule
-\end{tabular}
-\end{table*}
-The last column is a schedule-based signal-to-noise coefficient ratio,
-also a per-coordinate variance ratio for unit-variance data.
-This illustrates corruption, not learned denoising or generation.
+In terms of Eq.~\eqref{eq:closed}, the signal-to-noise ratio
+$\ab_t/(1-\ab_t)$ drops from $33.5$ at $t=50$, where the house is clearly visible, to below $0.1$
+at $t=500$, where the image is dominated by noise. By $t=T$ almost no
+signal remains, which justifies starting generation from
+$\Normal(0,\Id)$. This illustrates corruption only.
 
 \section{LDM: Latent Space and Efficient Generation}\label{sec:ldm}
 \subsection{Why move from pixels to a latent representation?}\label{sec:synthesis}
@@ -624,11 +633,8 @@ high-resolution pixel grid is expensive. LDM separates learning a useful
 image representation from learning its generative distribution
 \cite[Secs.~3.1--3.2]{rombach2022ldm}. Its first stage compresses images;
 its second stage applies diffusion to the resulting spatial tensors.
-The central question is how much computation can be removed while
-preserving information needed for convincing reconstruction.
 
-A latent is a learned feature representation, not a smaller JPEG or a
-text description. For RGB input $x_0\in\R^{H\times W\times3}$, let
+For RGB input $x_0\in\R^{H\times W\times3}$, let
 $\tilde z\in\R^{h\times w\times c}$, where $h=H/f$, $w=W/f$,
 $f\ge1$ is the spatial downsampling factor, and $c$ is the latent channel
 count. For example, an LDM configuration with $f=4,c=3$ maps
@@ -637,46 +643,80 @@ $256\times256\times3$ to $64\times64\times3$
 by $16$, but the end-to-end runtime and memory depend on more than the
 state shape.
 
-\subsection{VAE encoder, decoder, and the compression trade-off}\label{sec:vae}
-We emphasize LDM's KL-regularized, VAE-like autoencoder. Its encoder
-predicts a distribution over representations of an input image
-\cite{kingma2014vae,rombach2022ldm}:
-\begin{align}
-q_\phi(\tilde z\mid x_0)
- &=\Normal\!\left(\mu_\phi(x_0),\diag(\sigma_\phi^2(x_0))\right),\nonumber\\
-\tilde z&=\mu_\phi(x_0)+\sigma_\phi(x_0)\odot\xi,\quad
-\xi\sim\Normal(0,\Id),\nonumber\\
-\hat x_0&=D_\psi(\tilde z).\label{eq:vae}
-\end{align}
-$\phi,\psi$ are encoder and decoder parameters. The encoder outputs
-latent means $\mu_\phi$ and positive standard deviations $\sigma_\phi$;
-$\diag$ forms a diagonal covariance and $\odot$ denotes elementwise
-multiplication. The decoder $D_\psi$ reconstructs an image $\hat x_0$.
-Reparameterization places randomness in $\xi$, enabling gradient-based
-training. This posterior noise is different from the diffusion noise
-added in the second stage.
+\subsection{Perceptual image compression}\label{sec:vae}
+LDM's first stage is an autoencoder with encoder $\mathcal E_\phi$ and
+decoder $D_\psi$. It starts from the VAE of
+Section~\ref{sec:vae-background}, but its only job is to compress images
+\cite[Sec.~3.1]{rombach2022ldm}:
+\begin{equation}
+\tilde z=\mathcal E_\phi(x_0)\in\R^{h\times w\times c},\qquad
+\hat x_0=D_\psi(\tilde z).\label{eq:vae}
+\end{equation}
+Unlike the flat vector of Eq.~\eqref{eq:vaegen}, $\tilde z$ keeps a
+spatial layout that a convolutional U-Net \cite{ronneberger2015unet} can
+process. In the KL variant below, $\mathcal E_\phi$ samples $\tilde z$ with
+the reparameterization of Eq.~\eqref{eq:vaeenc}; this posterior noise $\xi$
+differs from the diffusion noise added in the second stage.
 
-The encoder must retain spatial and perceptual information; the decoder
-must learn how to turn it back into image detail. Reconstruction quality
-therefore limits what the complete generator can preserve. Excessive
-compression may erase fine text, small objects, or textures that later
-diffusion cannot faithfully restore.
+\paragraph{Training objective.} Instead of the pixel likelihood in
+Eq.~\eqref{eq:elbo}, the autoencoder combines three ingredients
+\cite[Sec.~3.1]{rombach2022ldm}. A \emph{perceptual loss}
+\cite{zhang2018lpips} compares deep-network features, so a reconstruction
+must look like the input rather than match every pixel. A
+\emph{patch-based adversarial loss} \cite{isola2017pix2pix,esser2021vqgan}
+lets a discriminator judge local patches, pushing textures toward realism
+and avoiding the blur of pixel-only losses. A light \emph{regularizer}
+prevents latents with arbitrarily high variance.
 
-Regularization makes the representation suitable for modeling, but the
-first stage is not merely a textbook VAE with pixel reconstruction loss.
-LDM uses perceptual and patch-adversarial reconstruction objectives with
-a weak KL penalty \cite[Sec.~3.1]{rombach2022ldm}. Perceptual loss compares
-visual features; adversarial training encourages locally realistic
-texture. A textbook VAE objective is given in
-Appendix~\ref{app:vaedetails} to distinguish these choices.
-The original paper also studies VQ regularization, so LDM is broader than
-this KL/VAE variant. Neither weak KL regularization nor successful
-reconstruction makes clean encoded latents exactly standard normal.
-The diffusion prior must still learn their distribution.
+\paragraph{Two regularizers.} \emph{KL-reg.} adds a weak KL penalty toward
+$\Normal(0,\Id)$, as in Eq.~\eqref{eq:elbo} but with a small weight.
+\emph{VQ-reg.} uses a vector-quantization layer \cite{oord2017vqvae}: each
+latent vector $\tilde z_{ij}\in\R^c$ is replaced by the nearest entry of a
+learned codebook $\mathcal Z\subset\R^c$,
+\begin{equation}
+\mathrm{VQ}(\tilde z)_{ij}=\arg\min_{e\in\mathcal Z}\|\tilde z_{ij}-e\|_2.
+\label{eq:vq}
+\end{equation}
+LDM places this layer \emph{inside the decoder}: the model is a VQGAN
+\cite{esser2021vqgan} whose quantization step is absorbed by $D_\psi$
+\cite[Sec.~3.1]{rombach2022ldm}. The diffusion model therefore operates
+on the continuous, pre-quantization latent, and quantization happens
+only when a latent is decoded.
+
+\paragraph{Why absorb quantization into the decoder?} The choice brings
+four benefits.
+(i)~\emph{Gaussian diffusion stays well defined.} Forward noising
+(Eq.~\eqref{eq:latentnoise}) and noise regression require a continuous
+space; Gaussian noise cannot be added to discrete codebook indices without
+switching to a different, discrete diffusion process. Both variants expose
+a continuous latent, so one denoiser and sampler design serves both.
+(ii)~\emph{Tolerance to sampling error.} A generated latent need not land
+exactly on codebook vectors; the decoder snaps each position to its
+nearest code, projecting small residual denoising errors back onto latents
+the decoder was trained on. This is our interpretation of the design, not
+a claim tested in the paper.
+(iii)~\emph{Spatial structure and mild compression.} VQGAN-style pipelines
+model token indices autoregressively in an arbitrary 1D order, ignoring
+much of the 2D structure of the latent. A U-Net models the 2D latent
+directly, so LDM can use mild factors $f=4$--$8$ and keep reconstructions
+faithful \cite[Sec.~3.1]{rombach2022ldm}.
+(iv)~\emph{Bounded latent scale.} The codebook bounds latent magnitudes
+without tuning a KL weight, whereas KL latents are rescaled by the fixed
+factor $a$ of Section~\ref{sec:pipeline} \cite{rombach2022ldm}.
+Empirically, VQ-regularized LDMs sometimes reach better sample quality even
+though their reconstructions slightly trail the KL autoencoders
+\cite[Sec.~4, Table~8]{rombach2022ldm}. Our experiments use both: the
+ImageNet model is VQ-regularized with $f=4$, and the LSUN Churches model
+is KL-regularized with $f=8$ (Table~\ref{tab:colab-setup}).
+
+\paragraph{Diffusion replaces the VAE prior.} Neither regularizer makes
+clean latents standard normal, so LDM learns their distribution with
+diffusion (Section~\ref{sec:pipeline}) instead of decoding
+$\tilde z\sim\Normal(0,\Id)$. Reconstruction quality limits the whole
+generator: excessive compression may erase fine text or small objects.
 
 \subsection{Diffusion training and sampling in latent space}\label{sec:pipeline}
-After the autoencoder is trained, its parameters are fixed while the
-latent denoiser is trained. Let $z_0=a\tilde z$, with optional fixed scale
+The trained autoencoder is frozen while the latent denoiser is trained. Let $z_0=a\tilde z$, with optional fixed scale
 $a>0$ to match latent magnitudes to the noise schedule; $a=1$ means no
 rescaling. Diffusion acts on $d_z=hwc$ latent coordinates:
 \begin{align}
@@ -686,43 +726,107 @@ L_{\rm LDM}&=\E_{x_0,y,t,\xi,\eps_z}
 \left[\|\eps_z-\eps_\theta(z_t,t,\tau_\eta(y))\|_2^2\right].
 \label{eq:ldmloss}
 \end{align}
-The condition $y$ may be a text prompt, encoded by $\tau_\eta$ with
-parameters $\eta$. The time-conditioned denoiser, typically a U-Net,
-returns a tensor of the same shape as $z_t$. The conditional objective
-follows LDM \cite[Eq.~3]{rombach2022ldm}, here making stochastic encoding
-explicit. Posterior-mean encoding omits $\xi$.
+The condition $y$ is encoded by $\tau_\eta$ with parameters $\eta$
+(Section~\ref{sec:attention}). Eq.~\eqref{eq:ldmloss} follows
+LDM \cite[Eq.~3]{rombach2022ldm} with the stochastic encoding made explicit.
 
 For generation, start with latent Gaussian noise and repeatedly apply a
-compatible reverse sampler using the conditional predictor. Decode the
+reverse sampler with the conditional predictor. Samplers such as DDIM
+\cite{song2021ddim} reduce the number of steps, complementing the cheaper
+latent steps. Decode the
 final latent once as $D_\psi(z_0/a)$, undoing the training scale.
-Pure text-to-image generation needs no real input image or image encoder.
-The encoder is needed to form training representations, whereas the
-decoder converts a generated representation into pixels.
-Figure~\ref{fig:ldm} makes these roles explicit.
 
 \subsection{Conditioning and the complete pipeline}\label{sec:attention}\label{sec:cfg}
-LDM uses cross-attention to make denoising depend on a condition such as
-text \cite[Sec.~3.3]{rombach2022ldm}. Spatial image features supply
-queries; prompt-token embeddings supply keys and values. Learned
-attention weights retrieve text information useful for the current
-features. Thus a prompt changes the denoising predictions throughout
-the sampling loop; it is not pasted onto the decoded image.
-The matrix formulation and an optional toy calculation are confined to
+LDM is not specific to text. It conditions the denoiser on an input $y$
+from an arbitrary modality through a domain-specific encoder $\tau_\eta$
+\cite[Sec.~3.3]{rombach2022ldm}.
+
+\subsubsection{Conditioning through cross-attention}\label{sec:crossattn}
+The encoder maps the condition to a sequence of $m$ token embeddings,
+$C=\tau_\eta(y)\in\R^{m\times d_y}$, and cross-attention layers inserted
+into the U-Net at several resolutions inject $C$ into the denoiser
+$\eps_\theta(z_t,t,\tau_\eta(y))$ \cite[Sec.~3.3]{rombach2022ldm}. For
+text, LDM trains a transformer $\tau_\eta$ jointly with the denoiser,
+whereas Stable Diffusion v1.4 uses a frozen CLIP ViT-L/14 text encoder
+\cite{radford2021clip,compvis2022sd14}. We use text as the running
+example below.
+
+At one layer, flatten the U-Net feature map into $F\in\R^{n\times d_u}$,
+one row per spatial position. A cross-attention head
+\cite{vaswani2017attention} computes
+\begin{align}
+Q&=FW_Q,\quad K=CW_K,\quad V=CW_V,\label{eq:qkv}\\
+A&=\softmax\!\left(QK^\top/\sqrt{d_a}\right),\qquad O=AV,
+\label{eq:attention}
+\end{align}
+with learned projections $W_Q,W_K,W_V$ (Figure~\ref{fig:attention}).
+\emph{Queries come from the image; keys and values come from the condition.}
+Row $i$ of $A\in\R^{n\times m}$ is a probability distribution over tokens:
+it measures how well the query of position $i$ matches each token key,
+with the $\sqrt{d_a}$ scaling keeping the softmax from saturating. Row $i$
+of $O$ is the corresponding weighted average of token values; it is
+projected back to $d_u$ channels and added to the feature map through a
+residual connection. Each location therefore retrieves the words relevant
+to it; a region forming a bus can draw on the tokens ``red'' and ``bus''.
+Several heads run in parallel and their outputs are concatenated
+\cite{vaswani2017attention}. Because $A$ is recomputed from the noisy
+features at every layer and step, the prompt steers the denoising
+predictions throughout sampling; it is not pasted onto the decoded image.
+
+\begin{center}
+\resizebox{.88\columnwidth}{!}{%
+\begin{tikzpicture}[>=Stealth, font=\small,
+box/.style={draw=hcmusblue,rounded corners,fill=lightblue,align=center,
+minimum height=.8cm}]
+\node[box] (f) at (0,1.15) {Image features\\$F\to Q$};
+\node[box,fill=lightgreen] (c) at (0,-.45) {Condition tokens\\$C\to K,V$};
+\node[box] (a) at (3.35,.35) {Weights $A$\\$\softmax(QK^\top/\sqrt{d_a})$};
+\node[box] (o) at (6.35,.35) {$O=AV$\\to U-Net};
+\draw[->,thick] (f.east)--(a.north west);
+\draw[->,thick] (c.east)--node[midway,below,inner sep=2pt] {$K$}(a.south west);
+\draw[->,thick] (a)--(o);
+\draw[->,thick] (c.south)--(0,-1.3)--(6.35,-1.3)--(o.south);
+\node[fill=white,inner sep=1pt] at (3.35,-1.3) {$V$};
+\end{tikzpicture}}
+\captionsetup{hypcap=false}
+\captionof{figure}{Single-head cross-attention, based on
+\cite{vaswani2017attention,rombach2022ldm}. Image positions query the
+condition tokens; the output is added back to the U-Net features.}\label{fig:attention}
+\end{center}
+
+Cross-attention mixing is soft: an attribute can attach to the wrong object, or a token can be
+neglected \cite{chefer2023attend}; Section~\ref{sec:prompt-results}
+observes such failures. Matrix shapes and a toy calculation are in
 Appendix~\ref{app:attention}.
 
 Classifier-free guidance can strengthen conditional influence by using
 $\eps_u+s(\eps_c-\eps_u)$, where $\eps_u,\eps_c$ are unconditional and
 conditional predictions and $s\ge0$ is the guidance scale
-\cite{ho2022cfg}. Here $s=1$ is ordinary conditional sampling.
-Stronger guidance can trade diversity for conditional fidelity; it does
-not guarantee correct counting, spatial relations, or attribute binding.
-Standard CFG uses two denoiser evaluations per step. Details are in
-Appendix~\ref{app:cfg}.
+\cite{ho2022cfg}; $s=1$ is ordinary conditional sampling. Stronger
+guidance trades diversity for fidelity but does not guarantee correct
+counting, spatial relations, or attribute binding (Appendix~\ref{app:cfg}).
 
-DDPM uses iterative denoising to generate images. LDM makes each
-denoising step cheaper by using a compressed representation. Faster
-samplers such as DDIM reduce the number of evaluations \cite{song2021ddim}.
-A latent model can combine both approaches.
+\subsubsection{A modality-agnostic pipeline}\label{sec:fullpipeline}
+Only $\tau_\eta$ depends on the modality; the autoencoder, the U-Net, and
+the attention layers are shared \cite[Sec.~3.3]{rombach2022ldm}. For
+\emph{text}, $\tau_\eta$ is a transformer or pretrained language encoder
+with one token per word piece. For a \emph{class label}, a learned
+embedding yields a single token ($m=1$), as in our ImageNet LDM. For a
+\emph{layout}, bounding boxes with class labels are tokenized and
+encoded. \emph{Spatially aligned} inputs, such as semantic maps,
+low-resolution images, or inpainting masks, can instead be concatenated
+with $z_t$ along the channel axis. With \emph{no condition}, as in our
+LSUN Churches model, $\tau_\eta$ is dropped. LDM evaluates all of these
+settings \cite[Secs.~4.3--4.5]{rombach2022ldm}.
+
+Figure~\ref{fig:ldm} assembles the pipeline. \emph{Training}: train the
+autoencoder once and freeze it; encode an image, add noise to its latent,
+encode the paired condition with $\tau_\eta$, and train the conditional
+U-Net with Eq.~\eqref{eq:ldmloss}. \emph{Generation}: draw
+$z_T\sim\Normal(0,\Id)$, encode $y$ once, run the sampler with the
+conditional (and, with CFG, unconditional) predictions, and decode once;
+no real image or encoder is needed. One autoencoder serves many
+conditions \cite[Sec.~1]{rombach2022ldm}.
 
 % Keep the final LDM diagram and the experiment setup together.
 \twocolumn[{%
@@ -735,7 +839,7 @@ box/.style={draw=hcmusblue,rounded corners,fill=lightblue,
 note/.style={font=\small,align=center}]
 \node[note,anchor=west,font=\small\bfseries] at (0,3.8) {Training: encode a real image and learn noise prediction};
 \node[box,minimum width=1.25cm] (x) at (.65,2.7) {$x_0$\\image};
-\node[box,minimum width=1.9cm,fill=lightgreen] (e) at (2.65,2.7) {VAE encoder\\$q_\phi$, scale $a$};
+\node[box,minimum width=1.9cm,fill=lightgreen] (e) at (2.65,2.7) {Encoder\\$\mathcal E_\phi$, scale $a$};
 \node[box,minimum width=1.2cm] (z) at (4.65,2.7) {$z_0$\\latent};
 \node[box,minimum width=1.9cm,fill=lightorange] (q) at (6.65,2.7) {Add noise\\$q(z_t\mid z_0)$};
 \node[box,minimum width=2.6cm] (u) at (9.65,2.7) {Conditional U-Net\\predict $\eps_z$};
@@ -743,24 +847,27 @@ note/.style={font=\small,align=center}]
 \draw[->,thick] (e)--(z);
 \draw[->,thick] (z)--(q);
 \draw[->,thick] (q)--node[midway,above=2pt,font=\small] {$z_t,t$}(u);
-\node[box,fill=lightgreen,minimum width=2.6cm] (text) at (7.35,1) {Prompt $y\to\tau_\eta(y)$\\text tokens};
-\draw[->,thick] (text.north) -| node[pos=.75,right,font=\small] {cross-attention}(u.south);
+\node[box,fill=lightgreen,minimum width=2.6cm] (text) at (9.65,1) {Condition $y\to\tau_\eta(y)$\\text, class, layout, \ldots};
+\draw[->,thick] (text.north)--node[midway,right=3pt,font=\small] {cross-attention}(u.south);
+\node[box,fill=lightgreen,minimum width=2.2cm] (aligned) at (5.6,1) {Aligned input\\map, image, mask};
+\draw[->,thick,dashed] (aligned.east)--(8.05,1)--node[pos=.5,left,font=\small] {concat}(8.05,2.7);
 \node[note,anchor=west,font=\small\bfseries] at (0,-.1) {Generation: sample a latent, repeatedly denoise, then decode once};
 \node[box,minimum width=1.5cm,fill=lightorange] (n) at (.8,-1.35) {$z_T$\\Gaussian noise};
 \node[box,minimum width=3.3cm] (den) at (4,-1.35) {U-Net + sampler\\$z_T\to\cdots\to z_0$};
-\node[box,minimum width=2cm,fill=lightgreen] (dec) at (7.45,-1.35) {VAE decoder\\$D_\psi(z_0/a)$};
+\node[box,minimum width=2cm,fill=lightgreen] (dec) at (7.45,-1.35) {Decoder\\$D_\psi(z_0/a)$};
 \node[box,minimum width=1.4cm] (out) at (10,-1.35) {$\hat x_0$\\image};
 \draw[->,thick] (n)--(den);
 \draw[->,thick] (den)--(dec);
 \draw[->,thick] (dec)--(out);
-\node[box,fill=lightgreen,minimum width=2.6cm] (gentext) at (4,-2.9) {Same prompt tokens\\$\tau_\eta(y)$};
+\node[box,fill=lightgreen,minimum width=2.6cm] (gentext) at (4,-2.9) {Same condition\\$\tau_\eta(y)$};
 \draw[->,thick] (gentext.north)--(den.south);
 \end{tikzpicture}
 \captionof{figure}{Original latent diffusion pipeline, based on
-\cite[Fig.~3 and Sec.~3]{rombach2022ldm}. The VAE is learned first and
-frozen for diffusion training; its decoder runs after the denoising loop.
-Pure text-to-image generation does not require a real input image or the
-image encoder.}\label{fig:ldm}
+\cite[Fig.~3 and Sec.~3]{rombach2022ldm}. The autoencoder is learned
+first and frozen for diffusion training; its decoder runs after the
+denoising loop. A modality-specific encoder $\tau_\eta$ feeds the
+condition through cross-attention, while spatially aligned inputs can
+instead be concatenated with the noisy latent (dashed).}\label{fig:ldm}
 \end{minipage}\par\medskip
 \section{Results and Discussion}\label{sec:results}
 
@@ -815,10 +922,8 @@ We decoded latent states for display.
 For the text demo, the baseline asks for a bus and a car. The reference
 asks for a red bus to the left of a blue car. Two edits change only
 \emph{red} to \emph{green} or \emph{left} to \emph{right}. Within each
-seed, all four prompts start from a copy of the same Gaussian latent.
-Stable Diffusion encodes each prompt, supplies the text embeddings to
-the denoiser through cross-attention, applies classifier-free guidance,
-and decodes the final latent to RGB \cite{rombach2022ldm,ho2022cfg}.
+seed, all four prompts start from a copy of the same Gaussian latent
+and follow the conditioning pipeline of Section~\ref{sec:attention}.
 We visually checked the two vehicles, the requested colors, and the
 relative position. The baseline specifies only which vehicles to show.
 \end{minipage}

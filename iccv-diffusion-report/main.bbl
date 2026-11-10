@@ -1,4 +1,4 @@
-\begin{thebibliography}{18}
+\begin{thebibliography}{25}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -21,6 +21,19 @@ Nicholas Carlini, Jamie Hayes, Milad Nasr, Matthew Jagielski, Vikash Sehwag,
   Florian Tram{\`e}r, Borja Balle, Daphne Ippolito, and Eric Wallace.
 \newblock Extracting training data from diffusion models.
 \newblock In \emph{32nd USENIX Security Symposium}, 2023.
+
+\bibitem[Chefer et~al.(2023)Chefer, Alaluf, Vinker, Wolf, and
+  Cohen-Or]{chefer2023attend}
+Hila Chefer, Yuval Alaluf, Yael Vinker, Lior Wolf, and Daniel Cohen-Or.
+\newblock Attend-and-excite: Attention-based semantic guidance for
+  text-to-image diffusion models.
+\newblock \emph{ACM Transactions on Graphics}, 42\penalty0 (4), 2023.
+
+\bibitem[Esser et~al.(2021)Esser, Rombach, and Ommer]{esser2021vqgan}
+Patrick Esser, Robin Rombach, and Bj{\"o}rn Ommer.
+\newblock Taming transformers for high-resolution image synthesis.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision
+  and Pattern Recognition}, pages 12873--12883, 2021.
 
 \bibitem[Goodfellow et~al.(2014)Goodfellow, Pouget-Abadie, Mirza, Xu,
   Warde-Farley, Ozair, Courville, and Bengio]{goodfellow2014gan}
@@ -55,6 +68,12 @@ Jonathan Ho, Ajay Jain, and Pieter Abbeel.
 \newblock Official author kit; style and bibliography files distributed with
   the project.
 
+\bibitem[Isola et~al.(2017)Isola, Zhu, Zhou, and Efros]{isola2017pix2pix}
+Phillip Isola, Jun-Yan Zhu, Tinghui Zhou, and Alexei~A. Efros.
+\newblock Image-to-image translation with conditional adversarial networks.
+\newblock In \emph{Proceedings of the IEEE Conference on Computer Vision and
+  Pattern Recognition}, 2017.
+
 \bibitem[Kingma and Welling(2014)]{kingma2014vae}
 Diederik~P. Kingma and Max Welling.
 \newblock Auto-encoding variational bayes.
@@ -66,6 +85,20 @@ Diederik~P. Kingma and Max Welling.
 \newblock AI assistance for drafting, LaTeX, code, and source checking; see
   Appendix B.
 
+\bibitem[Radford et~al.(2021)Radford, Kim, Hallacy, Ramesh, Goh, Agarwal,
+  Sastry, Askell, Mishkin, Clark, Krueger, and Sutskever]{radford2021clip}
+Alec Radford, Jong~Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh,
+  Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark,
+  Gretchen Krueger, and Ilya Sutskever.
+\newblock Learning transferable visual models from natural language
+  supervision.
+\newblock In \emph{Proceedings of the 38th International Conference on Machine
+  Learning}, pages 8748--8763, 2021.
+
+\bibitem[Rombach and Esser(2022)]{compvis2022sd14}
+Robin Rombach and Patrick Esser.
+\newblock Stable diffusion v1.4 model card, 2022.
+
 \bibitem[Rombach et~al.(2022)Rombach, Blattmann, Lorenz, Esser, and
   Ommer]{rombach2022ldm}
 Robin Rombach, Andreas Blattmann, Dominik Lorenz, Patrick Esser, and Bj{\"o}rn
@@ -75,13 +108,12 @@ Robin Rombach, Andreas Blattmann, Dominik Lorenz, Patrick Esser, and Bj{\"o}rn
   and Pattern Recognition}, 2022.
 \newblock arXiv v2, April 2022; includes supplementary material.
 
-\bibitem[Schuhmann et~al.(2022)Schuhmann, Beaumont, Vencu, Gordon, Wightman,
-  Cherti, et~al.]{schuhmann2022laion}
-Christoph Schuhmann, Romain Beaumont, Richard Vencu, Cade Gordon, Ross
-  Wightman, Mehdi Cherti, et~al.
-\newblock {LAION-5B}: An open large-scale dataset for training next generation
-  image-text models.
-\newblock In \emph{Advances in Neural Information Processing Systems}, 2022.
+\bibitem[Ronneberger et~al.(2015)Ronneberger, Fischer, and
+  Brox]{ronneberger2015unet}
+Olaf Ronneberger, Philipp Fischer, and Thomas Brox.
+\newblock {U-Net}: Convolutional networks for biomedical image segmentation.
+\newblock In \emph{Medical Image Computing and Computer-Assisted Intervention
+  (MICCAI)}, pages 234--241, 2015.
 
 \bibitem[Sohl-Dickstein et~al.(2015)Sohl-Dickstein, Weiss, Maheswaranathan, and
   Ganguli]{sohl2015diffusion}
@@ -115,6 +147,12 @@ A{\"a}ron van~den Oord, Nal Kalchbrenner, and Koray Kavukcuoglu.
 \newblock In \emph{Proceedings of the 33rd International Conference on Machine
   Learning}, pages 1747--1756, 2016.
 
+\bibitem[van~den Oord et~al.(2017)van~den Oord, Vinyals, and
+  Kavukcuoglu]{oord2017vqvae}
+A{\"a}ron van~den Oord, Oriol Vinyals, and Koray Kavukcuoglu.
+\newblock Neural discrete representation learning.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2017.
+
 \bibitem[Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez,
   Kaiser, and Polosukhin]{vaswani2017attention}
 Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
@@ -127,5 +165,13 @@ Pascal Vincent.
 \newblock A connection between score matching and denoising autoencoders.
 \newblock \emph{Neural Computation}, 23\penalty0 (7):\penalty0 1661--1674,
   2011.
+
+\bibitem[Zhang et~al.(2018)Zhang, Isola, Efros, Shechtman, and
+  Wang]{zhang2018lpips}
+Richard Zhang, Phillip Isola, Alexei~A. Efros, Eli Shechtman, and Oliver Wang.
+\newblock The unreasonable effectiveness of deep features as a perceptual
+  metric.
+\newblock In \emph{Proceedings of the IEEE Conference on Computer Vision and
+  Pattern Recognition}, 2018.
 
 \end{thebibliography}

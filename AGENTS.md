@@ -1,6 +1,6 @@
 # Repository memory and agent handoff
 
-Last updated: 2026-11-09 (Asia/Ho_Chi_Minh).
+Last updated: 2026-11-10 (Asia/Ho_Chi_Minh).
 
 ## Purpose and current state
 
@@ -36,8 +36,8 @@ Current deliverables:
 
 The standalone 2015-loss subsection has been removed from main text. Its
 K, negative-bound loss and covariance/entropy details remain in Appendix C.5.
-The end of 3.2 states that DDPM inherits the forward/reverse construction
-and trains through variational inference. Subsection 3.3 now merges the full
+The first sentence of 3.3 states that DDPM inherits the forward/reverse
+construction and likelihood-based training. Subsection 3.3 now merges the full
 training derivation and simplified objective: it introduces the DDPM L_VLB
 decomposition, explains tractable posterior
 targets, fixes covariance, derives mean MSE, writes the target and predicted
@@ -60,6 +60,15 @@ to weighted noise MSE has been removed; that derivation is now in 3.3 only.
 All former app:vlb references have been removed or redirected. The remaining
 score-to-reverse-mean derivation is now C.6 after automatic renumbering.
 
+Redundancy cleanup (November 10, 2026): Song & Ermon/annealed Langevin is
+described once in 2.3 (label sec:history); 3.3 links back to it. The
+score/noise/mean equivalence is stated once ("Hence ..."), plus one Langevin
+sentence in the "Reverse sampling" paragraph. Repeated finite-T caveats were
+removed from Appendices C.3 and F; the text-to-image encoder caveat lives only
+in 4.4.2 text; 5.1 refers to 4.4 instead of re-explaining conditioning. The
+former Appendix C.8 "Two training stages" was removed; its joint
+condition-encoder fact moved to 4.3. Do not reintroduce these duplicates.
+
 The reverse-sampling paragraph of subsection 3.3 compares the 2015 learned covariance with DDPM
 2020's fixed isotropic choices sigma_t^2=beta_t or tilde_beta_t for t>1.
 It defines the posterior-variance formula before sampling, notes the paper's
@@ -67,6 +76,8 @@ similar-results finding, and separates predicted mean from fresh sampling
 noise. The final u_1=0 update is distinguished from decoder variance and
 the original 2015 endpoint. Appendix F references this main-text equation.
 The sampling variance choices are also in 3.3; worked examples begin at 3.4.
+
+Abstract and Introduction rewritten (November 10, 2026) after re-reading the assignment PDF (requirement/AI 24A Seminar Topics.pdf), requirement/REQUIREMENT-CHECKLIST.md, KeyQuestions.md and Human_note/intro.md ("raise Learning Objectives and Guiding Question"). The abstract is a single self-contained paragraph: question, the two papers, what we derive/illustrate, our pretrained-checkpoint results (LSUN median 2.44 s vs 6.10 s with HIGHER peak allocation 1.68 vs 0.75 GiB; 50 DDIM steps, one T4; no training of our own), ImageNet trajectories, the small SD v1.4 prompt test (color edit works, left-right reversal does not), and the published-evidence/limitations scope. The Introduction uses bold run-in headings (not \paragraph, which adds large vertical gaps in the ICCV style): context, Learning objective, Guiding question, From denoising to generation (one-step MSE regression gives the conditional mean, cf. KeyQuestions Q2 and App. C.4), Papers and scope, Papers versus our own work (rubric: separate paper findings from our own material), Organization. Keep the abstract and intro free of claims not supported in the body.
 
 The user approved a broader DDPM/LDM flow. The guiding question is **How can learning to remove noise enable a model to generate new images?** The Introduction also states the learning objective: **Explain forward noising and reverse denoising, including why latent diffusion reduces computational demands.**
 
@@ -90,9 +101,9 @@ score; noise predictions parameterize a noisy marginal score estimate. Equality
 with the true score is an ideal MSE-optimum statement, not an exact guarantee
 for an arbitrary trained network.
 
-The former qualitative comparison Table 1 has been replaced by the user-supplied `figures/qualitative_comparison.png` in Appendix E (Figure 5). Subsection 2.2 keeps its prose and references that illustration. Do not restore the old table unless requested.
+The schedule-coefficient table (tab:noise) was removed from 3.5 at the user's request; 3.5 states the setup briefly and quotes the SNR values inline, while seed/script details live in Appendix B.1. Do not restore the table. The former qualitative comparison Table 1 has been replaced by the user-supplied `figures/qualitative_comparison.png` in Appendix E (Figure 5). Subsection 2.2 keeps its prose and references that illustration. Do not restore the old table unless requested.
 
-Heavy DSM, MSE-optimum, original 2015 bound/covariance, and score-to-reverse-mean derivations are in Appendix C. Supporting VAE, attention matrix/toy example, and CFG details are in Appendix D; main-text attention is brief. The current PDF has **9 main-text pages + 1 reference page + 12 appendix pages = 22 pages**. The body must remain at most 10 pages, excluding references/appendices. The ZIP clean-build check must be refreshed after edits.
+Heavy DSM, MSE-optimum, original 2015 bound/covariance, and score-to-reverse-mean derivations are in Appendix C. The textbook VAE (prior, encoder, reparameterization, ELBO eq:elbo) is background subsection 2.4 (sec:vae-background); subsection 4.2 "Perceptual image compression" (sec:vae) per user request: the AE loss is only named conceptually (perceptual/LPIPS, patch-adversarial, light regularizer; no loss equation), then KL-reg vs VQ-reg (eq:vq), and a discussion of why LDM absorbs the VQ layer into the decoder: continuous latent for Gaussian diffusion, tolerance to off-codebook samples (explicitly labeled our interpretation), 2D structure/mild compression vs VQGAN autoregressive 1D ordering, bounded latent scale; plus the LDM finding that VQ-reg LDMs sometimes sample better despite slightly worse reconstruction, tied to our ImageNet (VQ f=4) and LSUN (KL f=8) checkpoints. Subsection 4.4 is split into 4.4.1 "Conditioning through cross-attention" (sec:crossattn: tau_eta, Q/K/V, figure, limitations, CFG) and 4.4.2 "A modality-agnostic pipeline" (sec:fullpipeline): LDM is not text-specific; only tau_eta depends on the modality (text, class label with m=1 as in our ImageNet LDM, layout, spatially aligned inputs concatenated with z_t, or none as in LSUN), followed by training/generation steps and autoencoder reuse. Figure 4 (fig:ldm) shows a generic condition y and a dashed concat branch; keep it modality-agnostic. Subsection 4.4.1 explains cross-attention in the main text (eq:qkv, eq:attention, fig:attention moved from the appendix), tau_eta (LDM joint transformer vs SD v1.4 frozen CLIP ViT-L/14), and the attribute-binding/neglect limitation (Attend-and-Excite). Appendix D ("Supporting Conditioning Details") now holds only attention shapes/toy example and CFG. Added bib: oord2017vqvae, esser2021vqgan, zhang2018lpips, isola2017pix2pix, ronneberger2015unet, radford2021clip, chefer2023attend. The current PDF has **10 main-text pages + 1 reference page + 12 appendix pages = 23 pages**. **Page budget: the main text may use up to 10 full pages, excluding references and appendices**, so there is roughly one page of room for new content; a 10-page body is acceptable. Layout pitfall: the twocolumn block before Section 5 forces a page break, so lines added to Sections 3-4 may spill into a mostly empty page. That is a layout-quality issue to avoid by rebalancing floats or text, not a page-limit violation; do not cut useful content merely to stay at 9 pages. The ZIP clean-build check must be refreshed after edits.
 
 Appendix F contains side-by-side Algorithms 1/2 for forward Gaussian
 diffusion and backward sampling with the 2015 learned mean/covariance model.
