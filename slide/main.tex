@@ -290,57 +290,71 @@ $\mathrm{SNR}=\ab_t/(1-\ab_t)$: $33.5$ at $t=50$ (clear), $1.93$ at $t=200$, $0.
 \begin{frame}
 \frametitle{Reverse denoising: learn to undo one small step}
 \framesubtitle{B \textperiodcentered{} Reverse denoising}
-\begin{center}
+{\centering
 \begin{tikzpicture}[>=Stealth,font=\footnotesize,
-  st/.style={draw=black!35,fill=white,rounded corners=2pt,minimum width=9mm,minimum height=5.5mm,inner sep=2pt},
-  opf/.style={draw=fwd,fill=white,rounded corners=3pt,minimum height=7mm,align=center,inner sep=3pt},
-  opr/.style={draw=rev,fill=white,rounded corners=3pt,minimum height=7.5mm,align=center,inner sep=2pt}]
+  st/.style={draw=black!35,fill=white,rounded corners=2pt,minimum width=9mm,minimum height=5.2mm,inner sep=2pt},
+  opf/.style={draw=fwd,fill=white,rounded corners=3pt,minimum height=6.2mm,align=center,inner sep=3pt},
+  opr/.style={draw=rev,fill=white,rounded corners=3pt,minimum height=7mm,align=center,inner sep=2pt}]
   % forward band
-  \fill[fwd!7,rounded corners=3pt] (0,1.3) rectangle (14.4,2.5);
-  \node[anchor=west,font=\scriptsize\bfseries,text=fwd] at (0.15,2.3) {FORWARD: known Gaussian corruption};
-  \node[st] (fx0) at (0.8,1.75) {$x_0$};
-  \node[st] (fxp) at (3.0,1.75) {$x_{t-1}$};
-  \node[opf,minimum width=5.4cm] (fk) at (7.2,1.75) {$q(x_t\mid x_{t-1})=\Normal(\sqrt{1-\beta_t}\,x_{t-1},\beta_t\Id)$};
-  \node[st] (fxt) at (11.5,1.75) {$x_t$};
-  \node[st] (fxT) at (13.6,1.75) {$x_T$};
+  \fill[fwd!7,rounded corners=3pt] (0,1.15) rectangle (14.4,2.17);
+  \node[anchor=west,font=\scriptsize\bfseries,text=fwd] at (0.15,1.99) {FORWARD: known Gaussian corruption};
+  \node[st] (fx0) at (0.8,1.56) {$x_0$};
+  \node[st] (fxp) at (3.0,1.56) {$x_{t-1}$};
+  \node[opf,minimum width=5.4cm] (fk) at (7.2,1.56) {$q(x_t\mid x_{t-1})=\Normal(\sqrt{1-\beta_t}\,x_{t-1},\beta_t\Id)$};
+  \node[st] (fxt) at (11.5,1.56) {$x_t$};
+  \node[st] (fxT) at (13.6,1.56) {$x_T$};
   \foreach \a/\b in {fx0/fxp,fxp/fk,fk/fxt,fxt/fxT}{\draw[->,line width=0.9pt,fwd] (\a) -- (\b);}
   % reverse band
-  \fill[rev!8,rounded corners=3pt] (0,0) rectangle (14.4,1.2);
-  \node[anchor=west,font=\scriptsize\bfseries,text=rev] at (0.15,1.0) {REVERSE: learned denoising};
-  \node[st] (rx0) at (0.8,0.45) {$x_0$};
-  \node[st] (rxp) at (3.0,0.45) {$x_{t-1}$};
-  \node[opr,minimum width=3.3cm] (rs) at (5.5,0.45) {sampler\\[-1pt]$\mu_\theta+\sigma_t u_t$};
-  \node[opr,minimum width=3.0cm] (rn) at (9.0,0.45) {\textbf{neural net}\\[-1pt]$\eps_\theta(x_t,t)$};
-  \node[st] (rxt) at (11.5,0.45) {$x_t$};
-  \node[st] (rxT) at (13.6,0.45) {$x_T$};
+  \fill[rev!8,rounded corners=3pt] (0,0) rectangle (14.4,1.08);
+  \node[anchor=west,font=\scriptsize\bfseries,text=rev] at (0.15,0.9) {REVERSE: learned denoising};
+  \node[st] (rx0) at (0.8,0.38) {$x_0$};
+  \node[st] (rxp) at (3.0,0.38) {$x_{t-1}$};
+  \node[opr,minimum width=3.3cm] (rs) at (5.5,0.38) {sampler\\[-1pt]$\mu_\theta+\sigma_t u_t$};
+  \node[opr,minimum width=3.0cm] (rn) at (9.0,0.38) {\textbf{neural net}\\[-1pt]$\eps_\theta(x_t,t)$};
+  \node[st] (rxt) at (11.5,0.38) {$x_t$};
+  \node[st] (rxT) at (13.6,0.38) {$x_T$};
   \foreach \a/\b in {rxT/rxt,rxt/rn,rn/rs,rs/rxp,rxp/rx0}{\draw[->,line width=0.9pt,rev] (\a) -- (\b);}
-  \node[font=\scriptsize,text=rev] at (5.5,1.0) {$u_t\sim\Normal(0,\Id)$};
-  \node[font=\scriptsize,text=rev] at (9.0,1.0) {timestep $t$};
-\end{tikzpicture}
-\end{center}
-\vspace{-2.5mm}
-\begin{columns}[T,onlytextwidth]
-\column{.49\textwidth}
-\begin{tbox}[fontupper=\footnotesize]{One reverse step}{rev}
-\setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{1pt}
-$p_\theta(x_{t-1}\mid x_t)=\Normal\big(\mu_\theta(x_t,t),\sigma_t^2\Id\big)$, \ $\sigma_t^2=\beta_t$: \emph{fixed}, not learned; $\theta$: U-Net weights
+  \node[font=\scriptsize,text=rev] at (5.5,0.9) {$u_t\sim\Normal(0,\Id)$};
+  \node[font=\scriptsize,text=rev] at (9.0,0.9) {timestep $t$};
+\end{tikzpicture}\par}
+\vspace{1mm}
+\begin{tcbraster}[raster columns=2,raster equal height,raster column skip=3mm,raster before skip=0pt,raster after skip=0pt,
+  raster every box/.style={base,fontupper=\footnotesize,coltitle=white}]
+\begin{tcolorbox}[colframe=rev,colback=rev!5!white,title={One reverse step}]
+\setlength{\abovedisplayskip}{2pt}\setlength{\belowdisplayskip}{2pt}
+$p_\theta(x_{t-1}\mid x_t)=\Normal\big(\mu_\theta(x_t,t),\sigma_t^2\Id\big)$, \ $\sigma_t^2=\beta_t$ \emph{fixed}
 \[\mu_\theta=\frac{1}{\sqrt{\alpha_t}}\Big(x_t-\frac{\beta_t}{\sqrt{1-\ab_t}}\,\boldsymbol{\eps_\theta(x_t,t)}\Big)\]
-\emph{Why predict $\eps$, not $x_0$?} $\eps\sim\Normal(0,\Id)$ is a simple, normalized target; it also encodes the score of the noisy marginal $q_t$: $-\eps_\theta/\sqrt{1-\ab_t}\approx\nabla\log q_t(x_t)$.
-\end{tbox}
-\column{.49\textwidth}
-\begin{tbox}[fontupper=\footnotesize]{Training objective}{hcmusblue}
-\setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{1pt}
+$\theta$: U-Net weights. The output also gives the score of the noisy data: $-\eps_\theta/\sqrt{1-\ab_t}\approx\nabla\log q_t(x_t)$.
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=hcmusblue,colback=hcmusblue!5!white,title={Training objective}]
+\setlength{\abovedisplayskip}{2pt}\setlength{\belowdisplayskip}{2pt}
 \[L_{\text{simple}}=\E_{t,x_0,\eps}\big[\|\eps-\eps_\theta(x_t,t)\|^2\big]\]
-\begin{enumerate}\setlength{\itemsep}{0pt}
+\begin{enumerate}\setlength{\itemsep}{1pt}
 \item draw $x_0\sim$ data, $t\sim\mathrm{U}\{1..T\}$, $\eps\sim\Normal(0,\Id)$
 \item build $x_t=\sqrt{\ab_t}\,x_0+\sqrt{1-\ab_t}\,\eps$
 \item predict $\eps_\theta(x_t,t)$; gradient step on the error
 \end{enumerate}
-\paper\ CIFAR-10 FID $3.17$ vs.\ $13.51$ (variational)
-\end{tbox}
-\end{columns}
-\src{Diagram: original schematic after Sohl-Dickstein et al.\ 2015 and Ho et al.\ 2020. $L_{\text{simple}}$ is a reweighted surrogate of the variational bound (Ho et al.\ 2020, Tables 1--2).}
-\note{\textbf{(~90 s)} Central figure: blue = known, orange = learned. The network never sees the clean image at inference. Training in 3 lines. Why epsilon: normalized target and link to score; derivation (KL, posterior mean) goes to Q\&A.}
+\end{tcolorbox}
+\end{tcbraster}
+\vspace{1.3mm}
+\begin{nbox}[fontupper=\footnotesize,before skip=0pt,after skip=0pt,colback=lightorange]{rev}
+\begin{minipage}[c]{.49\linewidth}
+\textbf{Why predict $\eps$, not $x_{t-1}$?} The mean $\tilde\mu_t$ of $x_{t-1}$ gives the same Gaussian step, but trains well only on the weighted bound. $\eps\sim\Normal(0,\Id)$ has one scale at every $t$, so plain MSE ($L_{\text{simple}}$) works best.
+\end{minipage}\hfill
+\begin{minipage}[c]{.49\linewidth}
+\centering\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.0}%
+{\scriptsize\paper\ Ho et al.\ 2020, Table~2: CIFAR-10 FID$\downarrow$}\\[0.6mm]
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Network predicts & weighted bound & plain MSE\\
+\midrule
+mean $\tilde\mu_t$ of $x_{t-1}$ & 13.22 & unstable\\
+noise $\eps$ & 13.51 & \textbf{3.17}\\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\end{nbox}
+\note{\textbf{(~90 s)} Central figure: blue = known, orange = learned. The network never sees the clean image at inference. Training in 3 lines. Why epsilon rather than x_{t-1}: both define the same Gaussian step, but predicting the mean only trains well on the weighted bound (FID 13.22) and is unstable with plain MSE; epsilon has unit scale at every t, so L_simple works (FID 3.17). Derivation (KL, posterior mean) goes to Q\&A.}
 \end{frame}
 
 %% =====================================================================

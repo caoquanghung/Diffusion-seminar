@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2026.2.2)  18 NOV 2026 13:58
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2026.2.2)  18 NOV 2026 14:13
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1262,7 +1262,7 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 
  <./figures/noise_sequence.pdf>]
 LaTeX Font Info:    Font shape `T1/lmss/m/it' in size <7> not available
-(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 344.
+(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 358.
 
 
 [5
@@ -1271,37 +1271,37 @@ LaTeX Font Info:    Font shape `T1/lmss/m/it' in size <7> not available
 <figures/retriever_step25.png, id=74, 925.4575pt x 602.25pt>
 File: figures/retriever_step25.png Graphic file (type png)
 <use figures/retriever_step25.png>
-Package pdftex.def Info: figures/retriever_step25.png  used on input line 382.
+Package pdftex.def Info: figures/retriever_step25.png  used on input line 396.
 (pdftex.def)             Requested size: 188.4738pt x 122.64417pt.
 
 
 [6
 
  <./figures/retriever_step25.png (PNG copy)>]
-Underfull \hbox (badness 1348) in paragraph at lines 435--435
+Underfull \hbox (badness 1348) in paragraph at lines 449--449
 \T1/lmss/m/n/7 the KL keeps codes near $\OMS/lmsy/m/n/7 N\OT1/lmr/m/n/7 (0\OML/
 lmm/m/it/7 ; \OT1/lmr/bx/n/7 I\OT1/lmr/m/n/7 )$\T1/lmss/m/n/7 .
  []
 
 
-Underfull \hbox (badness 3009) in paragraph at lines 435--435
+Underfull \hbox (badness 3009) in paragraph at lines 449--449
 \T1/lmss/bx/n/7 Prob-lem: \T1/lmss/m/n/7 pixel-wise squared er-ror
  []
 
 
-Underfull \hbox (badness 2142) in paragraph at lines 435--435
+Underfull \hbox (badness 2142) in paragraph at lines 449--449
 []\T1/lmss/bx/n/7 1. \T1/lmss/m/sl/7 Per-cep-tual loss\T1/lmss/m/n/7 : com-pare
  deep
  []
 
 
-Underfull \hbox (badness 1796) in paragraph at lines 435--435
+Underfull \hbox (badness 1796) in paragraph at lines 449--449
 \T1/lmss/bx/n/7 2. \T1/lmss/m/sl/7 Patch-based ad-ver-sar-ial loss\T1/lmss/m/n/
 7 : a
  []
 
 
-Underfull \hbox (badness 1147) in paragraph at lines 435--435
+Underfull \hbox (badness 1147) in paragraph at lines 449--449
 \T1/lmss/m/n/7 so de-cod-ing $[] \OMS/lmsy/m/n/7 ^^X N\OT1/lmr/m/n/7 (0\OML/lmm
 /m/it/7 ; \OT1/lmr/bx/n/7 I\OT1/lmr/m/n/7 )$ \T1/lmss/m/n/7 is not
  []
@@ -1319,19 +1319,19 @@ Underfull \hbox (badness 1147) in paragraph at lines 435--435
 File: figures/prompt/2027_reference.png Graphic file (type png)
 <use figures/prompt/2027_reference.png>
 Package pdftex.def Info: figures/prompt/2027_reference.png  used on input line 
-532.
+546.
 (pdftex.def)             Requested size: 62.59596pt x 62.59306pt.
 <figures/prompt/2027_change_color.png, id=92, 513.92pt x 513.92pt>
 File: figures/prompt/2027_change_color.png Graphic file (type png)
 <use figures/prompt/2027_change_color.png>
 Package pdftex.def Info: figures/prompt/2027_change_color.png  used on input li
-ne 532.
+ne 546.
 (pdftex.def)             Requested size: 62.59596pt x 62.59306pt.
 <figures/prompt/2027_change_side.png, id=93, 513.92pt x 513.92pt>
 File: figures/prompt/2027_change_side.png Graphic file (type png)
 <use figures/prompt/2027_change_side.png>
 Package pdftex.def Info: figures/prompt/2027_change_side.png  used on input lin
-e 532.
+e 546.
 (pdftex.def)             Requested size: 62.59596pt x 62.59306pt.
 
 
@@ -1342,49 +1342,49 @@ _color.png (PNG copy)> <./figures/prompt/2027_change_side.png (PNG copy)>]
 <figures/churches/ddpm_2026.png, id=99, 256.96pt x 256.96pt>
 File: figures/churches/ddpm_2026.png Graphic file (type png)
 <use figures/churches/ddpm_2026.png>
-Package pdftex.def Info: figures/churches/ddpm_2026.png  used on input line 583
+Package pdftex.def Info: figures/churches/ddpm_2026.png  used on input line 597
 .
 (pdftex.def)             Requested size: 39.83368pt x 39.8323pt.
 <figures/churches/ddpm_2027.png, id=100, 256.96pt x 256.96pt>
 File: figures/churches/ddpm_2027.png Graphic file (type png)
 <use figures/churches/ddpm_2027.png>
-Package pdftex.def Info: figures/churches/ddpm_2027.png  used on input line 583
+Package pdftex.def Info: figures/churches/ddpm_2027.png  used on input line 597
 .
 (pdftex.def)             Requested size: 39.83368pt x 39.8323pt.
 <figures/churches/ddpm_2028.png, id=101, 256.96pt x 256.96pt>
 File: figures/churches/ddpm_2028.png Graphic file (type png)
 <use figures/churches/ddpm_2028.png>
-Package pdftex.def Info: figures/churches/ddpm_2028.png  used on input line 583
+Package pdftex.def Info: figures/churches/ddpm_2028.png  used on input line 597
 .
 (pdftex.def)             Requested size: 39.83368pt x 39.8323pt.
 <figures/churches/ddpm_2029.png, id=102, 256.96pt x 256.96pt>
 File: figures/churches/ddpm_2029.png Graphic file (type png)
 <use figures/churches/ddpm_2029.png>
-Package pdftex.def Info: figures/churches/ddpm_2029.png  used on input line 583
+Package pdftex.def Info: figures/churches/ddpm_2029.png  used on input line 597
 .
 (pdftex.def)             Requested size: 39.83368pt x 39.8323pt.
 <figures/churches/ldm_2026.png, id=103, 256.96pt x 256.96pt>
 File: figures/churches/ldm_2026.png Graphic file (type png)
 <use figures/churches/ldm_2026.png>
-Package pdftex.def Info: figures/churches/ldm_2026.png  used on input line 583.
+Package pdftex.def Info: figures/churches/ldm_2026.png  used on input line 597.
 
 (pdftex.def)             Requested size: 39.83368pt x 39.8323pt.
 <figures/churches/ldm_2027.png, id=104, 256.96pt x 256.96pt>
 File: figures/churches/ldm_2027.png Graphic file (type png)
 <use figures/churches/ldm_2027.png>
-Package pdftex.def Info: figures/churches/ldm_2027.png  used on input line 583.
+Package pdftex.def Info: figures/churches/ldm_2027.png  used on input line 597.
 
 (pdftex.def)             Requested size: 39.83368pt x 39.8323pt.
 <figures/churches/ldm_2028.png, id=105, 256.96pt x 256.96pt>
 File: figures/churches/ldm_2028.png Graphic file (type png)
 <use figures/churches/ldm_2028.png>
-Package pdftex.def Info: figures/churches/ldm_2028.png  used on input line 583.
+Package pdftex.def Info: figures/churches/ldm_2028.png  used on input line 597.
 
 (pdftex.def)             Requested size: 39.83368pt x 39.8323pt.
 <figures/churches/ldm_2029.png, id=106, 256.96pt x 256.96pt>
 File: figures/churches/ldm_2029.png Graphic file (type png)
 <use figures/churches/ldm_2029.png>
-Package pdftex.def Info: figures/churches/ldm_2029.png  used on input line 583.
+Package pdftex.def Info: figures/churches/ldm_2029.png  used on input line 597.
 
 (pdftex.def)             Requested size: 39.83368pt x 39.8323pt.
 
@@ -1397,9 +1397,9 @@ g (PNG copy)> <./figures/churches/ddpm_2028.png (PNG copy)> <./figures/churches
 res/churches/ldm_2027.png (PNG copy)> <./figures/churches/ldm_2028.png (PNG cop
 y)> <./figures/churches/ldm_2029.png (PNG copy)>]
 LaTeX Font Info:    Font shape `T1/lmss/m/it' in size <8> not available
-(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 623.
+(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 637.
 
-Underfull \hbox (badness 2012) in paragraph at lines 623--623
+Underfull \hbox (badness 2012) in paragraph at lines 637--637
 \T1/lmss/m/n/8 can yield \T1/lmss/bx/n/8 de-mo-graphic stereo-
  []
 
@@ -1414,17 +1414,17 @@ Underfull \hbox (badness 2012) in paragraph at lines 623--623
 ]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\translate ' on input line 661.
+(hyperref)                removing `\translate ' on input line 675.
 
 LaTeX Font Info:    Font shape `T1/lmss/m/it' in size <6.6> not available
-(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 714.
-LaTeX Font Info:    Calculating math sizes for size <6.6> on input line 714.
+(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 728.
+LaTeX Font Info:    Calculating math sizes for size <6.6> on input line 728.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6.6> on input line 714.
+(Font)              <6.6> on input line 728.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <4.61998> on input line 714.
+(Font)              <4.61998> on input line 728.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <3.3> on input line 714.
+(Font)              <3.3> on input line 728.
 
 
 [13
@@ -1456,11 +1456,11 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 5BCEA9CF7D2D9AECE7CAC4018E9F6C5B;81.
  ) 
 Here is how much of TeX's memory you used:
- 31482 strings out of 473190
- 646033 string characters out of 5715801
- 1078206 words of memory out of 5000000
- 54045 multiletter control sequences out of 15000+600000
- 806422 words of font info for 204 fonts, out of 8000000 for 9000
+ 31483 strings out of 473190
+ 646052 string characters out of 5715801
+ 1081236 words of memory out of 5000000
+ 54046 multiletter control sequences out of 15000+600000
+ 800880 words of font info for 202 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  128i,18n,123p,450b,1356s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx6.pfb></usr/loc
@@ -1485,7 +1485,7 @@ ype1/public/lm/lmsy7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public
 ymbols/msam10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfon
 ts/symbols/msbm7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/zapfdi
 ng/uzdr.pfb>
-Output written on main.pdf (15 pages, 5353679 bytes).
+Output written on main.pdf (15 pages, 5353840 bytes).
 PDF statistics:
  257 PDF objects out of 1000 (max. 8388607)
  168 compressed objects within 2 object streams
