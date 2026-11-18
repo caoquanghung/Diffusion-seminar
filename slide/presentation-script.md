@@ -1,6 +1,6 @@
 # Presentation script: Diffusion Models, From Adding Noise to Generating Images
 
-Script thuyết trình cho deck [main.tex](main.tex) (12 slide nội dung + 2 slide backup).
+Script thuyết trình cho deck [main.tex](main.tex): 12 slide nội dung, cộng 4 slide backup (13: Notation, 14: Inside one denoising step, 15–16: References).
 
 **Cách đọc file này**
 
@@ -15,10 +15,10 @@ Script thuyết trình cho deck [main.tex](main.tex) (12 slide nội dung + 2 sl
 
 | Màu | Ý nghĩa | Ví dụ |
 |---|---|---|
-| Xanh dương nhạt (`fwd`) | Forward noising: cố định, đã biết | dải FORWARD slide 5, khung slide 3 |
-| Cam (`rev`) | Reverse denoising: học được; đồng thời là nhãn **OUR RUN** | dải REVERSE slide 5, khung sampling slide 6 |
-| Xanh lá (`ok`) | Latent diffusion / autoencoder; nhãn **OUR EXAMPLE** | khung autoencoder slide 7–8 |
-| Xanh đậm | Nhãn **PAPER REPORTS**: số liệu của paper, không phải của nhóm | slide 5, 8, 10 |
+| Xanh dương nhạt (`fwd`) | Forward noising: cố định, đã biết | khung "Forward noising equations" slide 3, đường "signal" trong biểu đồ |
+| Cam (`rev`) | Reverse denoising: học được; đồng thời là nhãn **OUR RUN** | dải REVERSE và khung Sampling slide 5 |
+| Xanh lá (`ok`) | Latent diffusion / autoencoder; nhãn **OUR EXAMPLE**; khung câu trả lời slide 6 | khung "Chosen values" slide 4, khung "Why removing noise generates new images" slide 6 |
+| Xanh đậm | Nhãn **PAPER REPORTS**: số liệu của paper, không phải của nhóm | thẻ Paper review slide 1, bảng FID slide 5, slide 8, 10 |
 
 Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OUR EXAMPLE bên cạnh** để người nghe biết số đó của ai.
 
@@ -28,81 +28,83 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 | # | Slide | Người nói | Thời lượng | Phần | Thông điệp một câu |
 |---|---|---|---|---|---|
-| 1 | Title + guiding question + learning objective | A | 45s | Mở đầu | Học khử nhiễu thì làm sao sinh ra ảnh mới? |
-| 2 | Where diffusion fits | A | 70s | Mở đầu | Diffusion học cấu trúc ảnh bằng cách đảo ngược một quá trình làm hỏng đã biết. |
-| 3 | Forward noising | A | 90s | A · Forward | Forward là chuỗi Gaussian đã biết; công thức đóng nhảy thẳng tới mọi bước $t$. |
-| 4 | Forward by hand and by eye | A | 80s | A · Forward | Kỳ vọng khác mẫu ngẫu nhiên; SNR giảm thì cấu trúc biến mất. |
-| 5 | Reverse denoising | B | 90s | B · Reverse | Mạng chỉ học dự đoán nhiễu; huấn luyện là hồi quy MSE. |
-| 6 | From denoising to generation | B | 110s | B · Reverse | **Trả lời guiding question**: free supervision, shared structure, small stochastic steps. |
-| 7 | Inside the autoencoder | B | 80s | C · Latent | Autoencoder nén ảnh thành latent và được đóng băng (frozen). |
-| 8 | Why latent diffusion is cheaper | B | 90s | C · Latent | Vòng lặp giữ nguyên, trạng thái nhỏ hơn: mỗi bước rẻ hơn. |
-| 9 | Cross-attention | C | 100s | C · Latent | Prompt điều khiển từng bước qua attention mềm; đổi màu được, đổi trái/phải thì không. |
-| 10 | Pixel vs latent on LSUN Churches | C | 80s | D · Evidence | Nhanh hơn khoảng 2.5 lần nhưng tốn bộ nhớ đỉnh hơn; chỉ là minh họa. |
-| 11 | Limitations | C | 50s | D · Evidence | Dữ liệu, bias, copyright, và giới hạn của chính thí nghiệm. |
-| 12 | Conclusion | C | 45s | Kết | Trả lời lại guiding question và 3 vế của learning objective. |
-| | **Tổng** | | **~930s ≈ 15.5 phút** | | Nếu cần đúng 15 phút, bỏ các câu **(cắt được)** ở slide 3, 6, 9. |
+| 1 | Title, guiding question, learning objective, paper review | A | 40s | Mở đầu | Học khử nhiễu thì làm sao sinh ra ảnh mới? DDPM và LDM đứng ở đâu trong dòng paper. |
+| 2 | Where diffusion fits: three ways to generate images | A | 60s | Mở đầu | Diffusion học cấu trúc ảnh bằng cách đảo ngược một quá trình làm hỏng đã biết. |
+| 3 | Forward noising: a known way to destroy structure | A | 85s | A · Forward | Một bước Gaussian đã biết; công thức đóng nhảy thẳng tới mọi $t$; tín hiệu được đổi dần sang nhiễu. |
+| 4 | Forward noising by hand and by eye | A | 90s | A · Forward | Hai bước tính tay theo hai cách cho cùng $x_2$; kỳ vọng khác một lần rút ngẫu nhiên. |
+| 5 | Reverse denoising: from noise back to an image | B | 85s | B · Reverse | Sinh ảnh = lặp bước ngược từ nhiễu; mạng chỉ cần dự đoán ε, và dự đoán ε tốt hơn dự đoán mean. |
+| 6 | Training the noise predictor, and why it works | B | 100s | B · Reverse | $L_{\text{simple}}$ là hồi quy MSE; ε dự đoán là score; **trả lời guiding question**: biết nhiễu thì biết ảnh sạch. |
+| 7 | Inside the autoencoder: how images become latents | B | 70s | C · Latent | Autoencoder nén ảnh thành latent và được đóng băng. |
+| 8 | Why latent diffusion is cheaper: same loop, smaller state | B | 80s | C · Latent | Vòng lặp giữ nguyên, trạng thái nhỏ hơn: mỗi bước rẻ hơn. |
+| 9 | Cross-attention: steering the denoiser with a prompt | C | 90s | C · Latent | Prompt điều khiển từng bước qua attention mềm; đổi màu được, đổi trái/phải thì không. |
+| 10 | Pixel vs. latent diffusion on LSUN Churches | C | 75s | D · Evidence | Nhanh hơn khoảng 2.5 lần nhưng tốn bộ nhớ đỉnh hơn; chỉ là minh họa. |
+| 11 | Limitations: training data, copyright and bias | C | 45s | D · Evidence | Dữ liệu, bias, copyright, và giới hạn của chính thí nghiệm. |
+| 12 | Conclusion: answering the guiding question | C | 40s | Kết | Trả lời lại guiding question và 3 vế của learning objective. |
+| | **Tổng** | | **~860s ≈ 14.3 phút** | | Còn khoảng 40s dự phòng trong giới hạn 15 phút. Nếu trễ, bỏ các câu **(cắt được)**. |
 
-**Sợi chỉ xuyên suốt**: guiding question được đặt ở slide 1, trả lời ở slide 6, nhắc lại ở slide 12. Learning objective được nêu ở slide 1, phần latent được trả lời ở slide 8, tổng kết ở slide 12.
+**Sợi chỉ xuyên suốt**: guiding question được đặt ở slide 1, trả lời ở khung xanh lá slide 6, nhắc lại ở slide 12. Learning objective được nêu ở slide 1; vế "forward" là slide 3–4, vế "reverse" là slide 5–6, vế "latent" là slide 7–8; tổng kết ở slide 12.
 
 ---
 
-## Slide 1: Title, guiding question, learning objective (A · ~45s)
+## Slide 1: Title, guiding question, learning objective, paper review (A · ~40s)
 
-**Bố cục**: dải tiêu đề xanh phía trên · **trái**: khung cam GUIDING QUESTION, bên dưới là khung xanh LEARNING OBJECTIVE (3 cụm từ tô màu) · **phải**: 4 ảnh ngôi nhà $t=0\to1000$, mũi tên xanh "forward noising (fixed)" ở trên, mũi tên cam "reverse denoising (learned)" ở dưới.
+**Bố cục**: dải tiêu đề xanh phía trên, bên dưới tiêu đề là 3 khối tên người trình bày (tên in đậm, MSSV bên dưới) · **trái**: khung cam GUIDING QUESTION, bên dưới là khung xanh LEARNING OBJECTIVE (3 cụm từ tô màu) · **phải**: thẻ xám PAPER REVIEW với 4 mục 2015 / 2019 / 2020 DDPM (required, có nhãn PAPER REPORTS) / 2022 LDM.
+
+**👉 [3 khối tên trên dải tiêu đề]**
 
 > Good morning everyone. We are Cao Quang Hung, Nguyen Trong Van Viet and Huynh Chi Ton, and today we present *Diffusion Models: From Adding Noise to Generating Images*.
 
-**👉 [Dải ảnh bên phải: quét theo mũi tên xanh từ $t=0$ đến $t=1000$]**
-
-> Start with this small house. If we add a little Gaussian noise again and again, after a thousand steps nothing is left but noise. Destroying an image is easy.
-
-**👉 [Mũi tên cam phía dưới: quét từ phải sang trái]**
-
-> The hard direction is the reverse. A denoiser cleans an image that already exists, but a generator must produce an image that never existed.
+> A denoiser cleans an image that already exists. A generator must produce an image that never existed. What connects the two?
 
 **👉 [Khung cam GUIDING QUESTION] ✋**
 
-> So our guiding question is: **how can learning to remove noise enable a model to generate new images?**
+> That is our guiding question: **how can learning to remove noise enable a model to generate new images?**
 
 **👉 [Khung xanh LEARNING OBJECTIVE: chỉ lần lượt 3 cụm màu xanh dương → cam → xanh lá]**
 
-> And our learning objective: by the end of this talk, you should be able to explain **forward noising**, **reverse denoising**, and **why latent diffusion reduces computational demands**. These three phrases are also the three parts of our talk.
+> By the end of this talk, you should be able to explain **forward noising**, **reverse denoising**, and **why latent diffusion reduces computational demands**. These three phrases are the three parts of the talk.
 
-**Chuyển ý**: "To see why this works, let's first place diffusion among other generative models."
+**👉 [Thẻ PAPER REVIEW: quét từ 2015 xuống 2022, dừng ở dòng DDPM]**
+
+> We build on four papers. The 2015 framework introduced the forward and reverse Gaussian chains; Song and Ermon learned scores at many noise levels; **DDPM**, our required paper, predicts the noise; and **LDM** runs the same idea in a compressed latent space. **(cắt được)** DDPM reports an FID of 3.17, but its likelihood is not competitive.
+
+**Chuyển ý**: "First, where does diffusion fit among generative models?"
+
+⚠️ **Đừng nói** rằng nhóm đã tự train mô hình. Mọi thí nghiệm dùng checkpoint pretrained.
 
 ---
 
-## Slide 2: Where diffusion fits (A · ~70s)
+## Slide 2: Where diffusion fits: three ways to generate images (A · ~60s)
 
-**Bố cục**: **cột trái**: ô xám *Discriminative*, ô xanh *Generative*, bên dưới là *Timeline* 2015–2022 · **cột phải**: hình 3 panel GAN (tím) | Autoregressive (xanh) | Diffusion (xanh lá), thanh "Core difference" ở đáy.
+**Bố cục**: **cột trái**: tiêu đề "Generative vs. discriminative", ô xám *Discriminative*, ô xanh *Generative*, dòng chữ nhỏ về Stable Diffusion · **cột phải**: tiêu đề "Qualitative comparison: GAN vs. autoregressive vs. diffusion", hình 3 panel GAN (tím) | Autoregressive (xanh) | Diffusion (xanh lá), thanh "Core difference" ở đáy hình.
 
 **👉 [Ô xám Discriminative]**
 
-> First, a discriminative model learns $p(y \mid x)$. To answer "is this a cat?", it only needs features that separate the classes.
+> A discriminative model learns $p(y \mid x)$. To answer "is this a cat?", it only needs features that separate the classes.
 
 **👉 [Ô xanh Generative]**
 
 > A generative model learns $p(x)$ or $p(x \mid y)$. To *create* a cat, it must capture shape, texture, lighting and layout, which is much more information.
 
-**👉 [Panel GAN màu tím: chỉ Generator → Discriminator → "adversarial training"]**
+**👉 [Panel GAN màu tím: Generator → Discriminator → "adversarial training"]**
 
-> There are three main families. A GAN maps noise to an image in one pass, but training is a game between a generator and a discriminator, and it can suffer from mode collapse.
+> There are three main families. A GAN maps noise to an image in one pass, but training is a game between two networks, and it can suffer from mode collapse.
 
 **👉 [Panel Autoregressive: chuỗi token $x_1, x_2, \dots$]**
 
-> An autoregressive model factorizes the image and generates it token by token. It gives good likelihood estimates, but sampling is slow and sequential.
+> An autoregressive model generates the image token by token: good likelihoods, but slow, sequential sampling.
 
 **👉 [Panel Diffusion: hàng trên "forward process", rồi hàng dưới "reverse process"]**
 
-> Diffusion adds noise in a fixed forward process and learns to remove it step by step. It trains stably and gives high quality and diversity, but sampling needs many steps. Remember that cost; it comes back later.
+> Diffusion adds noise in a fixed forward process and learns to remove it step by step. It trains stably and gives high quality and diversity, but sampling needs many steps.
 
 **👉 [Thanh "Core difference" dưới đáy hình]**
 
 > In one line: one pass, token by token, or denoising over many steps.
 
-**👉 [Timeline bên trái: chỉ nhanh 4 mốc]**
+**👉 [Dòng chữ nhỏ dưới ô Generative] (cắt được)**
 
-> Historically: the diffusion framework in 2015, score-based generation in 2019, then DDPM in 2020 and latent diffusion in 2022, which are the two papers we focus on.
+> This is also the backbone of today's text-to-image systems, such as Stable Diffusion, which we test on slide 9.
 
 **Chuyển ý**: "Let's start with the easy direction: forward noising."
 
@@ -110,63 +112,65 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 ---
 
-## Slide 3: Forward noising (A · ~90s)
+## Slide 3: Forward noising: a known way to destroy structure (A · ~85s)
 
-**Bố cục**: **dải sơ đồ trên**: $x_0 \to x_{t-1} \to$ [Known Gaussian kernel] $\to x_t \to x_T$, nhãn "clean data" / "nearly noise" · **khung xanh trái**: 2 phương trình (phương trình thứ hai đóng khung) · **3 gạch đầu dòng phải** · **khung cam dưới**: "Why $T=1000$ small steps?"
+**Bố cục**: **dải sơ đồ trên**: $x_0 \to x_{t-1} \to$ [Known Gaussian kernel] $\to x_t \to x_T$, nhãn "clean data" / "nearly noise" · **khung xanh trái "Forward noising equations"**: (1) ONE STEP có chú thích dưới hai số hạng "shrink old signal" / "add fresh noise"; (2) JUMP TO ANY $t$ IN ONE SHOT (phương trình đóng khung); bảng ký hiệu 4 hàng · **cột phải**: 3 gạch đầu dòng (**Why $x_T\approx\mathcal N(0,\mathbf I)$**, **Signal traded for noise**, **Assumptions**) và biểu đồ "DDPM schedule" với đường xanh $\sqrt{\bar\alpha_t}$, đường cam $\sqrt{1-\bar\alpha_t}$, vạch đứt "SNR = 1, $t\approx260$".
 
-**👉 [Dải sơ đồ: quét từ $x_0$ (clean data) sang $x_T$ (nearly noise)]**
+**👉 [Dải sơ đồ: quét từ $x_0$ (clean data) sang $x_T$ (nearly noise), dừng ở ô "Known Gaussian kernel"]**
 
-> The forward process takes a clean image $x_0$ and adds noise over $T$ steps, until $x_T$ is nearly pure noise.
+> The forward process takes a clean image $x_0$ and adds noise over $T$ steps until it is nearly pure noise. Each step is a *known* Gaussian kernel. Nothing here is learned.
 
-**👉 [Ô "Known Gaussian kernel" ở giữa dải]**
+**👉 [Phương trình (1): chỉ chú thích "shrink old signal", rồi "add fresh noise"]**
 
-> Each step is a *known* Gaussian: the mean is $\sqrt{1-\beta_t}$ times the previous state, and the variance is $\beta_t$. Nothing here is learned.
+> Equation one is a single step. The first term **shrinks the old signal** by $\sqrt{1-\beta_t}$; the second **adds fresh noise** with scale $\sqrt{\beta_t}$.
 
-**👉 [Khung xanh, phương trình dòng 1]**
+**👉 [Phương trình (2) đóng khung] ✋**
 
-> As a sample: $x_t$ equals $\sqrt{1-\beta_t}$ times $x_{t-1}$, plus $\sqrt{\beta_t}$ times fresh Gaussian noise.
+> Equation two is the key result. Because Gaussian steps compose, we can jump from $x_0$ to *any* step $t$ in one shot, using $\bar\alpha_t$, the product of the alphas.
 
-**👉 [Gạch đầu dòng 1 bên phải]**
+**👉 [Bảng ký hiệu dưới khung: quét nhanh]**
 
-> So $\beta_t$ plays two roles: it *shrinks* the old signal and *sets* the new noise level.
+> The symbols: $x_0$ is the clean image, rescaled to $[-1,1]$ and unitless; $\beta_t$ between 0 and 1 is the noise schedule; $t$ is a step index, not physical time; and $\varepsilon$ is standard Gaussian noise.
 
-**👉 [Phương trình đóng khung] ✋**
+**👉 [Gạch đầu dòng "Why $x_T\approx\mathcal N(0,\mathbf I)$"]**
 
-> The key result is this boxed formula. Because Gaussian steps compose, we can jump from $x_0$ to *any* step $t$ in one shot, using $\bar\alpha_t$, the product of the alphas. Here $t$ counts steps; it is not physical time.
+> Why does the chain end at pure noise? If a state is already standard normal, one step keeps it standard normal: $(1-\beta_t) + \beta_t = 1$. And at the last step $\bar\alpha_T$ is about $4\times10^{-5}$, so almost no signal is left. Generation can start from pure noise.
 
-**👉 [Gạch đầu dòng 2 và 3]**
+**👉 [Gạch đầu dòng "Signal traded for noise", rồi biểu đồ: đường xanh đi xuống, đường cam đi lên, vạch đứt ở $t\approx260$] ✋**
 
-> The standard normal is stationary, so after $T$ steps $x_T$ is approximately $\mathcal N(0, I)$: we know exactly where generation will start. DDPM uses $T = 1000$, with $\beta_t$ growing linearly from $10^{-4}$ to $0.02$.
+> In equation two, the squared weights always sum to one. So the forward process does not just add noise; it *trades* signal for noise. On the plot, the blue signal weight falls and the orange noise weight rises, and they cross at about $t = 260$, where the signal-to-noise ratio is one.
 
-**👉 [Khung cam dưới cùng: chỉ (1) rồi (2)]**
+**👉 [Gạch đầu dòng "Assumptions"]**
 
-> Why a thousand small steps instead of one big step? First, small steps keep each *reverse* step easy: nearly Gaussian, just a small correction. Second, every noise level becomes a training task, from fine detail to coarse layout; that second point is our reading. **(cắt được)** And training does not pay for $T$ steps, thanks to the closed form. The cost appears at sampling, as we'll see on slide 6.
+> The assumptions: a Markov chain, independent noise at every step, and small $\beta_t$, using DDPM's schedule of $T=1000$ steps from $10^{-4}$ to $0.02$.
+
+**Chuyển ý**: "Let's make this concrete with numbers."
 
 ---
 
-## Slide 4: Forward noising by hand and by eye (A · ~80s)
+## Slide 4: Forward noising by hand and by eye (A · ~90s)
 
-**Bố cục**: **khung xanh lá trái** "1-D calculation" (nhãn OUR EXAMPLE) · **3 gạch đầu dòng phải** · **dưới**: 5 ảnh ngôi nhà 28×28 với nhãn SNR màu xanh ở dưới mỗi ảnh.
+**Bố cục**: **dải xanh lá trên cùng** "Chosen values" (nhãn OUR EXAMPLE) · **hai khung giữa**: *Way 1: step by step with the schedule $\beta_1,\beta_2$* (xanh nhạt, trái) và *Way 2: one jump with the shortcut $\bar\alpha_2$* (xanh đậm, phải) · **khung cam** "Interpreting the stochastic expectation" · **dưới cùng**: ảnh 28×28 ngôi nhà ở 5 mức nhiễu (trái) và chú thích SNR (phải).
 
-**👉 [Khung xanh lá, dòng đầu: $x_0 = 0.8, \beta_1 = 0.1, \varepsilon = -0.5$]**
+**👉 [Dải xanh lá "Chosen values": chỉ lần lượt $x_0$, $\beta$, $\varepsilon$, $\alpha$, $\bar\alpha_2$]**
 
-> Let's do one step by hand. One pixel with value $x_0 = 0.8$, $\beta_1 = 0.1$, and suppose the noise draw is $\varepsilon = -0.5$. Then $\alpha_1 = 0.9$.
+> Let's do two steps by hand. One pixel $x_0 = 0.8$, rescaled to $[-1,1]$. A schedule $\beta_1 = 0.1$ and $\beta_2 = 0.2$, chosen large on purpose so the arithmetic is visible. Two noise draws, $\varepsilon_1 = -0.5$ and $\varepsilon_2 = -0.4$. So $\alpha_1 = 0.9$, $\alpha_2 = 0.8$, and $\bar\alpha_2 = 0.72$.
 
-**👉 [Lần lượt 3 dòng của phép tính]**
+**👉 [Khung Way 1: dòng Step 1, rồi dòng Step 2, dừng ở ô $x_2 = 0.3585$]**
 
-> The signal part: $\sqrt{0.9}\times 0.8 = 0.7589$. The noise part: $\sqrt{0.1}\times(-0.5) = -0.1581$. Add them: $x_1 = 0.6008$.
+> Way one, step by step. Step one: $\sqrt{0.9}$ times $0.8$ is $0.7589$, plus $\sqrt{0.1}$ times $-0.5$ is $-0.1581$, so $x_1 = 0.6008$. Step two starts from $x_1$: $\sqrt{0.8}$ times $0.6008$ is $0.5374$, minus $0.1789$, so **$x_2 = 0.3585$**.
 
-**👉 [Gạch đầu dòng 1–2 bên phải] ✋**
+**👉 [Khung Way 2: dòng "Shortcut (2)", rồi công thức $\bar\varepsilon$, rồi ô kết quả có dấu ✓]**
 
-> What does that mean? Given $x_0$, $x_1$ is Gaussian with mean $0.7589$ and variance $0.1$, so a standard deviation of about $0.32$. The *expected* value is $0.7589$ because the noise has mean zero. $0.6008$ is just *one* random realization; another draw gives another $x_1$.
+> Way two uses the shortcut from slide 3 and jumps straight from $x_0$: $\sqrt{0.72}$ times $0.8$ is $0.6788$, plus $0.5292$ times a single noise $\bar\varepsilon$. The two noise draws merge into **one** Gaussian, $\bar\varepsilon = -0.6053$; its variance is $(0.08 + 0.2)/0.28 = 1$. The result is again **$0.3585$**, the same as way one.
 
-**👉 [Gạch đầu dòng 3]**
+**👉 [Khung cam "Interpreting the stochastic expectation"] ✋**
 
-> We chose $\beta = 0.1$ on purpose so the arithmetic is visible. The images below use the small DDPM schedule.
+> What does this number mean? Because the noise has mean zero, the *expected* value of $x_2$ given $x_0$ is $\sqrt{\bar\alpha_2}\,x_0 = 0.6788$, with variance $0.28$. Both ways describe the **same distribution**. Our $0.3585$ is just **one random draw**, about 0.6 standard deviations below the mean. Averaging many draws would give $0.6788$.
 
-**👉 [Dải 5 ảnh: quét trái sang phải, dừng ở từng nhãn SNR]**
+**👉 [Ảnh ngôi nhà: quét trái sang phải, rồi chỉ chú thích SNR bên phải]**
 
-> Now by eye: our synthetic 28×28 house, one trajectory with $T = 1000$. Under each image is the signal-to-noise ratio, $\bar\alpha_t / (1-\bar\alpha_t)$. At $t = 50$, the SNR is 33.5 and the house is clearly visible. At $t = 200$, about 2. By $t = 500$ the SNR is below 0.1 and noise dominates. At $t = T$, almost nothing is left.
+> Now by eye, with the real DDPM schedule: our 28×28 house at five noise levels. At $t = 50$ the SNR is 33.5 and the house is clear. At $t = 500$ the SNR is below 0.1 and noise dominates. At $t = T$ almost nothing is left.
 
 **Chuyển người (A → B)**: "So destroying structure is easy and fully known. [Tên B] will now show how we *learn* to undo it."
 
@@ -174,164 +178,135 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 ---
 
-## Slide 5: Reverse denoising (B · ~90s)
+## Slide 5: Reverse denoising: from noise back to an image (B · ~85s)
 
-**Bố cục**: **sơ đồ hai dải**: dải xanh FORWARD ở trên (trái → phải), dải cam REVERSE ở dưới (**phải → trái**: $x_T \to x_t \to$ [neural net $\varepsilon_\theta$] $\to$ [sampler] $\to x_{t-1} \to x_0$) · **khung cam trái** "One reverse step" · **khung xanh phải** "Training objective" (nhãn PAPER REPORTS ở đáy).
+**Bố cục**: **dải cam trên cùng** "REVERSE: learned denoising", đọc **từ phải sang trái**: $x_T \to x_t \to$ [neural net $\varepsilon_\theta(x_t,t)$, nhãn "timestep $t$"] $\to$ [sampler $\mu_\theta+\sigma_t u_t$, nhãn $u_t\sim\mathcal N(0,\mathbf I)$] $\to x_{t-1} \to x_0$ · **giữa trái (40%)**: khung cam *Sampling: generate a new image* · **giữa phải (60%)**: khung xanh *Why predict ε, not the mean $\tilde\mu_t$?* với bảng FID 2×2 (nhãn PAPER REPORTS) · **dải cam dưới cùng**: *One reverse step: turn the noise prediction into $\mu_\theta$* chia 3 phần.
 
-**👉 [Dải xanh FORWARD phía trên]**
+**👉 [Dải REVERSE: kéo tay từ $x_T$ bên phải sang $x_0$ bên trái] ✋**
 
-> Here are both directions together. The blue band is the forward process we just saw: known and fixed.
+> Now the direction we learn. The reverse chain runs right to left, from pure noise $x_T$ back to an image $x_0$. At each step, a neural net looks at the noisy state and the timestep, and a sampler takes one small step.
 
-**👉 [Dải cam REVERSE: kéo tay từ $x_T$ bên phải sang $x_0$ bên trái] ✋**
+**👉 [Khung Sampling: chỉ bước 1 → 2 → 3, rồi dòng chữ xám cuối khung]**
 
-> The orange band is what we *learn*, and it runs right to left, from $x_T$ back to $x_0$.
+> Generating an image is just this loop. One: draw fresh noise. Two: for $t$ from $T$ down to 1, set $x_{t-1}$ to the mean $\mu_\theta$ plus a little fresh noise. Three: return $x_0$; no noise is added at the last step. Notice: **no real image is used**. The network only has to supply $\mu_\theta$ at each step.
 
-**👉 [Ô "neural net $\varepsilon_\theta(x_t,t)$" và nhãn "timestep $t$" phía trên]**
+**👉 [Khung "Why predict ε, not the mean $\tilde\mu_t$?": đọc câu hỏi]**
 
-> At each step, a neural network receives the noisy state $x_t$ and the timestep $t$, and predicts the noise inside it.
+> So what should the network predict? The obvious choice is the mean $\tilde\mu_t$ of $x_{t-1}$ directly. DDPM predicts the **noise** instead. Why?
 
-**👉 [Ô "sampler $\mu_\theta + \sigma_t u_t$" và nhãn $u_t$]**
+**👉 [Bảng FID: chỉ nhãn PAPER REPORTS, rồi hàng "mean", rồi hàng "noise ε", dừng ở 3.17]**
 
-> A sampler turns that prediction into a mean, $\mu_\theta$, adds a little fresh noise $\sigma_t u_t$, and gives $x_{t-1}$.
+> Ho et al. tested both on CIFAR-10. Predicting the mean works only with the weighted variational bound, at FID 13.22, and was unstable with plain MSE. Predicting the noise with plain MSE gives **FID 3.17**; lower is better. These are the paper's numbers. The reason: the noise has the same scale at every step, so a plain, unweighted loss works. We'll see that loss on the next slide.
 
-**👉 [Khung cam, công thức $\mu_\theta$: chỉ vào $\varepsilon_\theta$ in đậm]**
+**👉 [Dải "One reverse step": phần trái → công thức giữa (chỉ $\varepsilon_\theta$ in đậm) → phần phải]**
 
-> In formula form: the reverse step is Gaussian, and its mean is $x_t$ minus a scaled noise prediction, divided by $\sqrt{\alpha_t}$. The bold $\varepsilon_\theta$ is the only learned part.
+> Finally, how the predicted noise becomes one step. The reverse step is Gaussian with a fixed variance $\sigma_t^2 = \beta_t$. Its mean takes $x_t$ and subtracts a scaled noise prediction. The bold $\varepsilon_\theta$, from a U-Net, is the **only learned part**; everything else comes from the fixed schedule.
 
-**👉 [Dòng "Why predict $\varepsilon$, not $x_0$?"]**
-
-> Why predict the noise rather than the clean image? The noise is standard normal, a simple and normalized target at every $t$. It also encodes the *score*, the direction toward higher data density.
-
-**👉 [Khung xanh, công thức $L_{\text{simple}}$]**
-
-> Training is just regression. $L_{\text{simple}}$ is the expected squared error between the true noise and the predicted noise.
-
-**👉 [3 bước đánh số]**
-
-> Pick an image, a random $t$ and random noise; build $x_t$ with the closed form from slide 3; predict the noise and take a gradient step.
-
-**👉 [Nhãn PAPER REPORTS ở đáy khung]**
-
-> This simple loss works well. On CIFAR-10, Ho et al. report an FID of 3.17, versus 13.51 when training on the full variational bound; lower is better. These are the paper's numbers, not ours.
-
-⚠️ **Đừng nói** "$L_{\text{simple}}$ làm sampling nhanh hơn". Nó chỉ là bản reweighted của variational bound. Đạo hàm KL / posterior mean để dành cho Q&A.
+⚠️ **Đừng nói** "dự đoán mean hoàn toàn không học được". Paper chỉ báo là không ổn định khi dùng plain MSE; với weighted bound nó đạt FID 13.22.
 
 ---
 
-## Slide 6: From denoising to generation (B · ~110s), slide quan trọng nhất
+## Slide 6: Training the noise predictor, and why it works (B · ~100s)
 
-**Bố cục**: **trái**: khung cam "Sampling" (3 bước), danh sách "Why removing noise generates new images" (1–2–3), khung đỏ "Why not one step?" · **phải**: hình golden retriever 2 hàng × 4 cột (hàng trên **ADM** pixel, hàng dưới **LDM** latent; cột: *Noisy input* | *Predicted noise* / *Guided latent noise RMS* | **Clean estimate** | *Updated state*), nhãn OUR RUN, 2 gạch đầu dòng.
+**Bố cục**: **cột trái (hẹp)**: khung xanh *Training: learn to predict the noise* ($L_{\text{simple}}$ + 3 bước + dòng xám "Uses real images"), khung xanh nhạt *Connection to the score (Song & Ermon 2019)* (hai công thức $s_\theta$ và $\mu_\theta$ xếp dọc) · **cột phải (rộng)**: khung xanh lá *Why removing noise generates new images*: dòng in đậm "Core idea: know the noise ⇒ know the clean image", 5 gạch đầu dòng (**Noise and image: same information**, **Remove a little at a time**, **Why a real image, not any image**, **Coarse to fine**, **Why ε, not $x_0$?**) và câu nghiêng về nhà điêu khắc.
 
-> Now we can answer the guiding question.
+**👉 [Khung Training: công thức $L_{\text{simple}}$, rồi 3 bước đánh số]**
 
-**👉 [Khung cam Sampling: chỉ lần lượt bước 1 → 2 → 3]**
+> Training is plain regression. $L_{\text{simple}}$ is the squared error between the true noise and the predicted noise. Pick a real image, a random step $t$ and random noise; build $x_t$ with the closed form from slide 3; predict the noise and take a gradient step. Training uses real images; sampling, on the previous slide, did not.
 
-> Generation needs no real image. Step one: draw fresh noise $x_T$. Step two: for $t$ from $T$ down to 1, apply the learned step, which is the mean plus a little fresh noise. Step three: return $x_0$. At the very last step, no noise is added.
+**👉 [Khung score: câu đầu, rồi công thức $s_\theta$, rồi công thức $\mu_\theta$]**
 
-**👉 [Danh sách 1–2–3 "Why removing noise generates new images"] ✋ (đây là câu trả lời chính)**
+> The *score* is the direction in which the density of noisy images increases. At the optimum of this squared loss, the network predicts the *average* noise given $x_t$, and that average is a scaled score. Rewriting the mean with the score, each reverse step moves **uphill in density**, then adds a little noise, like annealed Langevin dynamics.
 
-> Why does removing noise produce *new* images? Three reasons.
-> **One, free supervision**: the forward process gives us pairs of noisy input and true noise at every level, with no labels.
-> **Two, shared structure**: to predict the noise across many images, the network must learn what images have in common: edges, textures, object shapes.
-> **Three, small stochastic steps**: each step is a gentle correction, and the fresh noise $u_t$ means every seed leads to a different image.
+**👉 [Khung xanh lá: dòng "Core idea"] ✋ (đây là câu trả lời chính cho guiding question)**
 
-**👉 [Khung đỏ "Why not one step?"]**
+> So, our answer to the guiding question. The core idea: **if you know the noise, you know the clean image.**
 
-> Why not jump straight from noise to an image? If we train $x_T \to x_0$ with squared error, the best answer is the conditional mean. But $x_T$ carries almost no information about $x_0$, so that mean is just the average image, a blur. Small forward steps are what make small reverse steps possible.
+**👉 [Gạch 1 "Noise and image: same information": chỉ công thức $\hat x_0$]**
 
-**👉 [Hình bên phải: nhãn OUR RUN và tiêu đề "Inside DDIM step 25"]**
+> Invert the closed form: given $x_t$ and the predicted noise, we can solve for a clean estimate $\hat x_0$. Predicting the noise and predicting the image carry the same information.
 
-> Here is what this looks like in our run with pretrained models: halfway through generation, at DDIM update 25 of 50, for the class "golden retriever".
+**👉 [Gạch 2 "Remove a little at a time"]**
 
-**👉 [Hàng trên (ADM): cột 1 "Noisy input", rồi nhảy sang cột 3 "Clean estimate"] ✋**
+> When generating, we start from pure noise and remove only a **small part** of the predicted noise at each step, adding a little fresh noise to keep samples diverse. Each step is an easy correction, unlike a VAE decoder that must produce the whole image in one pass.
 
-> Top row: the pixel-space ADM model. The current state still looks like noise, but the network's *clean estimate* already shows a head and a muzzle.
+**👉 [Gạch 3 "Why a real image, not any image"] ✋**
 
-**👉 [Hàng dưới (LDM): cột 3]**
+> Why does this give a *realistic* image and not just any image? To guess the noise correctly, the network must know what real images look like: whatever does not look like a real image *is* the noise. Since the noise prediction is proportional to minus the score, removing it climbs toward regions dense with real images.
 
-> Bottom row: the latent model. Same story: the dog is already there in the estimate.
+**👉 [Gạch 4 "Coarse to fine"]**
 
-**👉 [Cột 4 "Updated state" của cả hai hàng]**
+> Different noise levels teach different things: at large $t$, the layout, shapes and colours; at small $t$, edges and texture. Ho et al. observe that sampling follows the same order: large-scale features first, details last.
 
-> But the updated state moves only a small step toward that estimate. That is the mechanism: the estimate guides, and small steps refine.
+**👉 [Gạch 5 "Why ε, not $x_0$?"] (cắt được)**
 
-> **(cắt được)** If we run the forward process from the final image instead, the retriever's features fade out gradually, just like the house on slide 4.
+> And why noise rather than the clean image directly? The noise has the same scale at every step, while $x_0$ is nearly unguessable when $t$ is large; DDPM reports better samples with $\varepsilon$, as we saw on slide 5.
+
+**👉 [Câu nghiêng cuối khung]**
+
+> Think of a sculptor: the model learns what is *not* the statue, and chips it away layer by layer.
 
 **Chuyển ý**: "This loop works, but every step processes a full-resolution image, many times. Making each step cheaper is the job of latent diffusion."
 
-💡 Nếu bị hỏi về cột 2 hàng LDM (heatmap tím): đó là độ lớn RMS theo kênh của nhiễu latent dự đoán (đã có guidance) tại từng vị trí, không phải một ảnh.
+⚠️ **Đừng nói** $s_\theta$ *bằng* đúng score thật. Đó chỉ là xấp xỉ, đúng tại điểm tối ưu lý tưởng của MSE.
+⚠️ **Đừng nói** "diffusion luôn sắc nét hơn VAE". Slide chỉ so sánh cách giải mã (nhiều bước nhỏ so với một lần), không có thí nghiệm so sánh chất lượng.
+⚠️ Ý "nhiễu lớn dạy bố cục, nhiễu nhỏ dạy chi tiết" là cách hiểu của nhóm; phần có nguồn là *thứ tự xuất hiện khi sampling* (Ho et al. 2020, Sec. 4.3).
 
-⚠️ **Đừng nói** 50 bước DDIM là của DDPM gốc. Khung sampling bên trái là Algorithm 2 của DDPM; run của nhóm dùng sampler DDIM 50 bước.
+💡 Nếu bị hỏi "có bằng chứng nào cho clean estimate không?", mở **backup 14** (hình golden retriever, run của nhóm): ở bước DDIM 25/50, clean estimate đã thấy con chó trong khi trạng thái hiện tại vẫn còn nhiễu.
 
 ---
 
-## Slide 7: Inside the autoencoder (B · ~80s)
+## Slide 7: Inside the autoencoder: how images become latents (B · ~70s)
 
 **Bố cục**: **chuỗi trên cùng**: $x_0$ → [Encoder $\mathcal E_\phi$] → [$\mu_\phi, \sigma_\phi$] → [cam: $\tilde z = \mu + \sigma\odot\xi$] → [Decoder $D_\psi$] → $\hat x_0$ · **3 khung dưới**: *VAE objective* (xanh) | *LDM: a perceptual compressor* (xanh lá) | *What changes for diffusion* (cam).
 
 > Latent diffusion begins with an autoencoder.
 
-**👉 [Chuỗi trên: $x_0$ (nhãn $H\times W\times 3$) → Encoder → ô $\mu, \sigma$]**
+**👉 [Chuỗi trên: $x_0$ (nhãn $H\times W\times 3$) → Encoder → ô $\mu, \sigma$ → ô cam $\tilde z$]**
 
-> The encoder takes an $H \times W \times 3$ image and outputs a distribution: a mean and a standard deviation for every latent value.
-
-**👉 [Ô cam $\tilde z = \mu + \sigma\odot\xi$ và nhãn latent bên dưới]**
-
-> We sample a latent with the reparameterization trick. It has size $h \times w \times c$, where $h = H/f$ and $f$ is the downsampling factor.
+> The encoder turns an $H \times W \times 3$ image into a distribution, a mean and a standard deviation for every latent value, and we sample a latent of size $h \times w \times c$, where $h = H/f$.
 
 **👉 [Decoder → $\hat x_0$ "reconstruction"]**
 
 > The decoder maps the latent back to an image.
 
-**👉 [Khung xanh VAE objective: chỉ "Reconstruction", rồi "KL", rồi chữ **Problem**]**
+**👉 [Khung xanh VAE objective: "Reconstruction", "KL", rồi chữ **Problem**]**
 
-> A textbook VAE trains this with two terms: reconstruction, plus a KL term that keeps the codes close to $\mathcal N(0, I)$. The problem: pixel-wise squared error averages plausible details, so reconstructions turn blurry.
+> A textbook VAE trains this with reconstruction plus a KL term that keeps codes near $\mathcal N(0, I)$. The problem: pixel-wise squared error averages plausible details, so images turn blurry.
 
-**👉 [Khung xanh lá: chỉ 1 → 2 → 3, rồi dòng "Ours"]**
+**👉 [Khung xanh lá: 1 → 2 → 3, rồi dòng "Ours"]**
 
-> So LDM trains a *perceptual* compressor: a perceptual loss that compares deep features, a patch-based adversarial loss for realistic texture, and only a light regularizer, either a weak KL or a VQ codebook. Our runs use both kinds: KL with $f = 8$ for Churches, and VQ with $f = 4$ for ImageNet.
+> So LDM trains a *perceptual* compressor: a perceptual loss on deep features, a patch-based adversarial loss for realistic texture, and only a light regularizer, weak KL or a VQ codebook. Our runs use both: KL with $f = 8$ for Churches, VQ with $f = 4$ for ImageNet.
 
 **👉 [Khung cam "What changes for diffusion": lần lượt 4 dấu chấm] ✋ ở dấu chấm 3**
 
-> For diffusion, four points matter. The latent keeps its 2-D layout, so a U-Net can still process it. The autoencoder is trained once, then **frozen**. Clean latents are *not* standard normal, so we cannot simply decode random noise; diffusion has to learn the distribution of latents. And the encoder noise $\xi$ is not the diffusion noise $\varepsilon_z$.
+> For diffusion, four points matter. The latent keeps its 2-D layout, so a U-Net can process it. The autoencoder is trained once, then **frozen**. Clean latents are *not* standard normal, so we cannot just decode random noise; diffusion must learn the distribution of latents. And the encoder noise $\xi$ is not the diffusion noise $\varepsilon_z$.
 
 ⚠️ Sơ đồ vẽ biến thể KL ($\mu, \sigma$). Biến thể VQ không có $\mu, \sigma$. Nếu bị hỏi, nói rõ điều này.
 
 ---
 
-## Slide 8: Why latent diffusion is cheaper (B · ~90s)
+## Slide 8: Why latent diffusion is cheaper: same loop, smaller state (B · ~80s)
 
-**Bố cục**: **hàng TRAINING**: $x_0$ → [Encoder, frozen, scale $a$] → $z_0$ → [add noise] → [conditional U-Net] ← [$\tau_\eta(y)$] (nhãn "cross-attn") · **hàng GENERATION**: [$z_T$ noise] → [U-Net + sampler] → [Decoder (frozen)] → $\hat x_0$, chú thích "no real image or encoder needed" · **khung xanh lá trái** "Smaller state per denoising step" · **khung xanh phải** "Same principle, new space".
+**Bố cục**: **hàng TRAINING**: $x_0$ → [Encoder, frozen, scale $a$] → $z_0$ → [add noise] → [conditional U-Net] ← [$\tau_\eta(y)$] (nhãn "cross-attn") · **hàng GENERATION**: [$z_T$ noise] → [U-Net + sampler] → [Decoder (frozen)] → $\hat x_0$, chú thích "no real image or encoder needed" · **khung xanh lá trái** "Smaller state per denoising step" · **khung xanh phải** "Same principle, new space" ($L_{\text{LDM}}$, dòng định nghĩa $z_0=a\,\mathcal E_\phi(x_0)$, chữ **Caveat**).
 
 > Here is the full pipeline, and our answer to the last part of the learning objective.
 
-**👉 [Hàng TRAINING: quét trái → phải tới ô U-Net]**
+**👉 [Hàng TRAINING: quét trái → phải tới ô U-Net, rồi ô $\tau_\eta(y)$]**
 
-> Training: encode a real image with the frozen encoder, scale it by $a$, and get $z_0$. Add noise exactly as before. A conditional U-Net predicts the noise $\varepsilon_z$.
+> Training: encode a real image with the frozen encoder, scale it by a fixed $a$, add noise exactly as before, and train a U-Net to predict the noise. A condition $y$, text or a class, enters through $\tau_\eta$ and cross-attention.
 
-**👉 [Ô $\tau_\eta(y)$ bên phải và nhãn "cross-attn"]**
+**👉 [Hàng GENERATION, rồi chú thích "no real image or encoder needed"]**
 
-> The condition $y$, such as text or a class, enters through an encoder $\tau_\eta$ and cross-attention. That is the next slide.
+> Generation: start from latent noise, denoise for many steps, and decode **once** at the end. No real image and no encoder are needed.
 
-**👉 [Hàng GENERATION: $z_T$ → U-Net + sampler → Decoder → $\hat x_0$]**
+**👉 [Khung xanh lá: gạch 1 (PAPER REPORTS), gạch 2 (OUR EXAMPLE)] ✋**
 
-> Generation: start from latent noise $z_T$, run the U-Net and sampler for many steps, and decode **once** at the end.
+> Why is it cheaper? The loop is identical; the *state* is smaller. With $f = 4$, a 256×256 image becomes 64×64: **16 times fewer spatial positions**, as in the paper. In our LSUN Churches model, 196,608 values become 4,096, **about 48 times fewer**. Every U-Net call works on that small state.
 
-**👉 [Chú thích "no real image or encoder needed"]**
+**👉 [Khung xanh: công thức $L_{\text{LDM}}$, rồi chữ **Caveat**]**
 
-> No real image and no encoder are needed at generation time.
-
-**👉 [Khung xanh lá "Smaller state per denoising step": gạch 1 (PAPER REPORTS), gạch 2 (OUR EXAMPLE)] ✋**
-
-> So why is it cheaper? The loop is identical; the *state* is smaller. With $f = 4$, a 256×256 image becomes 64×64: **16 times fewer spatial positions**, as in the paper. For our LSUN Churches model, 196,608 values become 4,096, **about 48 times fewer**. Every one of the many U-Net calls works on that small state.
-
-**👉 [Khung xanh: công thức $L_{\text{LDM}}$]**
-
-> The loss is the same noise-prediction loss, now on latents and with a condition.
-
-**👉 [Chữ **Caveat** trong khung xanh]**
-
-> Two cautions. Forty-eight times fewer values does *not* mean forty-eight times faster, because runtime and memory depend on the networks too. And DDIM, which uses fewer steps, is a separate speedup. Compression also caps quality: fine text and small objects can be lost.
+> The loss is the same noise-prediction loss, now on latents with a condition. Two cautions: fewer values is *not* automatically 48 times faster, and DDIM's fewer steps are a separate speedup. Compression also caps quality: fine text and small objects can be lost. We test the real cost on slide 10.
 
 **Chuyển người (B → C)**: "[Tên C] will now show how the condition actually steers the denoiser."
 
@@ -339,55 +314,47 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 ---
 
-## Slide 9: Cross-attention and prompt control (C · ~100s)
+## Slide 9: Cross-attention: steering the denoiser with a prompt (C · ~90s)
 
-**Bố cục**: **trái**: khung xanh lá "Prompt → tokens → attention" (công thức $Q, K, V$, $O$; câu in đậm), 3 gạch đầu dòng · **phải**: nhãn OUR RUN, 3 ảnh *Reference* | *red → green* | *left → right* (seed 2027), 3 gạch đầu dòng với ✓/✗.
+**Bố cục**: **trái**: khung xanh lá "Prompt → tokens → attention" ($C=\tau_\eta(y)$, công thức $Q,K,V$ và $O$, dòng ký hiệu nhỏ, câu in đậm), 3 gạch đầu dòng · **phải**: nhãn OUR RUN "Stable Diffusion v1.4, seed 2027, same initial latent", 3 ảnh *Reference* | *red → green* | *left → right*, 3 gạch đầu dòng với ✓/✗.
 
-**👉 [Khung xanh lá, dòng $C = \tau_\eta(y)$]**
+**👉 [Dòng $C = \tau_\eta(y)$]**
 
-> The prompt is first encoded into tokens. In Stable Diffusion v1.4, a frozen CLIP text encoder does this.
+> The prompt is first turned into tokens. In Stable Diffusion v1.4, a frozen CLIP text encoder does this.
 
-**👉 [$Q = FW_Q$, rồi $K = CW_K$, $V = CW_V$] ✋**
+**👉 [$Q = FW_Q$, rồi $K$, $V$; sau đó dòng ký hiệu nhỏ] ✋**
 
-> In cross-attention, **queries come from the image** features $F$, while **keys and values come from the text** tokens $C$.
+> In cross-attention, **queries come from the image** features $F$, one row per position, while **keys and values come from the text** tokens $C$. The $W$ matrices are learned projections, and $d$ is the key width.
 
-**👉 [Công thức $O = \mathrm{softmax}(\cdot)V$]**
+**👉 [Công thức $O$, rồi câu in đậm cuối khung]**
 
-> Each image position computes a weighted mix of the tokens.
-
-**👉 [Câu in đậm cuối khung]**
-
-> So a region that is becoming a bus can draw on the tokens "red" and "bus".
+> Each image position takes a weighted mix of the tokens. So a region that is becoming a bus can draw on "red" and "bus".
 
 **👉 [3 gạch đầu dòng bên trái, lần lượt]**
 
-> This happens at every layer and every step: the prompt steers each prediction; it is not pasted onto the final image. Only $\tau_\eta$ depends on the modality: text, a single class token as in our ImageNet model, or a layout. Maps and masks are concatenated with $z_t$ instead. **(cắt được)** Classifier-free guidance then pushes predictions toward the prompt: a larger $s$ means closer to the prompt but less diverse.
+> This happens at every layer and every step: the prompt steers each prediction; it is not pasted onto the image. Only $\tau_\eta$ depends on the modality: text, a single class token as in our ImageNet model, or a layout. **(cắt được)** Classifier-free guidance mixes the predictions without and with the prompt: a larger $s$ means closer to the prompt but less diverse.
 
-**👉 [Nhãn OUR RUN và dòng "seed 2027, same initial latent"]**
+**👉 [Nhãn OUR RUN, rồi ảnh 1 "Reference"]**
 
-> Does it work? Our small test: same seed, same initial latent, three prompts.
+> Does it work? Our small test: same seed, same initial latent, three prompts. Reference: "a red bus to the left of a blue car."
 
-**👉 [Ảnh 1 "Reference"]**
+**👉 [Ảnh 2 "red → green" rồi gạch ✓ bên dưới]**
 
-> Reference: "a red bus to the left of a blue car."
+> Change red to green: the bus turns green at all four seeds we tried. But the blue car does not clearly appear, and at this seed we even get two green buses.
 
-**👉 [Ảnh 2 "red → green" rồi gạch đầu dòng ✓ bên dưới]**
-
-> Change red to green: the bus turns green, at all four seeds we tried. But the blue car does not clearly appear, and at this seed we even get two green buses.
-
-**👉 [Ảnh 3 "left → right" rồi gạch đầu dòng ✗]**
+**👉 [Ảnh 3 "left → right" rồi gạch ✗]**
 
 > Change left to right: no clear swap. The red bus stays on the left.
 
-**👉 [Gạch đầu dòng cuối "Cross-attention is soft"] ✋**
+**👉 [Gạch cuối "Cross-attention is soft"] ✋**
 
-> Cross-attention is **soft**: an attribute can bind to the wrong object, and a token can be ignored. And to be clear: this is 16 images checked by eye, an illustration and not a general conclusion.
+> Cross-attention is **soft**: an attribute can bind to the wrong object, and a token can be ignored. To be clear: this is 16 images checked by eye, an illustration and not a general conclusion.
 
 ---
 
-## Slide 10: Pixel vs latent on LSUN Churches (C · ~80s)
+## Slide 10: Pixel vs. latent diffusion on LSUN Churches (C · ~75s)
 
-**Bố cục**: **dòng thiết lập trên cùng** (OUR RUN: T4, batch 1, 50 DDIM, 4 seeds) · **trái**: bảng 3 hàng, khung xanh PAPER REPORTS · **phải**: lưới ảnh 2 × 4 (hàng DDPM, hàng LDM; cột seed 2026–2029) và chú thích · **khung cam Takeaway** dưới cùng.
+**Bố cục**: **dòng thiết lập trên cùng** (OUR RUN: T4, batch 1, 50 DDIM steps η = 0, 4 seeds) · **trái**: bảng 3 hàng, khung xanh PAPER REPORTS · **phải**: lưới ảnh 2 × 4 (hàng DDPM, hàng LDM; cột seed 2026–2029) và chú thích · **khung cam Takeaway** dưới cùng.
 
 **👉 [Dòng thiết lập trên cùng]**
 
@@ -399,7 +366,7 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 **👉 [Hàng "Median latency": chỉ vào **2.44**]**
 
-> Median latency: 6.10 seconds per image versus 2.44, about **2.5 times faster**, and that includes the decoder.
+> Median latency: 6.10 seconds per image versus 2.44, about **2.5 times faster**, including the decoder.
 
 **👉 [Hàng "Peak CUDA alloc.": chỉ vào **0.75** rồi 1.68] ✋**
 
@@ -407,11 +374,11 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 **👉 [Khung xanh PAPER REPORTS]**
 
-> As external evidence, the LDM paper on inpainting at 256²: sampling throughput rises from 0.26 to 0.97 samples per second, and FID@2k drops from 24.74 to 15.21. That is a different task, and these are the paper's numbers.
+> As external evidence, the LDM paper on inpainting: throughput rises from 0.26 to 0.97 samples per second, and FID@2k drops from 24.74 to 15.21. That is a different task, and these are the paper's numbers.
 
-**👉 [Lưới ảnh: hàng DDPM (seed 2028, 2029), rồi hàng LDM (2027–2029, 2026)]**
+**👉 [Lưới ảnh: hàng DDPM, rồi hàng LDM]**
 
-> Quality by eye: both give plausible churches. Pixel model: a clear steeple at seed 2028, while the dark 2029 image hides detail. Latent model: clear facades at 2027 to 2029, and 2026 is a distant complex. The seeds match, but each model draws noise in its own space, so the columns are *not* paired images.
+> By eye, both give plausible churches: a clear steeple from the pixel model at 2028, clear facades from the latent model at 2027 to 2029. The seeds match, but each model draws noise in its own space, so the columns are *not* paired images.
 
 **👉 [Khung cam Takeaway]**
 
@@ -421,13 +388,13 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 ---
 
-## Slide 11: Limitations (C · ~50s)
+## Slide 11: Limitations: training data, copyright and bias (C · ~45s)
 
 **Bố cục**: 3 khung ngang: *1. Training data* (xanh) | *2. Bias* (cam) | *3. Copyright and memorization* (đỏ), khung xám *Method limits* dưới cùng.
 
 **👉 [Khung 1 Training data]**
 
-> First, data: a model only knows what its data contains. Our church model only makes churches, ImageNet conditioning has a fixed class list, and text models inherit what their captions describe.
+> First, data: a model only knows what its data contains. Our church model only makes churches; ImageNet conditioning has a fixed class list; text models inherit what their captions describe.
 
 **👉 [Khung 2 Bias: chỉ dòng in đậm cuối]**
 
@@ -435,35 +402,29 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 **👉 [Khung 3 Copyright: lần lượt 3 gạch đầu dòng]**
 
-> Third, copyright: Carlini et al. extracted memorized training images from diffusion models, so data provenance matters. The U.S. Copyright Office analysis is about U.S. law, not Vietnamese law, and none of this means every generated image is a copy.
+> Third, copyright: Carlini et al. extracted memorized training images from diffusion models. The U.S. Copyright Office analysis is about U.S. law, not Vietnamese law, and none of this means every generated image is a copy.
 
-**👉 [Khung xám Method limits]**
+**👉 [Khung xám Method limits] (cắt được)**
 
-> And the method itself has limits: many sampling steps, quality capped by the autoencoder, soft cross-attention, and our experiments are small illustrations, not benchmarks.
+> And the method itself: many sampling steps, quality capped by the autoencoder, soft cross-attention, and small experiments.
 
 ---
 
-## Slide 12: Conclusion (C · ~45s)
+## Slide 12: Conclusion: answering the guiding question (C · ~40s)
 
 **Bố cục**: **khung cam lớn** (guiding question + câu trả lời có 3 cụm in đậm) · **3 thẻ**: *1. Forward noising* (xanh dương) | *2. Reverse denoising* (cam) | *3. Latent diffusion* (xanh lá) · dòng nghiêng · "Thank you · Questions?"
 
-**👉 [Khung cam: dòng câu hỏi in đậm]**
+**👉 [Khung cam: dòng câu hỏi in đậm, rồi 3 cụm in đậm] ✋**
 
-> Back to our guiding question: how can learning to remove noise enable a model to generate new images?
-
-**👉 [3 cụm in đậm trong câu trả lời, lần lượt] ✋**
-
-> Because the forward process gives **free training pairs at every noise level**, a network trained to predict the noise learns **shared image structure**, and running it from **fresh noise in many small stochastic steps** turns noise into a new sample.
+> Back to our question. Learning to remove noise generates new images because the forward process gives **free training pairs at every noise level**, a network trained to predict the noise learns **shared image structure**, and running it from **fresh noise in many small stochastic steps** turns noise into a new sample.
 
 **👉 [3 thẻ: trái → giữa → phải]**
 
-> Our learning objective in three cards. Forward noising is a known Gaussian chain with a closed form. Reverse denoising learns to predict the noise and samples step by step. Latent diffusion applies the same principle to compact latents: about 2.5 times faster in our run, with prompts through cross-attention, at the cost of a reconstruction limit and not necessarily lower memory.
+> Our learning objective in three cards: forward noising is a known Gaussian chain with a closed form; reverse denoising learns to predict the noise and samples step by step; latent diffusion does the same on compact latents, about 2.5 times faster in our run, but with a reconstruction limit and not necessarily lower memory.
 
 **👉 [Dòng nghiêng]**
 
-> Capability is bounded by the training data, and by what we actually measured.
-
-> Thank you. We are happy to take your questions.
+> Capability is bounded by the training data, and by what we actually measured. Thank you; we are happy to take your questions.
 
 ---
 
@@ -471,17 +432,21 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 | Câu hỏi có thể gặp | Quay về | Ai trả lời | Ý chính |
 |---|---|---|---|
-| Vì sao dự đoán $\varepsilon$ mà không phải $x_0$? | 5 | A/B | Target $\mathcal N(0,I)$ đã chuẩn hóa ở mọi $t$; liên hệ score $-\varepsilon_\theta/\sqrt{1-\bar\alpha_t}$. |
-| Vì sao $T$ bước nhỏ thay vì một bước? | 3, 6 | A | Bước ngược gần Gaussian nên dễ học; mọi mức nhiễu là một bài toán; training dùng closed form. |
-| Vì sao $x_T \approx \mathcal N(0,I)$? | 3, 4 | A | $\bar\alpha_T$ rất nhỏ, SNR ≈ $4\times10^{-5}$; với $T$ hữu hạn thì chỉ xấp xỉ, không bằng chính xác. |
-| Vì sao không sinh ảnh trong một bước? | 6 (khung đỏ) | B | MSE cho $\mathbb E[x_0 \mid x_T] \approx \mathbb E[x_0]$, tức ảnh trung bình bị mờ. |
+| Vì sao dự đoán ε mà không dự đoán mean $\tilde\mu_t$ (hay $x_0$)? | 5 (bảng FID) | B | Cùng một bước Gaussian, nhưng dự đoán mean chỉ tốt với weighted bound (FID 13.22) và không ổn định với plain MSE; ε cùng thang đo ở mọi $t$ nên $L_{\text{simple}}$ đạt FID 3.17. DDPM cũng ghi dự đoán $x_0$ cho chất lượng kém hơn ở thí nghiệm ban đầu (Sec. 3.2). |
+| Vì sao ε dự đoán lại là score? | 6 (khung score) | B | Tối ưu MSE cho $\varepsilon_\theta\approx\mathbb E[\varepsilon\mid x_t]$, và $\nabla\log q_t=-\mathbb E[\varepsilon\mid x_t]/\sqrt{1-\bar\alpha_t}$; chỉ là xấp xỉ, đúng ở điểm tối ưu lý tưởng. |
+| Vì sao 2 cách ở slide 4 cho cùng $x_2$? | 4 (Way 2) | A | Hai nhiễu Gaussian độc lập gộp thành một Gaussian; phương sai $\alpha_2\beta_1+\beta_2=0.28=1-\bar\alpha_2$. |
+| Vì sao $T$ bước nhỏ thay vì một bước? | 3 (gạch Assumptions, biểu đồ) | A | Bước nhỏ thì bước ngược gần Gaussian, dễ học; mọi mức nhiễu là một bài toán huấn luyện; training dùng closed form nên không tốn $T$ bước, chi phí $T$ bước nằm ở sampling. |
+| Vì sao $x_T \approx \mathcal N(0, I)$? | 3 (gạch "Why…", biểu đồ) | A | $\mathcal N(0,I)$ được giữ qua mỗi bước; $\bar\alpha_T\approx4\times10^{-5}$; với $T$ hữu hạn thì chỉ xấp xỉ. |
+| Vì sao không sinh ảnh trong một bước? | 6 (gạch "Remove a little at a time") | B | Train $x_T\to x_0$ bằng MSE cho $\mathbb E[x_0\mid x_T]\approx\mathbb E[x_0]$, tức ảnh trung bình bị mờ, vì $x_T$ gần như không chứa thông tin về $x_0$. |
 | VAE khác autoencoder thường? Sao không decode $z\sim\mathcal N(0,I)$? | 7 | B | Encoder xuất phân phối + KL + reparameterization; latent sạch không phải $\mathcal N(0,I)$. |
 | Vì sao perceptual + adversarial thay vì MSE? | 7 | B | MSE theo pixel lấy trung bình các chi tiết khả dĩ nên ảnh mờ. |
 | Cross-attention khác self-attention? | 9 | C | Q từ ảnh; K, V từ điều kiện (với self-attention thì cả ba từ ảnh). |
 | Vì sao LDM nhanh hơn mà tốn bộ nhớ đỉnh hơn? | 10 | C | Nói thật: nhóm chỉ đo, chưa phân tích. Hai checkpoint khác kiến trúc/decoder; đây là giả thuyết chưa kiểm chứng. |
 | Thí nghiệm có chứng minh latent tốt hơn pixel? | 10 | C | Không: 4 mẫu, 1 cặp checkpoint, không FID. Chỉ là minh họa, kèm số liệu Table 6 của paper. |
 | Diffusion có sao chép ảnh huấn luyện? | 11 | C | Carlini et al.: memorization có thể xảy ra, nhưng không phải mọi ảnh sinh ra đều là bản sao. |
-| Nguồn hình/số liệu? | Backup 13–14 | ai cũng được | Sơ đồ là hình tự vẽ; run dùng checkpoint pretrained; số paper ghi rõ nguồn. |
+| Một ký hiệu nghĩa là gì / miền giá trị? | Backup 13 | ai cũng được | Bảng Notation, value ranges and modelling assumptions. |
+| Có bằng chứng nào mạng "thấy" ảnh khi trạng thái còn đầy nhiễu? | Backup 14 | B | Run của nhóm: ở bước DDIM 25/50, clean estimate $\hat x_0$ đã thấy con chó (cả pixel ADM và latent LDM); updated state chỉ nhích một bước nhỏ. |
+| Nguồn hình/số liệu? | Backup 15–16 | ai cũng được | Sơ đồ là hình tự vẽ; run dùng checkpoint pretrained; số paper ghi rõ nguồn. |
 
 **Mẹo khi trả lời**: luôn bấm về slide liên quan và **chỉ vào đúng khung** trước khi trả lời. Như vậy người hỏi thấy câu trả lời đã nằm trong bài.
 
@@ -489,7 +454,7 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 ## Checklist trước giờ trình bày
 
-- [ ] Mỗi người tập riêng phần của mình với đồng hồ (A ≈ 4.8 phút, B ≈ 6.2 phút, C ≈ 4.6 phút).
+- [ ] Mỗi người tập riêng phần của mình với đồng hồ: **A ≈ 4.6 phút** (slide 1–4, 275s), **B ≈ 5.6 phút** (slide 5–8, 335s), **C ≈ 4.2 phút** (slide 9–12, 250s). B đang dài hơn hai người còn lại khoảng 1 phút; nếu muốn cân hơn, chuyển slide 8 cho C (A 275s, B 255s, C 330s).
 - [ ] Tập 2 lần chuyển người (sau slide 4, sau slide 8) cho liền mạch.
 - [ ] Chuẩn bị laser/pointer. Nếu không có, đứng cạnh màn hình và chỉ bằng tay theo các 👉.
 - [ ] Đánh dấu sẵn các câu **(cắt được)** để bỏ nếu trễ hơn 30 giây.

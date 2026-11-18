@@ -581,11 +581,7 @@ INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/lm/lmmib7.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/lm/lmmib5.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/lm/lmbsy7.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/lm/lmbsy5.tfm
-INPUT ./figures/retriever_step25.png
-INPUT ./figures/retriever_step25.png
-INPUT ./figures/retriever_step25.png
-INPUT ./figures/retriever_step25.png
-INPUT ./figures/retriever_step25.png
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/lm/ec-lmssbo10.tfm
 INPUT ./figures/prompt/2027_reference.png
 INPUT ./figures/prompt/2027_reference.png
 INPUT ./figures/prompt/2027_reference.png
@@ -688,6 +684,11 @@ INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam5
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm5.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm5.tfm
+INPUT ./figures/retriever_step25.png
+INPUT ./figures/retriever_step25.png
+INPUT ./figures/retriever_step25.png
+INPUT ./figures/retriever_step25.png
+INPUT ./figures/retriever_step25.png
 OUTPUT main.nav
 OUTPUT main.toc
 OUTPUT main.snm
@@ -708,6 +709,7 @@ INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr5.pfb
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr6.pfb
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr7.pfb
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmss8.pfb
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmssbo10.pfb
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmssbx10.pfb
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmsso8.pfb
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmsy10.pfb

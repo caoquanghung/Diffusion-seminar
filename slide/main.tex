@@ -285,25 +285,16 @@ $\mathrm{SNR}=\ab_t/(1-\ab_t)$: $33.5$ at $t=50$ (clear), $1.93$ at $t=200$, $0.
 \end{frame}
 
 %% =====================================================================
-%% 5. Reverse denoising  (~90 s)
+%% 5. Reverse denoising: diagram, sampling, why epsilon, one step  (~90 s)
 %% =====================================================================
 \begin{frame}
-\frametitle{Reverse denoising: learn to undo one small step}
+\frametitle{Reverse denoising: from noise back to an image}
 \framesubtitle{B \textperiodcentered{} Reverse denoising}
 {\centering
 \begin{tikzpicture}[>=Stealth,font=\footnotesize,
   st/.style={draw=black!35,fill=white,rounded corners=2pt,minimum width=9mm,minimum height=5.2mm,inner sep=2pt},
   opf/.style={draw=fwd,fill=white,rounded corners=3pt,minimum height=6.2mm,align=center,inner sep=3pt},
   opr/.style={draw=rev,fill=white,rounded corners=3pt,minimum height=7mm,align=center,inner sep=2pt}]
-  % forward band
-  \fill[fwd!7,rounded corners=3pt] (0,1.15) rectangle (14.4,2.17);
-  \node[anchor=west,font=\scriptsize\bfseries,text=fwd] at (0.15,1.99) {FORWARD: known Gaussian corruption};
-  \node[st] (fx0) at (0.8,1.56) {$x_0$};
-  \node[st] (fxp) at (3.0,1.56) {$x_{t-1}$};
-  \node[opf,minimum width=5.4cm] (fk) at (7.2,1.56) {$q(x_t\mid x_{t-1})=\Normal(\sqrt{1-\beta_t}\,x_{t-1},\beta_t\Id)$};
-  \node[st] (fxt) at (11.5,1.56) {$x_t$};
-  \node[st] (fxT) at (13.6,1.56) {$x_T$};
-  \foreach \a/\b in {fx0/fxp,fxp/fk,fk/fxt,fxt/fxT}{\draw[->,line width=0.9pt,fwd] (\a) -- (\b);}
   % reverse band
   \fill[rev!8,rounded corners=3pt] (0,0) rectangle (14.4,1.08);
   \node[anchor=west,font=\scriptsize\bfseries,text=rev] at (0.15,0.9) {REVERSE: learned denoising};
@@ -317,33 +308,21 @@ $\mathrm{SNR}=\ab_t/(1-\ab_t)$: $33.5$ at $t=50$ (clear), $1.93$ at $t=200$, $0.
   \node[font=\scriptsize,text=rev] at (5.5,0.9) {$u_t\sim\Normal(0,\Id)$};
   \node[font=\scriptsize,text=rev] at (9.0,0.9) {timestep $t$};
 \end{tikzpicture}\par}
-\vspace{1mm}
-\begin{tcbraster}[raster columns=2,raster equal height,raster column skip=3mm,raster before skip=0pt,raster after skip=0pt,
+\vspace{2.5mm}
+\begin{tcbraster}[raster columns=2,raster equal height,raster column skip=3mm,raster before skip=0pt,raster after skip=0pt,raster force size=false,
   raster every box/.style={base,fontupper=\footnotesize,coltitle=white}]
-\begin{tcolorbox}[colframe=rev,colback=rev!5!white,title={One reverse step}]
-\setlength{\abovedisplayskip}{2pt}\setlength{\belowdisplayskip}{2pt}
-$p_\theta(x_{t-1}\mid x_t)=\Normal\big(\mu_\theta(x_t,t),\sigma_t^2\Id\big)$, \ $\sigma_t^2=\beta_t$ \emph{fixed}
-\[\mu_\theta=\frac{1}{\sqrt{\alpha_t}}\Big(x_t-\frac{\beta_t}{\sqrt{1-\ab_t}}\,\boldsymbol{\eps_\theta(x_t,t)}\Big)\]
-$\theta$: U-Net weights. The output also gives the score of the noisy data: $-\eps_\theta/\sqrt{1-\ab_t}\approx\nabla\log q_t(x_t)$.
+\begin{tcolorbox}[colframe=rev,colback=rev!5!white,title={Sampling: generate a new image},width=.4\linewidth]
+\textbf{1.}~draw fresh noise $x_T\sim\Normal(0,\Id)$\\[0.6mm]
+\textbf{2.}~for $t=T,\dots,1$:\\
+\hspace*{1.2em}$x_{t-1}=\mu_\theta(x_t,t)+\sigma_t\,u_t$\\
+\hspace*{1.2em}$u_t\sim\Normal(0,\Id)$\\[0.6mm]
+\textbf{3.}~return $x_0$ \quad(no noise is added at $t=1$)\\[0.8mm]
+{\color{muted}No real image is used; the network only supplies $\mu_\theta$ at each step (Ho et al.\ 2020, Alg.~2).}
 \end{tcolorbox}
-\begin{tcolorbox}[colframe=hcmusblue,colback=hcmusblue!5!white,title={Training objective}]
-\setlength{\abovedisplayskip}{2pt}\setlength{\belowdisplayskip}{2pt}
-\[L_{\text{simple}}=\E_{t,x_0,\eps}\big[\|\eps-\eps_\theta(x_t,t)\|^2\big]\]
-\begin{enumerate}\setlength{\itemsep}{1pt}
-\item draw $x_0\sim$ data, $t\sim\mathrm{U}\{1..T\}$, $\eps\sim\Normal(0,\Id)$
-\item build $x_t=\sqrt{\ab_t}\,x_0+\sqrt{1-\ab_t}\,\eps$
-\item predict $\eps_\theta(x_t,t)$; gradient step on the error
-\end{enumerate}
-\end{tcolorbox}
-\end{tcbraster}
-\vspace{1.3mm}
-\begin{nbox}[fontupper=\footnotesize,before skip=0pt,after skip=0pt,colback=lightorange]{rev}
-\begin{minipage}[c]{.49\linewidth}
-\textbf{Why predict $\eps$, not $x_{t-1}$?} The mean $\tilde\mu_t$ of $x_{t-1}$ gives the same Gaussian step, but trains well only on the weighted bound. $\eps\sim\Normal(0,\Id)$ has one scale at every $t$, so plain MSE ($L_{\text{simple}}$) works best.
-\end{minipage}\hfill
-\begin{minipage}[c]{.49\linewidth}
-\centering\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.0}%
-{\scriptsize\paper\ Ho et al.\ 2020, Table~2: CIFAR-10 FID$\downarrow$}\\[0.6mm]
+\begin{tcolorbox}[colframe=hcmusblue,colback=hcmusblue!5!white,title={Why predict $\eps$, not the mean $\tilde\mu_t$?},width=.6\linewidth-3mm]
+Predicting the mean $\tilde\mu_t$ of $x_{t-1}$ directly gives the same step, but it trains well only on the weighted bound; $\eps$ has one scale at every $t$, so plain MSE ($L_{\text{simple}}$, slide~6) works best.\par\vspace{0.6mm}
+{\centering\setlength{\tabcolsep}{5pt}\renewcommand{\arraystretch}{1.0}%
+{\scriptsize\paper\ Ho et al.\ 2020, Table~2: CIFAR-10 FID$\downarrow$}\\[0.5mm]
 \begin{tabular}{@{}lcc@{}}
 \toprule
 Network predicts & weighted bound & plain MSE\\
@@ -351,48 +330,67 @@ Network predicts & weighted bound & plain MSE\\
 mean $\tilde\mu_t$ of $x_{t-1}$ & 13.22 & unstable\\
 noise $\eps$ & 13.51 & \textbf{3.17}\\
 \bottomrule
-\end{tabular}
+\end{tabular}\par}
+\end{tcolorbox}
+\end{tcbraster}
+\vspace{2.5mm}
+\begin{tbox}[fontupper=\footnotesize,before skip=0pt,after skip=0pt]{One reverse step: turn the noise prediction into $\mu_\theta$}{rev}
+\setlength{\abovedisplayskip}{0pt}\setlength{\belowdisplayskip}{0pt}
+\begin{minipage}[c]{.3\linewidth}\raggedright
+$p_\theta(x_{t-1}\mid x_t)=\Normal\big(\mu_\theta,\sigma_t^2\Id\big)$\\[0.5mm]
+$\sigma_t^2=\beta_t$ \emph{fixed}, not learned
+\end{minipage}\hfill
+\begin{minipage}[c]{.36\linewidth}
+\[\mu_\theta=\frac{1}{\sqrt{\alpha_t}}\Big(x_t-\frac{\beta_t}{\sqrt{1-\ab_t}}\,\boldsymbol{\eps_\theta(x_t,t)}\Big)\]
+\end{minipage}\hfill
+\begin{minipage}[c]{.3\linewidth}\raggedright
+$\theta$: U-Net weights. Only the bold $\eps_\theta$ is learned; $\beta_t,\alpha_t,\ab_t$ come from the fixed schedule.
 \end{minipage}
-\end{nbox}
-\note{\textbf{(~90 s)} Central figure: blue = known, orange = learned. The network never sees the clean image at inference. Training in 3 lines. Why epsilon rather than x_{t-1}: both define the same Gaussian step, but predicting the mean only trains well on the weighted bound (FID 13.22) and is unstable with plain MSE; epsilon has unit scale at every t, so L_simple works (FID 3.17). Derivation (KL, posterior mean) goes to Q\&A.}
+\end{tbox}
+\note{\textbf{(~90 s)} Diagram: the learned reverse chain runs right to left, from noise $x_T$ to $x_0$. Sampling in 3 lines: start from noise, repeat the reverse step, no image needed. Why epsilon rather than the mean: both define the same Gaussian step, but predicting the mean only trains well on the weighted bound (FID 13.22) and is unstable with plain MSE; epsilon has unit scale at every t, so L_simple works (FID 3.17). Bottom box: how the predicted noise becomes the mean of one step.}
 \end{frame}
 
 %% =====================================================================
-%% 6. From denoising to generation  (~110 s)
+%% 6. Training, score, answer to the guiding question  (~110 s)
 %% =====================================================================
 \begin{frame}
-\frametitle{From denoising to generation: answering the guiding question}
+\frametitle{Training the noise predictor, and why it works}
 \framesubtitle{B \textperiodcentered{} Reverse denoising}
 \begin{columns}[T,onlytextwidth]
-\column{.52\textwidth}
-\begin{tbox}[fontupper=\footnotesize]{Sampling: no real image needed}{rev}
-\textbf{1.}~$x_T\sim\Normal(0,\Id)$ \quad(fresh noise)\\
-\textbf{2.}~for $t=T,\dots,1$:\; $x_{t-1}=\mu_\theta(x_t,t)+\sigma_t\,u_t$,\; $u_t\sim\Normal(0,\Id)$\\
-\textbf{3.}~return $x_0$ \quad(no noise is added at $t=1$)
+\column{.42\textwidth}
+\tcbset{before skip=0pt,after skip=2mm}
+\begin{tbox}[fontupper=\footnotesize]{Training: learn to predict the noise}{hcmusblue}
+\setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{2pt}
+\[L_{\text{simple}}=\E_{t,x_0,\eps}\big[\|\eps-\eps_\theta(x_t,t)\|^2\big]\]
+\textbf{1.}~draw $x_0\sim$ data, $t\sim\mathrm{U}\{1..T\}$, $\eps\sim\Normal(0,\Id)$\\
+\textbf{2.}~build $x_t=\sqrt{\ab_t}\,x_0+\sqrt{1-\ab_t}\,\eps$\\
+\textbf{3.}~predict $\eps_\theta(x_t,t)$; gradient step on the error\\[0.5mm]
+{\scriptsize\color{muted}Uses real images (Ho et al.\ 2020, Alg.~1).}
 \end{tbox}
-\vspace{1mm}
-{\footnotesize\textbf{Why removing noise generates new images}
-\begin{enumerate}\setlength{\itemsep}{1pt}
-\item \textbf{Free supervision:} the forward process gives $(x_t,\eps)$ pairs at every noise level.
-\item \textbf{Shared structure:} to predict the noise, the network must learn what images have in common.
-\item \textbf{Small stochastic steps:} each step is a gentle correction; fresh $u_t$ makes every seed a different image.
-\end{enumerate}}
-\vspace{0.5mm}
-\begin{nbox}[fontupper=\footnotesize]{bad}
-\textbf{Why not one step?} Training $x_T\mapsto x_0$ with squared error gives $\E[x_0\mid x_T]\approx\E[x_0]$ because $x_T$ carries almost no information about $x_0$: the average, blurry image. Small \emph{forward} steps are what make small \emph{reverse} steps possible.
-\end{nbox}
-\column{.46\textwidth}
-\includegraphics[width=\linewidth]{figures/retriever_step25.png}\\[-0.5mm]
-{\footnotesize \ours\ \emph{Inside DDIM update 25, golden retriever.} Top: pixel ADM; bottom: latent LDM.}
-\vspace{0.5mm}
-\footnotesize
-\begin{itemize}\setlength{\itemsep}{1pt}
-\item The \emph{clean estimate} already shows head and muzzle, while the \emph{updated state} is still noisy.
-\item A forward pass from the final image makes the retriever's features vanish gradually (cf.\ slide~4).
+\begin{tbox}[fontupper=\footnotesize,after skip=0pt]{Connection to the score (Song \& Ermon 2019)}{fwd}
+\setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{1pt}
+The score $\nabla_x\log q_t(x)$ points uphill in noisy-data density. At the optimum of $L_{\text{simple}}$, \mbox{$\eps_\theta\approx\E[\eps\mid x_t]$}, so
+\[s_\theta:=-\frac{\eps_\theta}{\sqrt{1-\ab_t}}\approx\nabla_{x_t}\log q_t(x_t)\]
+\[\mu_\theta=\frac{x_t+\beta_t\,s_\theta}{\sqrt{\alpha_t}}\]
+Each step moves \emph{uphill in density}, then adds noise: like annealed Langevin dynamics.
+\end{tbox}
+\column{.56\textwidth}
+\begin{tbox}[fontupper=\footnotesize,before skip=0pt,after skip=0pt]{Why removing noise generates new images}{ok}
+\setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{1pt}
+\textbf{Core idea: know the noise $\Rightarrow$ know the clean image.}
+\begin{itemize}\setlength{\itemsep}{2.2pt}
+\item \textbf{Noise and image: same information.} Invert the closed form:
+\[\hat x_0=\big(x_t-\sqrt{1-\ab_t}\,\eps_\theta(x_t,t)\big)/\sqrt{\ab_t}\]
+\item \textbf{Remove a little at a time.} From pure noise $x_T$, each step removes a small part of the predicted noise (plus fresh noise for diversity): many easy corrections, unlike a one-pass VAE decoder.
+\item \textbf{Why a \emph{real} image, not any image.} To guess the noise, the net must know what real images look like; $\eps_\theta\propto-$score, so removing it climbs toward regions dense with real images.
+\item \textbf{Coarse to fine.} Large $t$: layout, shape, colour; small $t$: edges, texture. Sampling goes in this order (Ho et al.\ 2020, Sec.~4.3).
+\item \textbf{Why $\eps$, not $x_0$?} $\eps\sim\Normal(0,\Id)$ has one scale at every $t$; $x_0$ is nearly unguessable at large $t$ (DDPM Sec.~3.2; slide~5).
 \end{itemize}
+\vspace{0.5mm}
+{\color{ok!70!black}\itshape Like a sculptor: learn what is \emph{not} the statue, then chip it away layer by layer.}
+\end{tbox}
 \end{columns}
-\src{Our run: OpenAI ADM (pixel), CompVis cin256-v2 (latent), ImageNet, 50 DDIM steps; one sample per class. Sampling: Ho et al.\ 2020, Alg.~2.}
-\note{\textbf{(~110 s)} This slide answers the guiding question: free supervision, shared structure, small stochastic steps. One-step training collapses to the mean image. The picture shows the mechanism: at step 25 the clean estimate already has a dog, the state still looks like noise.}
+\note{\textbf{(~110 s)} Training in 3 lines (real image, closed form, regress the noise). Score box: the MSE optimum makes the noise prediction a scaled score, so each step climbs the noisy-data density, like annealed Langevin dynamics. Green box is our answer to the guiding question: know the noise, know the image; remove a little at a time; removing noise climbs toward real images; coarse to fine; why epsilon. Inside-a-step figure from our run: backup slide 14.}
 \end{frame}
 
 %% =====================================================================
@@ -664,7 +662,7 @@ Same principle on autoencoder latents: cheaper steps ($\approx2.5\times$ faster 
 \vspace{0.5mm}
 \begin{center}
 {\small\itshape Capability is bounded by the training data, and by what we actually measured.}\\[1.5mm]
-{\large\bfseries\color{hcmusblue}Thank you \textperiodcentered{} Questions?}\\[0.5mm]{\scriptsize\color{muted}Notation, references and figure sources: backup slides}
+{\large\bfseries\color{hcmusblue}Thank you \textperiodcentered{} Questions?}\\[0.5mm]{\scriptsize\color{muted}Notation, a denoising trace, references and figure sources: backup slides}
 \end{center}
 \note{\textbf{(~45 s)} Close the loop on the guiding question in one sentence; the three recap cards mirror the learning objective. Hand over to Q\&A; every member answers at least one question.}
 \end{frame}
@@ -728,6 +726,26 @@ $L_{\text{LDM}}$ & $L_{\text{simple}}$ on $z_t$, given $\tau_\eta(y)$\\
 \end{frame}
 
 \newcommand{\refitem}[1]{\par\noindent\hangindent=1.2em\hangafter=1 \textbullet\ #1\par\vspace{1pt}}
+
+\begin{frame}
+\frametitle{Inside one denoising step: our run}
+\framesubtitle{Backup}
+\begin{columns}[c,onlytextwidth]
+\column{.6\textwidth}
+\includegraphics[width=\linewidth]{figures/retriever_step25.png}
+\column{.38\textwidth}
+\footnotesize
+\ours\ ImageNet class ``golden retriever'', 50 DDIM steps ($\eta=0$), one sample. Top: pixel ADM; bottom: latent LDM (CompVis cin256-v2). Snapshot inside update 25.
+\begin{enumerate}\setlength{\itemsep}{1.5pt}
+\item \textbf{Noisy input} $x_t$: still looks like noise.
+\item \textbf{Predicted noise} $\eps_\theta(x_t,t)$ (LDM: per-position size of the latent noise).
+\item \textbf{Clean estimate} $\hat x_0=\big(x_t-\sqrt{1-\ab_t}\,\eps_\theta\big)/\sqrt{\ab_t}$: the dog is already there.
+\item \textbf{Updated state} $x_{t-1}$: only a small step toward $\hat x_0$.
+\end{enumerate}
+\vspace{1mm}
+Supports slide~6: knowing the noise gives the image; each step is a small correction.
+\end{columns}
+\end{frame}
 
 \begin{frame}
 \frametitle{References (1/2)}
