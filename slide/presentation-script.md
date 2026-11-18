@@ -1,6 +1,6 @@
 # Presentation script: Diffusion Models, From Adding Noise to Generating Images
 
-Script thuyết trình cho deck [main.tex](main.tex): 12 slide nội dung, cộng 4 slide backup (13: Notation, 14: Inside one denoising step, 15–16: References).
+Script thuyết trình cho deck [main.tex](main.tex): 13 slide (slide 1 là title kèm guiding question; 12 slide nội dung), cộng 5 slide backup (14: Notation, 15: Inside one denoising step, 16: LDM details, 17–18: References).
 
 **Cách đọc file này**
 
@@ -9,7 +9,7 @@ Script thuyết trình cho deck [main.tex](main.tex): 12 slide nội dung, cộn
 - **✋**: dừng khoảng 1 giây và nhấn giọng. Đây là các câu người nghe cần nhớ.
 - **(cắt được)**: câu có thể bỏ khi trễ giờ.
 - **⚠️ Đừng nói**: những phát biểu vượt quá bằng chứng của nhóm.
-- Phân công người nói theo [slide-outline.md](../slide-outline.md): **A** slide 1–4, **B** slide 5–8, **C** slide 9–12. Có thể đổi tên tùy nhóm.
+- Phân công người nói theo [slide-outline.md](../slide-outline.md): **A** slide 1–4, **B** slide 5–8, **C** slide 9–13. Có thể đổi tên tùy nhóm.
 
 **Mã màu trên slide**: hãy dùng màu để dẫn mắt người nghe.
 
@@ -34,15 +34,16 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 | 4 | Forward noising by hand and by eye | A | 90s | A · Forward | Hai bước tính tay theo hai cách cho cùng $x_2$; kỳ vọng khác một lần rút ngẫu nhiên. |
 | 5 | Reverse denoising: from noise back to an image | B | 85s | B · Reverse | Sinh ảnh = lặp bước ngược từ nhiễu; mạng chỉ cần dự đoán ε, và dự đoán ε tốt hơn dự đoán mean. |
 | 6 | Training the noise predictor, and why it works | B | 100s | B · Reverse | $L_{\text{simple}}$ là hồi quy MSE; ε dự đoán là score; **trả lời guiding question**: biết nhiễu thì biết ảnh sạch. |
-| 7 | Inside the autoencoder: how images become latents | B | 70s | C · Latent | Autoencoder nén ảnh thành latent và được đóng băng. |
-| 8 | Why latent diffusion is cheaper: same loop, smaller state | B | 80s | C · Latent | Vòng lặp giữ nguyên, trạng thái nhỏ hơn: mỗi bước rẻ hơn. |
-| 9 | Cross-attention: steering the denoiser with a prompt | C | 90s | C · Latent | Prompt điều khiển từng bước qua attention mềm; đổi màu được, đổi trái/phải thì không. |
-| 10 | Pixel vs. latent diffusion on LSUN Churches | C | 75s | D · Evidence | Nhanh hơn khoảng 2.5 lần nhưng tốn bộ nhớ đỉnh hơn; chỉ là minh họa. |
-| 11 | Limitations: training data, copyright and bias | C | 45s | D · Evidence | Dữ liệu, bias, copyright, và giới hạn của chính thí nghiệm. |
-| 12 | Conclusion: answering the guiding question | C | 40s | Kết | Trả lời lại guiding question và 3 vế của learning objective. |
-| | **Tổng** | | **~860s ≈ 14.3 phút** | | Còn khoảng 40s dự phòng trong giới hạn 15 phút. Nếu trễ, bỏ các câu **(cắt được)**. |
+| 7 | From DDPM to LDM: the cost of pixels, and three ideas | B | 60s | C · Latent | Pixel diffusion tốn kém vì mọi bước chạm mọi pixel; LDM có 3 ý tưởng chính. |
+| 8 | Latent space: an autoencoder that compresses images (stage 1) | B | 65s | C · Latent | Autoencoder nén ảnh thành lưới latent 2-D nhỏ, rồi được đóng băng. |
+| 9 | Operations in latent space: the whole LDM pipeline | C | 75s | C · Latent | Vòng lặp DDPM giữ nguyên nhưng chạy trên $z$ nhỏ; encoder chỉ dùng khi train, decoder chạy một lần. |
+| 10 | Cross-attention: steering the denoiser with a prompt | C | 80s | C · Latent | Vùng ảnh "hỏi", từ trong prompt "trả lời"; đổi màu được, đổi trái/phải thì không. |
+| 11 | Pixel vs. latent diffusion on LSUN Churches | C | 70s | D · Evidence | Nhanh hơn khoảng 2.5 lần nhưng tốn bộ nhớ đỉnh hơn; chỉ là minh họa. |
+| 12 | Limitations: training data, copyright and bias | C | 40s | D · Evidence | Dữ liệu, bias, copyright, và giới hạn của chính thí nghiệm. |
+| 13 | Conclusion: answering the guiding question | C | 35s | Kết | Trả lời lại guiding question và 3 vế của learning objective. |
+| | **Tổng** | | **~885s ≈ 14.75 phút** | | Chỉ còn khoảng 15s dự phòng trong giới hạn 15 phút. Hãy tập với đồng hồ và sẵn sàng bỏ các câu **(cắt được)**. |
 
-**Sợi chỉ xuyên suốt**: guiding question được đặt ở slide 1, trả lời ở khung xanh lá slide 6, nhắc lại ở slide 12. Learning objective được nêu ở slide 1; vế "forward" là slide 3–4, vế "reverse" là slide 5–6, vế "latent" là slide 7–8; tổng kết ở slide 12.
+**Sợi chỉ xuyên suốt**: guiding question được đặt ở slide 1, trả lời ở khung xanh lá slide 6, nhắc lại ở slide 13. Learning objective được nêu ở slide 1; vế "forward" là slide 3–4, vế "reverse" là slide 5–6, vế "latent" là slide 7–10; tổng kết ở slide 13.
 
 ---
 
@@ -104,7 +105,7 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 **👉 [Dòng chữ nhỏ dưới ô Generative] (cắt được)**
 
-> This is also the backbone of today's text-to-image systems, such as Stable Diffusion, which we test on slide 9.
+> This is also the backbone of today's text-to-image systems, such as Stable Diffusion, which we test on slide 10.
 
 **Chuyển ý**: "Let's start with the easy direction: forward noising."
 
@@ -252,91 +253,121 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 ⚠️ **Đừng nói** "diffusion luôn sắc nét hơn VAE". Slide chỉ so sánh cách giải mã (nhiều bước nhỏ so với một lần), không có thí nghiệm so sánh chất lượng.
 ⚠️ Ý "nhiễu lớn dạy bố cục, nhiễu nhỏ dạy chi tiết" là cách hiểu của nhóm; phần có nguồn là *thứ tự xuất hiện khi sampling* (Ho et al. 2020, Sec. 4.3).
 
-💡 Nếu bị hỏi "có bằng chứng nào cho clean estimate không?", mở **backup 14** (hình golden retriever, run của nhóm): ở bước DDIM 25/50, clean estimate đã thấy con chó trong khi trạng thái hiện tại vẫn còn nhiễu.
+💡 Nếu bị hỏi "có bằng chứng nào cho clean estimate không?", mở **backup 15** (hình golden retriever, run của nhóm): ở bước DDIM 25/50, clean estimate đã thấy con chó trong khi trạng thái hiện tại vẫn còn nhiễu.
 
 ---
 
-## Slide 7: Inside the autoencoder: how images become latents (B · ~70s)
+## Slide 7: From DDPM to LDM: the cost of pixels, and three ideas (B · ~60s)
 
-**Bố cục**: **chuỗi trên cùng**: $x_0$ → [Encoder $\mathcal E_\phi$] → [$\mu_\phi, \sigma_\phi$] → [cam: $\tilde z = \mu + \sigma\odot\xi$] → [Decoder $D_\psi$] → $\hat x_0$ · **3 khung dưới**: *VAE objective* (xanh) | *LDM: a perceptual compressor* (xanh lá) | *What changes for diffusion* (cam).
+**Bố cục**: **trái**, hai khung độc lập xếp dọc: khung đỏ *Limitation 1: cost (every step, every pixel)* (một câu, công thức chi phí "cost ≈ #steps × one pass on all pixels" có chú thích dưới hai thừa số, 2 gạch đầu dòng PAPER REPORTS và OUR RUN, dòng nguồn xám, "→ ideas 1, 2") và khung cam *Limitation 2: no control (unconditional)* (một câu, "→ idea 3") · **phải**: tiêu đề xanh lá "LDM (Rombach et al. 2022): three ideas", 3 thẻ xanh lá đánh số 1–2–3, mỗi thẻ có mũi tên xám chỉ tới slide sẽ giải thích.
 
-> Latent diffusion begins with an autoencoder.
+> DDPM has two separate limitations, and LDM answers each of them.
 
-**👉 [Chuỗi trên: $x_0$ (nhãn $H\times W\times 3$) → Encoder → ô $\mu, \sigma$ → ô cam $\tilde z$]**
+**👉 [Khung đỏ "Limitation 1": câu đầu]**
 
-> The encoder turns an $H \times W \times 3$ image into a distribution, a mean and a standard deviation for every latent value, and we sample a latent of size $h \times w \times c$, where $h = H/f$.
+> The first is **cost**. Most pixels of an image hold fine detail we barely perceive, yet the network re-processes *all* of them at *every* step.
 
-**👉 [Decoder → $\hat x_0$ "reconstruction"]**
+**👉 [Công thức chi phí: chỉ "#steps" (25–1000), rồi "one pass on all pixels" (196,608 values)] ✋**
 
-> The decoder maps the latent back to an image.
+> So the cost is roughly the number of steps times one network pass over all pixels, and **both factors are large**: 25 to 1000 steps, each over almost 200,000 values for a 256 by 256 image.
 
-**👉 [Khung xanh VAE objective: "Reconstruction", "KL", rồi chữ **Problem**]**
+**👉 [Gạch PAPER REPORTS, chỉ dòng nguồn xám]**
 
-> A textbook VAE trains this with reconstruction plus a KL term that keeps codes near $\mathcal N(0, I)$. The problem: pixel-wise squared error averages plausible details, so images turn blurry.
+> The LDM paper quotes 150 to 1000 V100 GPU-days to train strong pixel models, and about five days on one A100 to sample 50,000 images. Those numbers are cited from Dhariwal and Nichol.
 
-**👉 [Khung xanh lá: 1 → 2 → 3, rồi dòng "Ours"]**
+**👉 [Gạch OUR RUN, rồi "→ ideas 1, 2"]**
 
-> So LDM trains a *perceptual* compressor: a perceptual loss on deep features, a patch-based adversarial loss for realistic texture, and only a light regularizer, weak KL or a VQ codebook. Our runs use both: KL with $f = 8$ for Churches, VQ with $f = 4$ for ImageNet.
+> We see it in our own run too: 6.10 seconds for one 256 by 256 image, even with only 50 steps; more on slide 11. Ideas one and two on the right fix this.
 
-**👉 [Khung cam "What changes for diffusion": lần lượt 4 dấu chấm] ✋ ở dấu chấm 3**
+**👉 [Khung cam "Limitation 2", rồi "→ idea 3"]**
 
-> For diffusion, four points matter. The latent keeps its 2-D layout, so a U-Net can process it. The autoencoder is trained once, then **frozen**. Clean latents are *not* standard normal, so we cannot just decode random noise; diffusion must learn the distribution of latents. And the encoder noise $\xi$ is not the diffusion noise $\varepsilon_z$.
+> The second limitation is **control**. DDPM learns the image distribution only: it returns *some* image, and we cannot ask for "a red bus". Idea three fixes this.
 
-⚠️ Sơ đồ vẽ biến thể KL ($\mu, \sigma$). Biến thể VQ không có $\mu, \sigma$. Nếu bị hỏi, nói rõ điều này.
+**👉 [Tiêu đề xanh lá bên phải, rồi thẻ 1] ✋**
 
----
+> Latent diffusion answers this with three ideas. **One**: run diffusion in a compressed *latent* space and train in two stages; an autoencoder is trained once, frozen and reused, then diffusion runs on its small latents.
 
-## Slide 8: Why latent diffusion is cheaper: same loop, smaller state (B · ~80s)
+**👉 [Thẻ 2]**
 
-**Bố cục**: **hàng TRAINING**: $x_0$ → [Encoder, frozen, scale $a$] → $z_0$ → [add noise] → [conditional U-Net] ← [$\tau_\eta(y)$] (nhãn "cross-attn") · **hàng GENERATION**: [$z_T$ noise] → [U-Net + sampler] → [Decoder (frozen)] → $\hat x_0$, chú thích "no real image or encoder needed" · **khung xanh lá trái** "Smaller state per denoising step" · **khung xanh phải** "Same principle, new space" ($L_{\text{LDM}}$, dòng định nghĩa $z_0=a\,\mathcal E_\phi(x_0)$, chữ **Caveat**).
+> **Two**: keep the latent as a 2-D grid with only mild compression, 4 to 8 times per side, so a U-Net still works and reconstructions stay faithful.
 
-> Here is the full pipeline, and our answer to the last part of the learning objective.
+**👉 [Thẻ 3]**
 
-**👉 [Hàng TRAINING: quét trái → phải tới ô U-Net, rồi ô $\tau_\eta(y)$]**
+> **Three**: a general conditioning mechanism, cross-attention, that lets any input such as text, a class or a layout steer the denoiser. The next three slides unpack these ideas, in this order.
 
-> Training: encode a real image with the frozen encoder, scale it by a fixed $a$, add noise exactly as before, and train a U-Net to predict the noise. A condition $y$, text or a class, enters through $\tau_\eta$ and cross-attention.
-
-**👉 [Hàng GENERATION, rồi chú thích "no real image or encoder needed"]**
-
-> Generation: start from latent noise, denoise for many steps, and decode **once** at the end. No real image and no encoder are needed.
-
-**👉 [Khung xanh lá: gạch 1 (PAPER REPORTS), gạch 2 (OUR EXAMPLE)] ✋**
-
-> Why is it cheaper? The loop is identical; the *state* is smaller. With $f = 4$, a 256×256 image becomes 64×64: **16 times fewer spatial positions**, as in the paper. In our LSUN Churches model, 196,608 values become 4,096, **about 48 times fewer**. Every U-Net call works on that small state.
-
-**👉 [Khung xanh: công thức $L_{\text{LDM}}$, rồi chữ **Caveat**]**
-
-> The loss is the same noise-prediction loss, now on latents with a condition. Two cautions: fewer values is *not* automatically 48 times faster, and DDIM's fewer steps are a separate speedup. Compression also caps quality: fine text and small objects can be lost. We test the real cost on slide 10.
-
-**Chuyển người (B → C)**: "[Tên C] will now show how the condition actually steers the denoiser."
-
-⚠️ **Đừng nói** "LDM nhanh hơn 16× / 48×" hay "tiết kiệm 16× bộ nhớ". Đó là tỉ lệ số phần tử, không phải tốc độ hay bộ nhớ đo được.
+⚠️ **Đừng nói** các con số GPU-days là của LDM tự đo. LDM trích chúng từ Dhariwal & Nichol 2021.
 
 ---
 
-## Slide 9: Cross-attention: steering the denoiser with a prompt (C · ~90s)
+## Slide 8: Latent space: an autoencoder that compresses images (stage 1) (B · ~65s)
 
-**Bố cục**: **trái**: khung xanh lá "Prompt → tokens → attention" ($C=\tau_\eta(y)$, công thức $Q,K,V$ và $O$, dòng ký hiệu nhỏ, câu in đậm), 3 gạch đầu dòng · **phải**: nhãn OUR RUN "Stable Diffusion v1.4, seed 2027, same initial latent", 3 ảnh *Reference* | *red → green* | *left → right*, 3 gạch đầu dòng với ✓/✗.
+**Bố cục**: **sơ đồ ngang trên cùng**: [image $x_0$, $256\times256\times3$] → [Encoder $\mathcal E$] → hình lưới xanh "latent $z$: $32\times32\times4$" → [Decoder $D$] → [reconstruction $\hat x_0\approx x_0$], chú thích "a small 2-D grid: $h=H/f$" · **3 khung dưới**: *What the latent looks like* (xanh) | *How stage 1 is trained* (xanh lá) | *Why we still need diffusion* (cam).
 
-**👉 [Dòng $C = \tau_\eta(y)$]**
+**👉 [Sơ đồ: quét từ image → Encoder → hình lưới latent → Decoder → reconstruction]**
 
-> The prompt is first turned into tokens. In Stable Diffusion v1.4, a frozen CLIP text encoder does this.
+> Stage one is an autoencoder. The encoder compresses a 256 by 256 image into a small latent grid, and the decoder expands it back into an image that looks like the original.
 
-**👉 [$Q = FW_Q$, rồi $K$, $V$; sau đó dòng ký hiệu nhỏ] ✋**
+**👉 [Hình lưới latent, rồi khung xanh "What the latent looks like"] ✋**
 
-> In cross-attention, **queries come from the image** features $F$, one row per position, while **keys and values come from the text** tokens $C$. The $W$ matrices are learned projections, and $d$ is the key width.
+> The key point: the latent is a small **2-D grid**, not a flat vector, so the image layout survives. With a factor of 4, the paper reduces 256 by 256 to 64 by 64, 16 times fewer positions. Our Churches model uses a factor of 8: 32 by 32 by 4, about **48 times fewer values**.
 
-**👉 [Công thức $O$, rồi câu in đậm cuối khung]**
+**👉 [Khung xanh lá "How stage 1 is trained": 3 mục in đậm, rồi dòng "Ours"]**
 
-> Each image position takes a weighted mix of the tokens. So a region that is becoming a bus can draw on "red" and "bus".
+> To keep reconstructions sharp, it is trained with a perceptual loss, so the output must *look* like the input, and a patch-based adversarial loss for realistic texture; a plain pixel loss would give blur. A light regularizer keeps the latent well behaved: a weak KL, or a codebook in the decoder. Our two models use one of each.
+
+**👉 [Khung cam "Why we still need diffusion"]**
+
+> After stage one the autoencoder is **frozen**. But we cannot just decode a random latent: clean latents are not standard Gaussian, so random ones decode to poor images. Diffusion must learn where real latents lie. And compression caps quality: fine text and small objects can be lost.
+
+⚠️ Công thức VAE (ELBO, reparameterization) đã chuyển xuống **backup 16**. Chỉ mở khi bị hỏi.
+
+**Chuyển người (B → C)**: "Now that we have a latent space, [Tên C] will show how diffusion runs inside it."
+
+---
+
+## Slide 9: Operations in latent space: the whole LDM pipeline (C · ~75s)
+
+**Bố cục**: **sơ đồ lớn** chiếm gần cả slide: vùng nền xanh nhạt "LATENT SPACE: every diffusion operation runs on the small $z$" · **làn trên TRAINING (stage 2)**: [real image $x_0$] → [Encoder, frozen] → [$z_0$] → [add noise] → [U-Net, predict the noise] · **làn dưới GENERATION** (chú thích "no real image, no encoder"): [$z_T$ noise] → [U-Net + sampler, $T$ steps] (mũi tên cam "repeat") → [Decoder, frozen, **once**] → [new image] · **bên phải**: [prompt $y$] → [condition encoder $\tau_\eta$], hai mũi tên xanh "cross-attn" vào cả hai U-Net · **3 thẻ dưới**: *Same DDPM operations, now on $z$* (xanh) | *Encoder only for training* (xanh lá) | *Cheaper per step* (cam).
+
+**👉 [Vùng nền xanh "LATENT SPACE"] ✋**
+
+> This is the whole pipeline. The shaded area is the latent space: **everything diffusion does happens here**, on the small grid, not on pixels.
+
+**👉 [Làn TRAINING: trái → phải]**
+
+> Training: take a real image, encode it once with the frozen encoder, add noise exactly as on slide 3, and train the U-Net to predict that noise. It is DDPM, just on $z$.
+
+**👉 [Làn GENERATION: $z_T$ → U-Net + sampler (chỉ mũi tên "repeat") → Decoder → new image]**
+
+> Generation: start from latent noise, run the U-Net and sampler for $T$ steps, and call the decoder **once** at the end. No real image and no encoder are needed.
+
+**👉 [prompt $y$ → $\tau_\eta$ → hai mũi tên "cross-attn"]**
+
+> A prompt is encoded by $\tau_\eta$ and enters both U-Nets through cross-attention, which is the next slide.
+
+**👉 [3 thẻ dưới: trái → giữa → phải]**
+
+> So: the same DDPM operations, now on $z$; the encoder only for training and the decoder once; and each U-Net call is cheaper because it sees about 48 times fewer values. DDIM's fewer steps are a separate speedup. We measure the real cost on slide 11.
+
+⚠️ **Đừng nói** "LDM nhanh hơn 48×". Đó là 48× ít giá trị hơn mỗi bước, không phải tốc độ đo được (đo thật: 2.5×, slide 11).
+
+---
+
+## Slide 10: Cross-attention: steering the denoiser with a prompt (C · ~80s)
+
+**Bố cục**: **trái**: khung xanh lá *Image regions ask, prompt words answer* (lưới latent với một ô cam; các token a / red / bus / left / blue / car; đường nối dày tới "red" và "bus"), 3 gạch đầu dòng · **phải**: nhãn OUR RUN "Stable Diffusion v1.4, seed 2027, same initial latent", 3 ảnh *Reference* | *red → green* | *left → right*, 3 gạch đầu dòng với ✓/✗.
+
+**👉 [Hình bên trái: ô cam trên lưới latent, rồi các đường nối dày tới "red" và "bus"] ✋**
+
+> How does the prompt steer the denoiser? Through cross-attention: **image regions ask, prompt words answer**. Each region of the latent, like this orange one, looks up the prompt tokens; thick lines mean high attention. A region that is becoming a bus pulls information from "red" and "bus".
 
 **👉 [3 gạch đầu dòng bên trái, lần lượt]**
 
-> This happens at every layer and every step: the prompt steers each prediction; it is not pasted onto the image. Only $\tau_\eta$ depends on the modality: text, a single class token as in our ImageNet model, or a layout. **(cắt được)** Classifier-free guidance mixes the predictions without and with the prompt: a larger $s$ means closer to the prompt but less diverse.
+> This happens at every U-Net layer and every step, so the prompt steers each noise prediction; nothing is pasted onto the final pixels. The same mechanism works for any condition: only the encoder changes, for text, a class or a layout. **(cắt được)** A guidance scale controls how strongly the prompt is followed: higher means closer to the prompt but less diverse.
 
 **👉 [Nhãn OUR RUN, rồi ảnh 1 "Reference"]**
 
-> Does it work? Our small test: same seed, same initial latent, three prompts. Reference: "a red bus to the left of a blue car."
+> Does it work? Our small test with Stable Diffusion: same seed, same initial latent, three prompts. Reference: "a red bus to the left of a blue car."
 
 **👉 [Ảnh 2 "red → green" rồi gạch ✓ bên dưới]**
 
@@ -350,9 +381,11 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 > Cross-attention is **soft**: an attribute can bind to the wrong object, and a token can be ignored. To be clear: this is 16 images checked by eye, an illustration and not a general conclusion.
 
+⚠️ Công thức $Q, K, V$, softmax và CFG đã chuyển xuống **backup 16**. Chỉ mở khi bị hỏi.
+
 ---
 
-## Slide 10: Pixel vs. latent diffusion on LSUN Churches (C · ~75s)
+## Slide 11: Pixel vs. latent diffusion on LSUN Churches (C · ~70s)
 
 **Bố cục**: **dòng thiết lập trên cùng** (OUR RUN: T4, batch 1, 50 DDIM steps η = 0, 4 seeds) · **trái**: bảng 3 hàng, khung xanh PAPER REPORTS · **phải**: lưới ảnh 2 × 4 (hàng DDPM, hàng LDM; cột seed 2026–2029) và chú thích · **khung cam Takeaway** dưới cùng.
 
@@ -388,7 +421,7 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 ---
 
-## Slide 11: Limitations: training data, copyright and bias (C · ~45s)
+## Slide 12: Limitations: training data, copyright and bias (C · ~40s)
 
 **Bố cục**: 3 khung ngang: *1. Training data* (xanh) | *2. Bias* (cam) | *3. Copyright and memorization* (đỏ), khung xám *Method limits* dưới cùng.
 
@@ -410,7 +443,7 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 ---
 
-## Slide 12: Conclusion: answering the guiding question (C · ~40s)
+## Slide 13: Conclusion: answering the guiding question (C · ~35s)
 
 **Bố cục**: **khung cam lớn** (guiding question + câu trả lời có 3 cụm in đậm) · **3 thẻ**: *1. Forward noising* (xanh dương) | *2. Reverse denoising* (cam) | *3. Latent diffusion* (xanh lá) · dòng nghiêng · "Thank you · Questions?"
 
@@ -438,15 +471,18 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 | Vì sao $T$ bước nhỏ thay vì một bước? | 3 (gạch Assumptions, biểu đồ) | A | Bước nhỏ thì bước ngược gần Gaussian, dễ học; mọi mức nhiễu là một bài toán huấn luyện; training dùng closed form nên không tốn $T$ bước, chi phí $T$ bước nằm ở sampling. |
 | Vì sao $x_T \approx \mathcal N(0, I)$? | 3 (gạch "Why…", biểu đồ) | A | $\mathcal N(0,I)$ được giữ qua mỗi bước; $\bar\alpha_T\approx4\times10^{-5}$; với $T$ hữu hạn thì chỉ xấp xỉ. |
 | Vì sao không sinh ảnh trong một bước? | 6 (gạch "Remove a little at a time") | B | Train $x_T\to x_0$ bằng MSE cho $\mathbb E[x_0\mid x_T]\approx\mathbb E[x_0]$, tức ảnh trung bình bị mờ, vì $x_T$ gần như không chứa thông tin về $x_0$. |
-| VAE khác autoencoder thường? Sao không decode $z\sim\mathcal N(0,I)$? | 7 | B | Encoder xuất phân phối + KL + reparameterization; latent sạch không phải $\mathcal N(0,I)$. |
-| Vì sao perceptual + adversarial thay vì MSE? | 7 | B | MSE theo pixel lấy trung bình các chi tiết khả dĩ nên ảnh mờ. |
-| Cross-attention khác self-attention? | 9 | C | Q từ ảnh; K, V từ điều kiện (với self-attention thì cả ba từ ảnh). |
-| Vì sao LDM nhanh hơn mà tốn bộ nhớ đỉnh hơn? | 10 | C | Nói thật: nhóm chỉ đo, chưa phân tích. Hai checkpoint khác kiến trúc/decoder; đây là giả thuyết chưa kiểm chứng. |
-| Thí nghiệm có chứng minh latent tốt hơn pixel? | 10 | C | Không: 4 mẫu, 1 cặp checkpoint, không FID. Chỉ là minh họa, kèm số liệu Table 6 của paper. |
-| Diffusion có sao chép ảnh huấn luyện? | 11 | C | Carlini et al.: memorization có thể xảy ra, nhưng không phải mọi ảnh sinh ra đều là bản sao. |
-| Một ký hiệu nghĩa là gì / miền giá trị? | Backup 13 | ai cũng được | Bảng Notation, value ranges and modelling assumptions. |
-| Có bằng chứng nào mạng "thấy" ảnh khi trạng thái còn đầy nhiễu? | Backup 14 | B | Run của nhóm: ở bước DDIM 25/50, clean estimate $\hat x_0$ đã thấy con chó (cả pixel ADM và latent LDM); updated state chỉ nhích một bước nhỏ. |
-| Nguồn hình/số liệu? | Backup 15–16 | ai cũng được | Sơ đồ là hình tự vẽ; run dùng checkpoint pretrained; số paper ghi rõ nguồn. |
+| Vì sao pixel diffusion tốn kém, và LDM sửa bằng cách nào? | 7 | B | Mỗi bước chạy mạng trên mọi pixel; LDM cho diffusion chạy trên latent nhỏ (hai giai đoạn), giữ cấu trúc 2-D, thêm cross-attention. Số GPU-days là LDM trích từ Dhariwal & Nichol 2021. |
+| VAE khác autoencoder thường? Sao không decode $z\sim\mathcal N(0,I)$? | 8 (khung cam); công thức ở backup 16 | B | Encoder xuất phân phối + KL + reparameterization; latent sạch không phải $\mathcal N(0,I)$ nên phải dùng diffusion để học phân phối latent. |
+| Vì sao latent phải giữ dạng lưới 2-D và chỉ nén nhẹ? | 7 (thẻ 2), 8 | B | U-Net xử lý được lưới 2-D; nén nhẹ ($f=4$–$8$) giữ ảnh tái tạo trung thực; các mô hình hai giai đoạn trước đó làm phẳng thành chuỗi token 1-D và phải nén mạnh hơn. |
+| Vì sao perceptual + adversarial thay vì MSE? | 8 | B | MSE theo pixel lấy trung bình các chi tiết khả dĩ nên ảnh mờ. |
+| Encoder có dùng khi sinh ảnh không? | 9 | C | Không: sinh ảnh bắt đầu từ nhiễu latent $z_T$; encoder chỉ dùng khi train, decoder chạy một lần ở cuối. |
+| Cross-attention khác self-attention? Công thức cụ thể? | 10; công thức ở backup 16 | C | Q từ ảnh; K, V từ điều kiện (với self-attention thì cả ba từ ảnh); $O=\mathrm{softmax}(QK^\top/\sqrt d)V$. |
+| Vì sao LDM nhanh hơn mà tốn bộ nhớ đỉnh hơn? | 11 | C | Nói thật: nhóm chỉ đo, chưa phân tích. Hai checkpoint khác kiến trúc/decoder; đây là giả thuyết chưa kiểm chứng. |
+| Thí nghiệm có chứng minh latent tốt hơn pixel? | 11 | C | Không: 4 mẫu, 1 cặp checkpoint, không FID. Chỉ là minh họa, kèm số liệu Table 6 của paper. |
+| Diffusion có sao chép ảnh huấn luyện? | 12 | C | Carlini et al.: memorization có thể xảy ra, nhưng không phải mọi ảnh sinh ra đều là bản sao. |
+| Một ký hiệu nghĩa là gì / miền giá trị? | Backup 14 | ai cũng được | Bảng Notation, value ranges and modelling assumptions. |
+| Có bằng chứng nào mạng "thấy" ảnh khi trạng thái còn đầy nhiễu? | Backup 15 | B | Run của nhóm: ở bước DDIM 25/50, clean estimate $\hat x_0$ đã thấy con chó (cả pixel ADM và latent LDM); updated state chỉ nhích một bước nhỏ. |
+| Nguồn hình/số liệu? | Backup 17–18 | ai cũng được | Sơ đồ là hình tự vẽ; run dùng checkpoint pretrained; số paper ghi rõ nguồn. |
 
 **Mẹo khi trả lời**: luôn bấm về slide liên quan và **chỉ vào đúng khung** trước khi trả lời. Như vậy người hỏi thấy câu trả lời đã nằm trong bài.
 
@@ -454,7 +490,7 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 ## Checklist trước giờ trình bày
 
-- [ ] Mỗi người tập riêng phần của mình với đồng hồ: **A ≈ 4.6 phút** (slide 1–4, 275s), **B ≈ 5.6 phút** (slide 5–8, 335s), **C ≈ 4.2 phút** (slide 9–12, 250s). B đang dài hơn hai người còn lại khoảng 1 phút; nếu muốn cân hơn, chuyển slide 8 cho C (A 275s, B 255s, C 330s).
+- [ ] Mỗi người tập riêng phần của mình với đồng hồ: **A ≈ 4.6 phút** (slide 1–4, 275s), **B ≈ 5.2 phút** (slide 5–8, 310s), **C ≈ 5.0 phút** (slide 9–13, 300s). Tổng 885s, chỉ dư khoảng 15s so với giới hạn 15 phút.
 - [ ] Tập 2 lần chuyển người (sau slide 4, sau slide 8) cho liền mạch.
 - [ ] Chuẩn bị laser/pointer. Nếu không có, đứng cạnh màn hình và chỉ bằng tay theo các 👉.
 - [ ] Đánh dấu sẵn các câu **(cắt được)** để bỏ nếu trễ hơn 30 giây.

@@ -154,7 +154,7 @@
 \textbf{Generative} learns $p(x)$ or $p(x\mid y)$: must capture shape, texture, lighting and layout.
 \end{nbox}
 \vspace{1mm}
-{\scriptsize\color{muted} Diffusion is the generative backbone of today's text-to-image systems, e.g.\ Stable Diffusion (slide~9).\par}
+{\scriptsize\color{muted} Diffusion is the generative backbone of today's text-to-image systems, e.g.\ Stable Diffusion (slide~10).\par}
 \column{.68\textwidth}
 \sech{Qualitative comparison: GAN vs.\ autoregressive vs.\ diffusion}
 \centering
@@ -390,136 +390,182 @@ Each step moves \emph{uphill in density}, then adds noise: like annealed Langevi
 {\color{ok!70!black}\itshape Like a sculptor: learn what is \emph{not} the statue, then chip it away layer by layer.}
 \end{tbox}
 \end{columns}
-\note{\textbf{(~110 s)} Training in 3 lines (real image, closed form, regress the noise). Score box: the MSE optimum makes the noise prediction a scaled score, so each step climbs the noisy-data density, like annealed Langevin dynamics. Green box is our answer to the guiding question: know the noise, know the image; remove a little at a time; removing noise climbs toward real images; coarse to fine; why epsilon. Inside-a-step figure from our run: backup slide 14.}
+\note{\textbf{(~110 s)} Training in 3 lines (real image, closed form, regress the noise). Score box: the MSE optimum makes the noise prediction a scaled score, so each step climbs the noisy-data density, like annealed Langevin dynamics. Green box is our answer to the guiding question: know the noise, know the image; remove a little at a time; removing noise climbs toward real images; coarse to fine; why epsilon. Inside-a-step figure from our run: backup slide 15.}
 \end{frame}
 
 %% =====================================================================
-%% 7. Autoencoder  (~80 s)
+%% 7. From DDPM to LDM  (~60 s)
 %% =====================================================================
 \begin{frame}
-\frametitle{Inside the autoencoder: how images become latents}
+\frametitle{From DDPM to LDM: the cost of pixels, and three ideas}
 \framesubtitle{C \textperiodcentered{} Latent diffusion}
-\begin{center}
-\begin{tikzpicture}[>=Stealth,font=\footnotesize,
-  box/.style={draw=ok,fill=lightgreen,rounded corners=2pt,minimum height=8mm,inner sep=3pt,align=center},
-  io/.style={draw=black!35,fill=white,rounded corners=2pt,minimum height=8mm,minimum width=12mm,inner sep=2pt,align=center},
-  fl/.style={->,line width=0.9pt,ok!80!black}]
-  \node[io] (x) at (0.7,0) {$x_0$};
-  \node[box,minimum width=2.0cm] (enc) at (2.7,0) {Encoder\\[-1pt]$\mathcal E_\phi$};
-  \node[box,fill=white,minimum width=2.6cm] (par) at (5.4,0) {$\mu_\phi(x_0),\ \sigma_\phi(x_0)$};
-  \node[box,draw=rev,fill=lightorange,minimum width=2.8cm] (smp) at (8.4,0) {$\tilde z=\mu+\sigma\odot\xi$\\[-1pt]\scriptsize$\xi\sim\Normal(0,\Id)$};
-  \node[box,minimum width=2.0cm] (dec) at (11.1,0) {Decoder\\[-1pt]$D_\psi$};
-  \node[io] (xh) at (13.4,0) {$\hat x_0$};
-  \foreach \a/\b in {x/enc,enc/par,par/smp,smp/dec,dec/xh}{\draw[fl] (\a) -- (\b);}
-  \node[font=\scriptsize,text=muted] at (0.7,-0.7) {$H{\times}W{\times}3$};
-  \node[font=\scriptsize,text=muted] at (8.4,-0.78) {latent $\tilde z\in\R^{h\times w\times c},\ h=H/f$};
-  \node[font=\scriptsize,text=muted] at (13.4,-0.7) {reconstruction};
-  \node[font=\scriptsize\bfseries,text=ok] at (4.0,0.7) {compress: image $\to$ latent};
-  \node[font=\scriptsize\bfseries,text=ok] at (11.1,0.7) {decode: latent $\to$ image};
-\end{tikzpicture}
-\end{center}
-\vspace{-2.5mm}
 \begin{columns}[T,onlytextwidth]
-\column{.325\textwidth}
-\begin{tbox}[fontupper=\footnotesize,height=3.75cm]{VAE objective}{hcmusblue}
-\setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{1pt}
-\textbf{Reconstruction} + \textbf{KL to the prior}:
-\[\begin{gathered}\E[-\log p_\psi(x_0\mid\tilde z)]\\+\KL\big(q_\phi\|\Normal(0,\Id)\big)\end{gathered}\]
-The decoder must rebuild the image; the KL keeps codes near $\Normal(0,\Id)$. \textbf{Problem:} pixel-wise squared error averages plausible details, so images turn \emph{blurry}.
-\end{tbox}
-\column{.325\textwidth}
-\begin{tbox}[fontupper=\footnotesize,height=3.75cm]{LDM: a perceptual compressor}{ok}
-\textbf{1.}~\emph{Perceptual loss}: compare deep features, so the result must \emph{look} like the input.\\
-\textbf{2.}~\emph{Patch-based adversarial loss}: a discriminator judges local patches $\Rightarrow$ realistic texture.\\
-\textbf{3.}~\emph{Light regularizer}: weak KL (\textbf{KL-reg}) or a codebook in the decoder (\textbf{VQ-reg}).\\
-{\scriptsize Ours: Churches = KL, $f{=}8$; ImageNet = VQ, $f{=}4$.}
-\end{tbox}
-\column{.325\textwidth}
-\begin{tbox}[fontupper=\footnotesize,height=3.75cm]{What changes for diffusion}{rev}
-$\bullet$ Latent keeps its 2-D layout, so a U-Net can process it.\\
-$\bullet$ Autoencoder: trained once, then \textbf{frozen}.\\
-$\bullet$ Diffusion learns the \emph{distribution of latents}; clean latents are not $\Normal(0,\Id)$, so decoding $\tilde z\sim\Normal(0,\Id)$ is not enough.\\
-$\bullet$ Encoder noise $\xi\neq$ diffusion noise $\eps_z$.
-\end{tbox}
-\end{columns}
-\src{Kingma \& Welling 2014; Rombach et al.\ 2022, Sec.~3.1; Zhang et al.\ 2018; Isola et al.\ 2017; Esser et al.\ 2021; van den Oord et al.\ 2017.}
-\note{\textbf{(~80 s)} The autoencoder is the learned compression step. VAE in one line: encoder outputs a distribution, decoder reconstructs, KL regularizes. Pixel MSE gives blur, so LDM uses perceptual + adversarial loss. Key points: frozen after stage 1; diffusion replaces the VAE prior; do not confuse xi with epsilon\_z.}
-\end{frame}
-
-%% =====================================================================
-%% 8. Why latent diffusion is cheaper + pipeline  (~90 s)
-%% =====================================================================
-\begin{frame}
-\frametitle{Why latent diffusion is cheaper: same loop, smaller state}
-\framesubtitle{C \textperiodcentered{} Latent diffusion}
-\begin{center}
-\begin{tikzpicture}[>=Stealth,font=\footnotesize,
-  box/.style={draw=hcmusblue,fill=lightblue,rounded corners=2pt,minimum height=8mm,inner sep=3pt,align=center},
-  frz/.style={draw=ok,fill=lightgreen,rounded corners=2pt,minimum height=8mm,inner sep=3pt,align=center},
-  nz/.style={draw=rev,fill=lightorange,rounded corners=2pt,minimum height=8mm,inner sep=3pt,align=center},
-  fl/.style={->,line width=0.9pt}]
-  \node[anchor=west,font=\scriptsize\bfseries,text=hcmusblue] at (0,3.15) {TRAINING: encode a real image, learn noise prediction in latent space};
-  \node[box,minimum width=1.2cm] (x) at (0.7,2.45) {$x_0$};
-  \node[frz,minimum width=2.4cm] (e) at (3.0,2.45) {Encoder $\mathcal E_\phi$\\[-1pt]\scriptsize frozen, scale $a$};
-  \node[box,minimum width=1.2cm] (z) at (5.0,2.45) {$z_0$};
-  \node[nz,minimum width=2.3cm] (n) at (7.1,2.45) {add noise\\[-1pt]$q(z_t\mid z_0)$};
-  \node[box,minimum width=2.8cm] (u) at (10.0,2.45) {conditional U-Net\\[-1pt]predict $\eps_z$};
-  \node[frz,minimum width=1.6cm] (c) at (13.5,2.45) {$\tau_\eta(y)$\\[-1pt]\scriptsize text, class};
-  \draw[fl] (x)--(e); \draw[fl] (e)--(z); \draw[fl] (z)--(n); \draw[fl] (n)--(u);
-  \draw[fl] (c)--(u);
-  \node[font=\tiny,text=muted] at (12.0,2.78) {cross-attn};
-  \node[anchor=west,font=\scriptsize\bfseries,text=hcmusblue] at (0,1.25) {GENERATION: sample a latent, denoise repeatedly, decode once};
-  \node[nz,minimum width=1.6cm] (zT) at (1.0,0.55) {$z_T$\\[-1pt]\scriptsize noise};
-  \node[box,minimum width=4.6cm] (s) at (4.7,0.55) {U-Net + sampler, given $\tau_\eta(y)$\\[-1pt]$z_T\to\cdots\to z_0$};
-  \node[frz,minimum width=2.6cm] (d) at (9.0,0.55) {Decoder (frozen)\\[-1pt]$D_\psi(z_0/a)$};
-  \node[box,minimum width=1.3cm] (xo) at (11.5,0.55) {$\hat x_0$};
-  \node[anchor=west,font=\scriptsize,text=muted,align=left] at (12.3,0.55) {no real image\\[-1pt]or encoder needed};
-  \draw[fl] (zT)--(s); \draw[fl] (s)--(d); \draw[fl] (d)--(xo);
-\end{tikzpicture}
-\end{center}
-\vspace{-2.5mm}
-\begin{columns}[T,onlytextwidth]
-\column{.49\textwidth}
-\begin{tbox}[fontupper=\footnotesize]{Smaller state per denoising step}{ok}
-\begin{itemize}\setlength{\itemsep}{1.5pt}
-\item $f{=}4$: $256{\times}256{\times}3\to64{\times}64{\times}3$, i.e.\ \textbf{16$\times$ fewer spatial positions}. \paper\ Table~8
-\item LSUN Churches (KL-8): $196{,}608$ vs.\ $4{,}096$ values, \textbf{$\approx$48$\times$ fewer}. \oursum\ (arithmetic from run settings)
+\column{.5\textwidth}
+\tcbset{before skip=0pt,after skip=1.8mm}
+\begin{tbox}[fontupper=\footnotesize]{Limitation 1: cost (every step, every pixel)}{bad}
+\setlength{\abovedisplayskip}{2pt}\setlength{\belowdisplayskip}{2pt}
+Most pixels hold fine detail we barely perceive, yet the network re-processes \emph{all} of them at \emph{every} step:
+\[\text{cost}\approx\underbrace{\#\text{steps}}_{25\text{--}1000}\times\underbrace{\text{one pass on all pixels}}_{256^2\times3\,=\,196{,}608\text{ values}}\]
+\begin{itemize}\setlength{\itemsep}{1pt}
+\item \paper\ Training: 150--1000 V100 GPU-days; 50k samples: $\approx$5 days on one A100\textsuperscript{*}.
+\item \ours\ Pixel DDPM, 50 DDIM steps: 6.10\,s per $256^2$ image on a T4 (slide~11).
 \end{itemize}
+{\scriptsize\color{muted}\textsuperscript{*}Dhariwal \& Nichol 2021, via Rombach et al.\ 2022, Sec.~1}\hfill\mbox{\color{ok!75!black}\bfseries$\rightarrow$ ideas 1, 2}
 \end{tbox}
-\column{.49\textwidth}
-\begin{tbox}[fontupper=\footnotesize]{Same principle, new space}{hcmusblue}
-\setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{1pt}
-\[L_{\text{LDM}}=\E\big[\|\eps_z-\eps_\theta(z_t,t,\tau_\eta(y))\|^2\big]\]
-{\scriptsize $z_0=a\,\mathcal E_\phi(x_0)$, fixed scale $a>0$; $y$: condition (text, class).}\\
-Forward noising and $\eps$-prediction are unchanged; DDIM adds fewer steps on top. \textbf{Caveat:} compression caps quality (fine text, small objects), and runtime/memory depend on more than state size $\rightarrow$ slide~10.
+\begin{tbox}[fontupper=\footnotesize,after skip=0pt]{Limitation 2: no control (unconditional)}{rev}
+DDPM learns $p(x)$ only: it returns \emph{some} image, and we cannot ask for ``a red bus''. \hfill\mbox{\color{ok!75!black}\bfseries$\rightarrow$ idea 3}
 \end{tbox}
+\column{.48\textwidth}
+{\small\bfseries\color{ok!75!black}LDM (Rombach et al.\ 2022): three ideas}\par\vspace{1.2mm}
+\tcbset{before skip=0pt,after skip=1.6mm}
+\begin{nbox}[fontupper=\footnotesize,colback=lightgreen]{ok}
+\textbf{1. Diffusion in latent space, two-stage training.} Stage 1: an autoencoder compresses images once, then is frozen and reused. Stage 2: diffusion on the small latents. {\color{muted}$\rightarrow$ slides 8--9}
+\end{nbox}
+\begin{nbox}[fontupper=\footnotesize,colback=lightgreen]{ok}
+\textbf{2. 2-D latent, mild compression ($f=4$--$8$).} A U-Net still works on it and reconstructions stay faithful; earlier two-stage models used 1-D token sequences and stronger compression. {\color{muted}$\rightarrow$ slide 8}
+\end{nbox}
+\begin{nbox}[fontupper=\footnotesize,colback=lightgreen,after skip=0pt]{ok}
+\textbf{3. General conditioning: cross-attention.} Text, a class or a layout is encoded into tokens and injected into the U-Net. {\color{muted}$\rightarrow$ slide 10}
+\end{nbox}
 \end{columns}
-\src{Pipeline: original schematic after Rombach et al.\ 2022, Fig.~3 and Secs.~3.1--3.3; sampler: Song et al.\ 2021 (DDIM).}
-\note{\textbf{(~90 s)} Direct answer to the learning objective: the loop (predict noise, step) is identical, but each U-Net call works on a latent that is 16x (paper) or about 48x (our churches run) smaller; decode once at the end. Warn: a smaller state does not automatically mean lower peak memory; see slide 10.}
+\note{\textbf{(~60 s)} Two independent limitations. (1) Cost: number of steps times one network pass over all pixels, both large, while most pixels are imperceptible detail; evidence: the paper's GPU-days (cited from Dhariwal and Nichol) and our own 6.10 s per image; fixed by ideas 1 and 2. (2) Control: DDPM learns p(x) only, so a prompt cannot steer it; fixed by idea 3. Right: LDM's three ideas, each with the slide where we unpack it.}
 \end{frame}
 
 %% =====================================================================
-%% 9. Cross-attention + prompt control  (~100 s)
+%% 8. Latent space and the autoencoder  (~65 s)
+%% =====================================================================
+\begin{frame}
+\frametitle{Latent space: an autoencoder that compresses images (stage 1)}
+\framesubtitle{C \textperiodcentered{} Latent diffusion}
+{\centering
+\begin{tikzpicture}[>=Stealth,font=\footnotesize,
+  box/.style={draw=ok,fill=lightgreen,rounded corners=2pt,minimum height=9mm,inner sep=3pt,align=center},
+  io/.style={draw=black!35,fill=white,rounded corners=2pt,minimum height=9mm,inner sep=3pt,align=center},
+  fl/.style={->,line width=1pt,ok!80!black}]
+  \node[io,minimum width=2.4cm] (x) at (1.2,0) {image $x_0$\\[-1pt]\scriptsize $256{\times}256{\times}3$};
+  \node[box,minimum width=2.5cm] (enc) at (4.15,0) {\textbf{Encoder} $\mathcal E$\\[-1pt]\scriptsize compress by $f$};
+  \begin{scope}[shift={(6.75,-0.3)}]
+    \foreach \k in {0.24,0.12,0}{\fill[white,draw=hcmusblue!70] (\k,\k) rectangle ++(0.9,0.9);}
+    \draw[step=0.18,hcmusblue!45,very thin] (0,0) grid (0.9,0.9);
+  \end{scope}
+  \node[font=\scriptsize,text=hcmusblue] at (7.32,-0.62) {latent $z$: $32{\times}32{\times}4$};
+  \node[box,minimum width=2.5cm] (dec) at (10.45,0) {\textbf{Decoder} $D$\\[-1pt]\scriptsize expand back};
+  \node[io,minimum width=2.4cm] (xh) at (13.2,0) {reconstruction\\[-1pt]\scriptsize $\hat x_0\approx x_0$};
+  \draw[fl] (x)--(enc); \draw[fl] (enc.east)--(6.65,0); \draw[fl] (8.0,0)--(dec.west); \draw[fl] (dec)--(xh);
+  \node[font=\scriptsize,text=muted] at (7.32,-0.98) {a small 2-D grid: $h=H/f$, $w=W/f$ ($f=8$ here)};
+\end{tikzpicture}\par}
+\vspace{2.5mm}
+\begin{tcbraster}[raster columns=3,raster equal height,raster column skip=2.5mm,raster before skip=0pt,raster after skip=0pt,
+  raster every box/.style={base,fontupper=\footnotesize,coltitle=white}]
+\begin{tcolorbox}[colframe=hcmusblue,colback=hcmusblue!5!white,title={What the latent looks like}]
+A small \textbf{2-D grid}, not a flat vector, so the image layout survives.\\[1mm]
+$f=4$: $256^2{\times}3\to64^2{\times}3$, \textbf{16$\times$} fewer positions \paper\ Table~8\\[1mm]
+$f=8$: $32{\times}32{\times}4$, \textbf{48$\times$} fewer values \oursum\ (Churches)
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=ok,colback=ok!5!white,title={How stage 1 is trained}]
+\textbf{Perceptual loss}: compare deep features, so the output must \emph{look} like the input.\\[0.8mm]
+\textbf{Patch adversarial loss}: realistic texture; a plain pixel loss gives blur.\\[0.8mm]
+\textbf{Light regularizer}: weak KL, or a codebook (VQ) in the decoder.\\[0.6mm]
+{\scriptsize Ours: Churches = KL, $f{=}8$; ImageNet = VQ, $f{=}4$.}
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=rev,colback=rev!5!white,title={Why we still need diffusion}]
+The autoencoder is \textbf{frozen} after stage 1.\\[0.8mm]
+Clean latents are not standard Gaussian, so decoding a random $z$ gives poor images: diffusion must learn \emph{where real latents lie}.\\[0.8mm]
+Compression caps quality: fine text and small objects can be lost.
+\end{tcolorbox}
+\end{tcbraster}
+\src{Rombach et al.\ 2022, Sec.~3.1 and Table~8; Zhang et al.\ 2018 (perceptual); Isola et al.\ 2017, Esser et al.\ 2021 (adversarial, VQ). Formulas: backup slide 16.}
+\note{\textbf{(~65 s)} Stage 1 is a plain compress/decompress network. Point at the latent grid: it is still an image-shaped map, just 8 times smaller per side. Training uses perceptual and adversarial losses so reconstructions stay sharp. It is then frozen. Random latents do not decode to good images, which is why stage 2, diffusion, is needed.}
+\end{frame}
+
+%% =====================================================================
+%% 9. Operations in latent space: the whole pipeline  (~75 s)
+%% =====================================================================
+\begin{frame}
+\frametitle{Operations in latent space: the whole LDM pipeline}
+\framesubtitle{C \textperiodcentered{} Latent diffusion}
+{\centering
+\begin{tikzpicture}[>=Stealth,font=\footnotesize,
+  io/.style={draw=black!35,fill=white,rounded corners=2pt,minimum height=8.5mm,inner sep=2.5pt,align=center},
+  ae/.style={draw=ok,fill=lightgreen,rounded corners=2pt,minimum height=8.5mm,inner sep=2.5pt,align=center},
+  lat/.style={draw=hcmusblue,fill=white,rounded corners=2pt,minimum height=8.5mm,inner sep=2.5pt,align=center},
+  net/.style={draw=rev,fill=lightorange,rounded corners=2pt,minimum height=8.5mm,inner sep=2.5pt,align=center},
+  cnd/.style={draw=fwd,fill=fwd!8,rounded corners=2pt,minimum height=8.5mm,inner sep=2.5pt,align=center},
+  fl/.style={->,line width=0.9pt,black!65}]
+  % latent-space region
+  \fill[hcmusblue!7,rounded corners=4pt] (3.25,-0.75) rectangle (10.35,4.0);
+  \node[anchor=north west,font=\scriptsize\bfseries,text=hcmusblue] at (3.35,3.95) {LATENT SPACE: every diffusion operation runs on the small $z$};
+  % training lane
+  \node[anchor=west,font=\scriptsize\bfseries,text=black!70] at (0.0,3.75) {TRAINING (stage 2)};
+  \node[io,minimum width=1.5cm] (x) at (0.8,2.85) {real\\[-1pt]image $x_0$};
+  \node[ae,minimum width=1.6cm] (e) at (2.45,2.85) {Encoder\\[-1pt]\scriptsize frozen};
+  \node[lat,minimum width=1.1cm] (z0) at (4.15,2.85) {$z_0$};
+  \node[lat,minimum width=2.4cm] (n) at (6.15,2.85) {add noise\\[-1pt]\scriptsize $z_t$, as in slide 3};
+  \node[net,minimum width=2.3cm] (u) at (8.95,2.85) {U-Net\\[-1pt]\scriptsize predict the noise};
+  \draw[fl] (x)--(e); \draw[fl] (e)--(z0); \draw[fl] (z0)--(n); \draw[fl] (n)--(u);
+  % generation lane
+  \node[anchor=west,font=\scriptsize\bfseries,text=black!70] at (0.0,0.95) {GENERATION};
+  \node[anchor=west,font=\scriptsize,text=muted,align=left] at (0.0,0.25) {no real image,\\[-1pt]no encoder};
+  \node[lat,minimum width=1.5cm] (zT) at (4.35,0.25) {$z_T$\\[-1pt]\scriptsize noise};
+  \node[net,minimum width=3.4cm] (s) at (7.65,0.25) {U-Net + sampler, $T$ steps\\[-1pt]\scriptsize $z_T\to z_{T-1}\to\cdots\to z_0$};
+  \node[ae,minimum width=1.8cm] (d) at (11.6,0.25) {Decoder\\[-1pt]\scriptsize frozen, \textbf{once}};
+  \node[io,minimum width=1.4cm] (xo) at (13.7,0.25) {new\\[-1pt]image};
+  \draw[fl] (zT)--(s); \draw[fl] (s)--(d); \draw[fl] (d)--(xo);
+  \draw[->,line width=0.8pt,rev] ([xshift=-6mm]s.south) .. controls +(0,-0.5) and +(0,-0.5) .. ([xshift=6mm]s.south) node[pos=0.5,below,font=\tiny,text=rev]{repeat};
+  % condition
+  \node[cnd,minimum width=2.0cm] (tau) at (11.9,1.55) {condition\\[-1pt]encoder $\tau_\eta$};
+  \node[io,minimum width=1.4cm] (y) at (13.7,1.55) {prompt $y$\\[-1pt]\scriptsize ``red bus''};
+  \draw[fl] (y)--(tau);
+  \draw[->,line width=0.9pt,fwd] (tau.north) |- (u.east) node[pos=0.75,above,font=\tiny,text=fwd]{cross-attn};
+  \draw[->,line width=0.9pt,fwd] (tau.west) -| (s.north) node[pos=0.25,above,font=\tiny,text=fwd]{cross-attn};
+\end{tikzpicture}\par}
+\vspace{2.5mm}
+\begin{tcbraster}[raster columns=3,raster equal height,raster column skip=2.5mm,raster before skip=0pt,raster after skip=0pt,
+  raster every box/.style={base,fontupper=\footnotesize}]
+\begin{nbox}[colback=lightblue]{hcmusblue}
+\textbf{Same DDPM operations, now on $z$}: add noise with the closed form, predict the noise, denoise step by step.
+\end{nbox}
+\begin{nbox}[colback=lightgreen]{ok}
+\textbf{Encoder only for training.} Generation starts from latent noise and calls the decoder \textbf{once} at the end.
+\end{nbox}
+\begin{nbox}[colback=lightorange]{rev}
+\textbf{Cheaper per step}: the U-Net sees $\approx$48$\times$ fewer values (our $f=8$). DDIM's fewer steps are a separate speedup. Measured cost: slide~11.
+\end{nbox}
+\end{tcbraster}
+\src{Pipeline: ours, after Rombach et al.\ 2022, Fig.~3 and Secs.~3.1--3.3; sampler: Song et al.\ 2021 (DDIM).}
+\note{\textbf{(~75 s)} This is the whole pipeline. Shaded area = latent space: everything diffusion does (add noise, predict noise, denoise) happens there. Top lane: training encodes a real image once, then trains the U-Net exactly as in DDPM. Bottom lane: generation starts from latent noise, loops T steps, decodes once. The prompt enters both U-Nets through cross-attention (next slide). Do not claim 48x faster: it is 48x fewer values per step.}
+\end{frame}
+
+%% =====================================================================
+%% 10. Cross-attention + prompt control  (~80 s)
 %% =====================================================================
 \begin{frame}
 \frametitle{Cross-attention: steering the denoiser with a prompt}
 \framesubtitle{C \textperiodcentered{} Latent diffusion}
 \begin{columns}[T,onlytextwidth]
 \column{.47\textwidth}
-\begin{tbox}[fontupper=\footnotesize]{Prompt $\to$ tokens $\to$ attention}{ok}
-\setlength{\abovedisplayskip}{1.5pt}\setlength{\belowdisplayskip}{1.5pt}
-$C=\tau_\eta(y)$ (SD v1.4: frozen CLIP text encoder)
-\[Q=FW_Q,\quad K=CW_K,\quad V=CW_V\]
-\[O=\softmax\big(QK^{\top}/\sqrt{d}\big)\,V\]
-{\scriptsize $F$: U-Net image features (one row per position); $W_Q,W_K,W_V$: learned projections; $d$: key width.}\\
-\textbf{Queries from the image; keys and values from the condition}: a region turning into a bus can draw on \emph{red} and \emph{bus}.
+\begin{tbox}[fontupper=\footnotesize]{Image regions ask, prompt words answer}{ok}
+{\centering
+\begin{tikzpicture}[font=\scriptsize]
+  \fill[lightblue,draw=hcmusblue!60] (0,0) rectangle (1.4,1.4);
+  \draw[step=0.35,hcmusblue!40] (0,0) grid (1.4,1.4);
+  \fill[rev!70] (0.35,0.7) rectangle (0.7,1.05);
+  \node[text=hcmusblue] at (0.7,-0.22) {latent regions ($Q$)};
+  \foreach \w/\y/\lw/\c in {a/1.66/0.3/black!30,red/1.3/2.2/rev,bus/0.94/2.2/rev,left/0.58/0.6/black!40,blue/0.22/0.3/black!30,car/-0.14/0.6/black!40}{
+    \node[draw=fwd,fill=white,rounded corners=1.5pt,minimum width=0.95cm,minimum height=2.8mm,inner sep=0.6pt] (t\w) at (4.0,\y) {\w};
+    \draw[line width=\lw pt,\c] (0.7,0.88) -- (t\w.west);
+  }
+  \node[text=fwd] at (4.0,-0.48) {prompt tokens ($K$, $V$)};
+\end{tikzpicture}\par}
+\vspace{0.3mm}
+Thick lines = high attention: the region becoming a bus pulls from \emph{red} and \emph{bus}.
 \end{tbox}
-\vspace{0.5mm}
+\vspace{0.3mm}
 \footnotesize
-\begin{itemize}\setlength{\itemsep}{1pt}
-\item Recomputed at every layer and step: the prompt steers each prediction, it is \emph{not} pasted onto the image.
-\item Only $\tau_\eta$ depends on the modality: text, class label (1 token, our ImageNet LDM), layout; maps/masks are concatenated with $z_t$.
-\item CFG: $\eps_u+s(\eps_c-\eps_u)$, $\eps_u/\eps_c$ = prediction without/with prompt; larger $s$: closer to the prompt, less diverse.
+\begin{itemize}\setlength{\itemsep}{0.5pt}
+\item Repeated at every U-Net layer and step: the prompt steers each noise prediction, not the final pixels.
+\item Any condition works: only the encoder $\tau_\eta$ changes (text, class, layout).
+\item Guidance scale (CFG): higher = closer to the prompt, less diverse.
 \end{itemize}
 \column{.51\textwidth}
 {\footnotesize \ours\ \textbf{Stable Diffusion v1.4, seed 2027, same initial latent}}\\[1mm]
@@ -539,8 +585,8 @@ $C=\tau_\eta(y)$ (SD v1.4: frozen CLIP text encoder)
 \item Cross-attention is \emph{soft}: attributes can bind to the wrong object, or a token can be ignored.
 \end{itemize}
 \end{columns}
-\src{Vaswani et al.\ 2017; Rombach et al.\ 2022, Sec.~3.3; Ho \& Salimans 2022; Radford et al.\ 2021; Chefer et al.\ 2023. Images: our run, CFG 7.5, 50 DDIM steps; 16 images checked by eye, an illustration and not a general conclusion.}
-\note{\textbf{(~100 s)} Mechanism first (queries from the image, keys/values from the text), then the evidence: colour changes succeed, object identity and left/right do not. Cross-attention is soft; CFG does not guarantee counting or spatial relations. Be explicit: 16 images, visual check only.}
+\src{Rombach et al.\ 2022, Sec.~3.3; Ho \& Salimans 2022; Chefer et al.\ 2023. Images: our run (CFG 7.5, 50 DDIM steps).}
+\note{\textbf{(~80 s)} Mechanism first with the picture: one latent region (orange) asks, prompt words answer, thick lines are high attention. Then the evidence: colour changes succeed, object identity and left/right do not. Cross-attention is soft; guidance does not guarantee counting or spatial relations. Be explicit: 16 images, visual check only.}
 \end{frame}
 
 %% =====================================================================
@@ -628,7 +674,7 @@ Bianchi et al.\ (2023): ordinary prompts to text-to-image systems can yield \tex
 \end{columns}
 \vspace{1.5mm}
 \begin{nbox}[fontupper=\footnotesize]{muted}
-\textbf{Method limits:} many sampling steps \textperiodcentered{} quality capped by autoencoder reconstruction \textperiodcentered{} soft cross-attention (slide~9) \textperiodcentered{} our experiments are small illustrations (no FID, no bias metrics), not benchmarks.
+\textbf{Method limits:} many sampling steps \textperiodcentered{} quality capped by autoencoder reconstruction \textperiodcentered{} soft cross-attention (slide~10) \textperiodcentered{} our experiments are small illustrations (no FID, no bias metrics), not benchmarks.
 \end{nbox}
 \src{Bianchi et al.\ 2023; Carlini et al.\ 2023; U.S.\ Copyright Office 2025, Copyright and AI, Part 3 (pre-publication version).}
 \note{\textbf{(~50 s)} Critical analysis: say plainly what our experiments do not prove. The legal source is a US policy analysis, not a conclusion about every generated image, and not Vietnamese law.}
@@ -662,7 +708,7 @@ Same principle on autoencoder latents: cheaper steps ($\approx2.5\times$ faster 
 \vspace{0.5mm}
 \begin{center}
 {\small\itshape Capability is bounded by the training data, and by what we actually measured.}\\[1.5mm]
-{\large\bfseries\color{hcmusblue}Thank you \textperiodcentered{} Questions?}\\[0.5mm]{\scriptsize\color{muted}Notation, a denoising trace, references and figure sources: backup slides}
+{\large\bfseries\color{hcmusblue}Thank you \textperiodcentered{} Questions?}\\[0.5mm]{\scriptsize\color{muted}Notation, a denoising trace, LDM formulas, references and figure sources: backup slides}
 \end{center}
 \note{\textbf{(~45 s)} Close the loop on the guiding question in one sentence; the three recap cards mirror the learning objective. Hand over to Q\&A; every member answers at least one question.}
 \end{frame}
@@ -748,6 +794,42 @@ Supports slide~6: knowing the noise gives the image; each step is a small correc
 \end{frame}
 
 \begin{frame}
+\frametitle{LDM details: objectives and attention}
+\framesubtitle{Backup}
+\begin{tcbraster}[raster columns=3,raster equal height,raster column skip=2.5mm,raster before skip=0pt,raster after skip=0pt,
+  raster every box/.style={base,fontupper=\scriptsize,coltitle=white}]
+\begin{tcolorbox}[colframe=ok,colback=ok!5!white,title={Stage 1: autoencoder (KL variant)}]
+\setlength{\abovedisplayskip}{2pt}\setlength{\belowdisplayskip}{2pt}
+Encoder outputs $\mu_\phi(x_0),\sigma_\phi(x_0)$; sample with the reparameterization
+\[\tilde z=\mu_\phi+\sigma_\phi\odot\xi,\quad \xi\sim\Normal(0,\Id)\]
+Textbook VAE objective:
+\[\begin{gathered}\E\big[-\log p_\psi(x_0\mid\tilde z)\big]\\+\KL\big(q_\phi\,\|\,\Normal(0,\Id)\big)\end{gathered}\]
+LDM swaps the pixel likelihood for perceptual + patch-adversarial losses and keeps only a \emph{weak} KL. VQ variant: each latent vector snaps to its nearest codebook entry inside the decoder.\\[0.6mm]
+Encoder noise $\xi$ $\neq$ diffusion noise $\eps_z$.
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=hcmusblue,colback=hcmusblue!5!white,title={Stage 2: diffusion on latents}]
+\setlength{\abovedisplayskip}{2pt}\setlength{\belowdisplayskip}{2pt}
+Scaled latent $z_0=a\,\tilde z$ (fixed $a>0$), then the DDPM closed form:
+\[z_t=\sqrt{\ab_t}\,z_0+\sqrt{1-\ab_t}\,\eps_z\]
+Conditional noise-prediction loss:
+\[L_{\text{LDM}}=\E\big[\|\eps_z-\eps_\theta(z_t,t,\tau_\eta(y))\|^2\big]\]
+Generation: sample $z_T\sim\Normal(0,\Id)$, run the sampler, decode once with $D_\psi(z_0/a)$.
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=fwd,colback=fwd!5!white,title={Cross-attention and guidance}]
+\setlength{\abovedisplayskip}{2pt}\setlength{\belowdisplayskip}{2pt}
+$F$: U-Net features (one row per position); $C=\tau_\eta(y)$: condition tokens.
+\[Q=FW_Q,\ \ K=CW_K,\ \ V=CW_V\]
+\[O=\softmax\big(QK^{\top}/\sqrt{d}\big)\,V\]
+$W_Q,W_K,W_V$: learned projections; $d$: key width.\\[0.6mm]
+Classifier-free guidance:
+\[\hat\eps=\eps_u+s\,(\eps_c-\eps_u)\]
+$\eps_u,\eps_c$: prediction without/with the condition; $s=1$ is plain conditional sampling; two U-Net calls per step.
+\end{tcolorbox}
+\end{tcbraster}
+\src{Kingma \& Welling 2014; Rombach et al.\ 2022, Secs.~3.1--3.3, Eq.~3; Vaswani et al.\ 2017; Ho \& Salimans 2022.}
+\end{frame}
+
+\begin{frame}
 \frametitle{References (1/2)}
 \framesubtitle{Backup}
 \fontsize{7}{8.4}\selectfont
@@ -787,7 +869,7 @@ Supports slide~6: knowing the noise gives the image; each step is a small correc
 \end{columns}
 \vspace{2mm}
 \begin{nbox}[fontupper=\fontsize{7}{8.4}\selectfont]{muted}
-\textbf{Figures and results.} The schematics (slides 3, 5, 7, 8) are original drawings of the cited methods. The 1-D calculation, the 28$\times$28 noising sequence, the LSUN Churches timing, the ImageNet denoising traces and the Stable Diffusion prompt test are our own runs with pretrained checkpoints (no training by us); published numbers are attributed to Ho et al.\ 2020 and Rombach et al.\ 2022.\\[1mm]
+\textbf{Figures and results.} The schematics (slides 3, 5, 8, 9, 10) are original drawings of the cited methods. The 1-D calculation, the 28$\times$28 noising sequence, the LSUN Churches timing, the ImageNet denoising traces and the Stable Diffusion prompt test are our own runs with pretrained checkpoints (no training by us); published numbers are attributed to Ho et al.\ 2020 and Rombach et al.\ 2022.\\[1mm]
 \textbf{AI assistance.} OpenAI Codex (report drafting, code, checks); Claude (slide drafting and Beamer preparation).
 \end{nbox}
 \end{frame}
