@@ -435,47 +435,47 @@ DDPM learns $p(x)$ only: it returns \emph{some} image, and we cannot ask for ``a
 %% 8. Latent space and the autoencoder  (~65 s)
 %% =====================================================================
 \begin{frame}
-\frametitle{Latent space: an autoencoder that compresses images (stage 1)}
+\frametitle{Latent space: what it is, and why it helps}
 \framesubtitle{C \textperiodcentered{} Latent diffusion}
 {\centering
 \begin{tikzpicture}[>=Stealth,font=\footnotesize,
   box/.style={draw=ok,fill=lightgreen,rounded corners=2pt,minimum height=9mm,inner sep=3pt,align=center},
   io/.style={draw=black!35,fill=white,rounded corners=2pt,minimum height=9mm,inner sep=3pt,align=center},
   fl/.style={->,line width=1pt,ok!80!black}]
+  \draw[dashed,ok!70!black,rounded corners=4pt] (2.75,-1.3) rectangle (11.85,0.95);
+  \node[anchor=north,font=\scriptsize\bfseries,text=ok!70!black,fill=white,inner sep=1.5pt] at (7.3,1.08) {stage 1: trained once, then frozen};
   \node[io,minimum width=2.4cm] (x) at (1.2,0) {image $x_0$\\[-1pt]\scriptsize $256{\times}256{\times}3$};
-  \node[box,minimum width=2.5cm] (enc) at (4.15,0) {\textbf{Encoder} $\mathcal E$\\[-1pt]\scriptsize compress by $f$};
-  \begin{scope}[shift={(6.75,-0.3)}]
+  \node[font=\scriptsize,text=muted] at (1.2,-0.72) {196,608 values};
+  \node[box,minimum width=2.3cm] (enc) at (4.25,0) {\textbf{VAE encoder}\\[-1pt]\scriptsize mean $\mu$, spread $\sigma$};
+  \begin{scope}[shift={(6.8,-0.42)}]
     \foreach \k in {0.24,0.12,0}{\fill[white,draw=hcmusblue!70] (\k,\k) rectangle ++(0.9,0.9);}
     \draw[step=0.18,hcmusblue!45,very thin] (0,0) grid (0.9,0.9);
   \end{scope}
-  \node[font=\scriptsize,text=hcmusblue] at (7.32,-0.62) {latent $z$: $32{\times}32{\times}4$};
-  \node[box,minimum width=2.5cm] (dec) at (10.45,0) {\textbf{Decoder} $D$\\[-1pt]\scriptsize expand back};
+  \node[font=\scriptsize,text=hcmusblue] at (7.37,-0.72) {latent $z$: $32{\times}32{\times}4$};
+  \node[font=\scriptsize,text=hcmusblue] at (7.37,-1.05) {4,096 values};
+  \node[box,minimum width=2.3cm] (dec) at (10.35,0) {\textbf{VAE decoder}\\[-1pt]\scriptsize latent $\to$ image};
   \node[io,minimum width=2.4cm] (xh) at (13.2,0) {reconstruction\\[-1pt]\scriptsize $\hat x_0\approx x_0$};
-  \draw[fl] (x)--(enc); \draw[fl] (enc.east)--(6.65,0); \draw[fl] (8.0,0)--(dec.west); \draw[fl] (dec)--(xh);
-  \node[font=\scriptsize,text=muted] at (7.32,-0.98) {a small 2-D grid: $h=H/f$, $w=W/f$ ($f=8$ here)};
+  \draw[fl] (x)--(enc); \draw[fl] (enc.east)--node[above,font=\scriptsize,text=ok!70!black]{sample $z$}(6.7,0); \draw[fl] (8.05,0)--(dec.west); \draw[fl] (dec)--(xh);
+  \node[font=\scriptsize,inner sep=0] at (10.35,-0.88) {\oursum\ \textbf{48$\times$ fewer values}};
 \end{tikzpicture}\par}
-\vspace{2.5mm}
-\begin{tcbraster}[raster columns=3,raster equal height,raster column skip=2.5mm,raster before skip=0pt,raster after skip=0pt,
-  raster every box/.style={base,fontupper=\footnotesize,coltitle=white}]
-\begin{tcolorbox}[colframe=hcmusblue,colback=hcmusblue!5!white,title={What the latent looks like}]
-A small \textbf{2-D grid}, not a flat vector, so the image layout survives.\\[1mm]
-$f=4$: $256^2{\times}3\to64^2{\times}3$, \textbf{16$\times$} fewer positions \paper\ Table~8\\[1mm]
-$f=8$: $32{\times}32{\times}4$, \textbf{48$\times$} fewer values \oursum\ (Churches)
+\vspace{2.2mm}
+\begin{tcbraster}[raster columns=2,raster equal height=rows,raster column skip=2.5mm,raster row skip=1.8mm,raster before skip=0pt,raster after skip=0pt,
+  raster every box/.style={base,fontupper=\footnotesize\raggedright,coltitle=white,top=0.6mm,bottom=0.6mm}]
+\begin{tcolorbox}[colframe=hcmusblue,colback=hcmusblue!5!white,title={1. What is a latent?}]
+In general, a \textbf{hidden, compressed representation} from which the data can be rebuilt (a textbook VAE uses a short flat vector). \textbf{In LDM}: a small image-shaped grid (here $32{\times}32{\times}4$) that keeps layout, shapes and colours.
 \end{tcolorbox}
-\begin{tcolorbox}[colframe=ok,colback=ok!5!white,title={How stage 1 is trained}]
-\textbf{Perceptual loss}: compare deep features, so the output must \emph{look} like the input.\\[0.8mm]
-\textbf{Patch adversarial loss}: realistic texture; a plain pixel loss gives blur.\\[0.8mm]
-\textbf{Light regularizer}: weak KL, or a codebook (VQ) in the decoder.\\[0.6mm]
-{\scriptsize Ours: Churches = KL, $f{=}8$; ImageNet = VQ, $f{=}4$.}
+\begin{tcolorbox}[colframe=hcmusblue!70!black,colback=hcmusblue!5!white,title={2. VAE encoder and decoder}]
+The \textbf{encoder} maps an image to a small cloud of latents (mean, spread) and we sample $z$; the \textbf{decoder} maps $z$ back to an image. 
 \end{tcolorbox}
-\begin{tcolorbox}[colframe=rev,colback=rev!5!white,title={Why we still need diffusion}]
-The autoencoder is \textbf{frozen} after stage 1.\\[0.8mm]
-Clean latents are not standard Gaussian, so decoding a random $z$ gives poor images: diffusion must learn \emph{where real latents lie}.\\[0.8mm]
-Compression caps quality: fine text and small objects can be lost.
+\begin{tcolorbox}[colframe=ok,colback=ok!5!white,title={3. Why does it cut the cost?}]
+Cost $\approx$ \#steps $\times$ one pass (slide~7): LDM keeps the steps, but every pass sees \textbf{48$\times$ fewer values}; the VAE runs only \textbf{once} per image.
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=rev,colback=rev!5!white,title={4. Why still need diffusion?}]
+The VAE only restores images we \emph{already have}. A new image needs a new latent, and a random one decodes to garbage: diffusion learns to \textbf{create realistic latents}. $\rightarrow$ next slide
 \end{tcolorbox}
 \end{tcbraster}
-\src{Rombach et al.\ 2022, Sec.~3.1 and Table~8; Zhang et al.\ 2018 (perceptual); Isola et al.\ 2017, Esser et al.\ 2021 (adversarial, VQ). Formulas: backup slide 16.}
-\note{\textbf{(~65 s)} Stage 1 is a plain compress/decompress network. Point at the latent grid: it is still an image-shaped map, just 8 times smaller per side. Training uses perceptual and adversarial losses so reconstructions stay sharp. It is then frozen. Random latents do not decode to good images, which is why stage 2, diffusion, is needed.}
+\src{Rombach et al.\ 2022, Secs.~3.1--3.2. How the autoencoder is trained (perceptual and adversarial losses) and its formulas: backup slide 16.}
+\note{\textbf{(~65 s)} Diagram first: image (196,608 values) -> encoder -> latent grid (4,096 values, 48x fewer) -> decoder -> reconstruction; the dashed frame = stage 1, trained once then frozen. Then four boxes in reading order: what a latent is (in general a hidden compressed representation; in LDM an image-shaped grid); how the VAE encoder and decoder produce it (mean and spread, sample, decode back); why it cuts cost (same steps, each pass 48x smaller); why diffusion is still needed (the VAE only restores existing images; diffusion creates new latents).}
 \end{frame}
 
 %% =====================================================================
@@ -826,7 +826,7 @@ Classifier-free guidance:
 $\eps_u,\eps_c$: prediction without/with the condition; $s=1$ is plain conditional sampling; two U-Net calls per step.
 \end{tcolorbox}
 \end{tcbraster}
-\src{Kingma \& Welling 2014; Rombach et al.\ 2022, Secs.~3.1--3.3, Eq.~3; Vaswani et al.\ 2017; Ho \& Salimans 2022.}
+\src{Kingma \& Welling 2014; Rombach et al.\ 2022, Secs.~3.1--3.3, Eq.~3; Zhang et al.\ 2018; Isola et al.\ 2017; Esser et al.\ 2021; Vaswani et al.\ 2017; Ho \& Salimans 2022.}
 \end{frame}
 
 \begin{frame}

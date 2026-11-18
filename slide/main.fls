@@ -2,7 +2,7 @@ PWD /Users/caoquanghung/HCMUS/CS/CS420-AI (not deep learning)/seminar/AI-seminar
 INPUT /usr/local/texlive/2025/texmf.cnf
 INPUT /usr/local/texlive/2025/texmf-dist/web2c/texmf.cnf
 INPUT /usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt
-INPUT main.tex
+INPUT /Users/caoquanghung/HCMUS/CS/CS420-AI (not deep learning)/seminar/AI-seminar/Diffusion-seminar/slide/main.tex
 OUTPUT main.log
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/beamer/beamer.cls
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/beamer/beamer.cls

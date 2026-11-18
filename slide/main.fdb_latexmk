@@ -1,5 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1795017555.39876 "main.tex" "main.pdf" "main" 1795017561.07683 0
+["pdflatex"] 1795019330.14369 "/Users/caoquanghung/HCMUS/CS/CS420-AI (not deep learning)/seminar/AI-seminar/Diffusion-seminar/slide/main.tex" "main.pdf" "main" 1795019334.05019 0
+  "/Users/caoquanghung/HCMUS/CS/CS420-AI (not deep learning)/seminar/AI-seminar/Diffusion-seminar/slide/main.tex" 1795019329.70531 57878 4db3d17e6ac1546f86ea63956f63e772 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc" 1254269338 2375 baa924870cfb487815765f9094cf3728 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathex.enc" 1202520719 3486 c7eadf5dcc57b3b2d11736679f6636ba ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc" 1202520719 2405 5dcf2c1b967ee25cc46c58cd52244aed ""
@@ -314,10 +315,10 @@
   "figures/prompt/2027_reference.png" 1794399065.12501 459909 4d5e9ffd9e036c10fde1ce3a5f5421e3 ""
   "figures/qualitative_comparison.png" 1794399065.10744 1770432 e981b160270b58f80a600a502c53f113 ""
   "figures/retriever_step25.png" 1794399065.10886 904844 5cfb6badfead9811d7f971c23f28f258 ""
-  "main.aux" 1795017560.65412 3701 3d91f57d4d6bc58025fb88d1a0777576 "pdflatex"
-  "main.nav" 1795017560.65557 2232 7a5356d2d314fa91c945e4194cb2eaf5 "pdflatex"
-  "main.out" 1795017560.65524 81 5bcea9cf7d2d9aece7cac4018e9f6c5b "pdflatex"
-  "main.tex" 1795017554.30009 57141 ab33c7574deea5b4a50a3040db55997f ""
+  "main.aux" 1795019333.78811 3747 205d960714e01882f2be9c305e9cac93 "pdflatex"
+  "main.nav" 1795019333.78962 2232 7a5356d2d314fa91c945e4194cb2eaf5 "pdflatex"
+  "main.out" 1795019333.78934 81 5bcea9cf7d2d9aece7cac4018e9f6c5b "pdflatex"
+  "main.tex" 1795019329.70531 57878 4db3d17e6ac1546f86ea63956f63e772 ""
   (generated)
   "main.aux"
   "main.log"

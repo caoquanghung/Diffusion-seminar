@@ -35,7 +35,7 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 | 5 | Reverse denoising: from noise back to an image | B | 85s | B · Reverse | Sinh ảnh = lặp bước ngược từ nhiễu; mạng chỉ cần dự đoán ε, và dự đoán ε tốt hơn dự đoán mean. |
 | 6 | Training the noise predictor, and why it works | B | 100s | B · Reverse | $L_{\text{simple}}$ là hồi quy MSE; ε dự đoán là score; **trả lời guiding question**: biết nhiễu thì biết ảnh sạch. |
 | 7 | From DDPM to LDM: the cost of pixels, and three ideas | B | 60s | C · Latent | Pixel diffusion tốn kém vì mọi bước chạm mọi pixel; LDM có 3 ý tưởng chính. |
-| 8 | Latent space: an autoencoder that compresses images (stage 1) | B | 65s | C · Latent | Autoencoder nén ảnh thành lưới latent 2-D nhỏ, rồi được đóng băng. |
+| 8 | Latent space: what it is, and why it helps | B | 65s | C · Latent | VAE nén ảnh thành latent gọn (mean, spread, sample); mỗi bước xử lý ít hơn 48× giá trị; vẫn cần diffusion để *tạo* latent mới. |
 | 9 | Operations in latent space: the whole LDM pipeline | C | 75s | C · Latent | Vòng lặp DDPM giữ nguyên nhưng chạy trên $z$ nhỏ; encoder chỉ dùng khi train, decoder chạy một lần. |
 | 10 | Cross-attention: steering the denoiser with a prompt | C | 80s | C · Latent | Vùng ảnh "hỏi", từ trong prompt "trả lời"; đổi màu được, đổi trái/phải thì không. |
 | 11 | Pixel vs. latent diffusion on LSUN Churches | C | 70s | D · Evidence | Nhanh hơn khoảng 2.5 lần nhưng tốn bộ nhớ đỉnh hơn; chỉ là minh họa. |
@@ -299,27 +299,33 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 ---
 
-## Slide 8: Latent space: an autoencoder that compresses images (stage 1) (B · ~65s)
+## Slide 8: Latent space: what it is, and why it helps (B · ~65s)
 
-**Bố cục**: **sơ đồ ngang trên cùng**: [image $x_0$, $256\times256\times3$] → [Encoder $\mathcal E$] → hình lưới xanh "latent $z$: $32\times32\times4$" → [Decoder $D$] → [reconstruction $\hat x_0\approx x_0$], chú thích "a small 2-D grid: $h=H/f$" · **3 khung dưới**: *What the latent looks like* (xanh) | *How stage 1 is trained* (xanh lá) | *Why we still need diffusion* (cam).
+**Bố cục**: **sơ đồ ngang trên cùng**: [image $x_0$, "196,608 values"] → [VAE encoder, "mean $\mu$, spread $\sigma$"] → mũi tên "sample $z$" → hình lưới xanh "latent $z$: $32\times32\times4$", "4,096 values" → [VAE decoder, "latent → image"] → [reconstruction $\hat x_0\approx x_0$]; khung đứt nét xanh lá "stage 1: trained once, then frozen"; dưới decoder có nhãn OUR EXAMPLE "48× fewer values" · **4 khung xếp lưới 2×2, đọc theo hàng**: *1. What is a latent?* | *2. VAE encoder and decoder* (hàng trên, xanh) · *3. Why does it cut the cost?* (xanh lá) | *4. Why still need diffusion?* (cam) (hàng dưới).
 
-**👉 [Sơ đồ: quét từ image → Encoder → hình lưới latent → Decoder → reconstruction]**
+**👉 [Khung 1 "What is a latent?": câu "In general", rồi chỉ hình lưới latent ở giữa sơ đồ (chỉ "4,096 values") khi nói "In LDM"] ✋**
 
-> Stage one is an autoencoder. The encoder compresses a 256 by 256 image into a small latent grid, and the decoder expands it back into an image that looks like the original.
+> First, what is a latent? In general, it is a **hidden, compressed representation** of the data, from which the data can be rebuilt; a textbook VAE uses a short, flat vector. **LDM's** latent is a specific choice: a small image-shaped grid, here 32 by 32 by 4 numbers, that keeps the layout, shapes and colours and drops detail we barely see.
 
-**👉 [Hình lưới latent, rồi khung xanh "What the latent looks like"] ✋**
+**👉 [Sơ đồ: VAE encoder → "sample $z$" → lưới → VAE decoder → reconstruction; rồi khung 2 "VAE encoder and decoder"]**
 
-> The key point: the latent is a small **2-D grid**, not a flat vector, so the image layout survives. With a factor of 4, the paper reduces 256 by 256 to 64 by 64, 16 times fewer positions. Our Churches model uses a factor of 8: 32 by 32 by 4, about **48 times fewer values**.
+> How do we get it? With a VAE. The encoder maps an image not to a single point but to a small *cloud* of possible latents, a mean and a spread, and we sample $z$ from it. The decoder maps $z$ back to an image. A weak KL term keeps the latent values tame.
 
-**👉 [Khung xanh lá "How stage 1 is trained": 3 mục in đậm, rồi dòng "Ours"]**
+**👉 [Khung đứt nét "stage 1: trained once, then frozen"]**
 
-> To keep reconstructions sharp, it is trained with a perceptual loss, so the output must *look* like the input, and a patch-based adversarial loss for realistic texture; a plain pixel loss would give blur. A light regularizer keeps the latent well behaved: a weak KL, or a codebook in the decoder. Our two models use one of each.
+> This VAE is stage one: trained once, then frozen.
 
-**👉 [Khung cam "Why we still need diffusion"]**
+**👉 [Khung 3 "Why does it cut the cost?", rồi nhãn "48× fewer values" trên sơ đồ] ✋**
 
-> After stage one the autoencoder is **frozen**. But we cannot just decode a random latent: clean latents are not standard Gaussian, so random ones decode to poor images. Diffusion must learn where real latents lie. And compression caps quality: fine text and small objects can be lost.
+> Why does this cut the cost? Remember from slide 7: cost is the number of steps times one network pass. LDM keeps the steps, but every pass now runs on the latent, with **48 times fewer values** in our Churches model, and the VAE runs only once per image.
 
-⚠️ Công thức VAE (ELBO, reparameterization) đã chuyển xuống **backup 16**. Chỉ mở khi bị hỏi.
+**👉 [Khung 4 "Why still need diffusion?"] ✋**
+
+> But if we already have a decoder, why do we still need diffusion? Because the VAE only restores images we **already have**. A *new* image needs a new latent, and a random latent decodes to garbage. Diffusion learns to **create realistic latents**, and the decoder turns them into pixels. That is the next slide.
+
+⚠️ **Đừng nói** mọi model của nhóm đều là VAE: model Churches dùng latent kiểu VAE (KL), còn model ImageNet dùng biến thể VQ (codebook). KL trong LDM chỉ là lực kéo yếu, nên latent *không* thành Gaussian chuẩn; đó là lý do decode một latent ngẫu nhiên cho ảnh xấu (khung 4).
+⚠️ Cách train autoencoder (perceptual loss, adversarial loss, KL/VQ) đã chuyển xuống **backup 16**. Nếu bị hỏi "vì sao ảnh tái tạo không mờ", mở backup 16.
+⚠️ Công thức VAE (ELBO, reparameterization) cũng ở **backup 16**. Chỉ mở khi bị hỏi.
 
 **Chuyển người (B → C)**: "Now that we have a latent space, [Tên C] will show how diffusion runs inside it."
 
@@ -472,9 +478,9 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 | Vì sao $x_T \approx \mathcal N(0, I)$? | 3 (gạch "Why…", biểu đồ) | A | $\mathcal N(0,I)$ được giữ qua mỗi bước; $\bar\alpha_T\approx4\times10^{-5}$; với $T$ hữu hạn thì chỉ xấp xỉ. |
 | Vì sao không sinh ảnh trong một bước? | 6 (gạch "Remove a little at a time") | B | Train $x_T\to x_0$ bằng MSE cho $\mathbb E[x_0\mid x_T]\approx\mathbb E[x_0]$, tức ảnh trung bình bị mờ, vì $x_T$ gần như không chứa thông tin về $x_0$. |
 | Vì sao pixel diffusion tốn kém, và LDM sửa bằng cách nào? | 7 | B | Mỗi bước chạy mạng trên mọi pixel; LDM cho diffusion chạy trên latent nhỏ (hai giai đoạn), giữ cấu trúc 2-D, thêm cross-attention. Số GPU-days là LDM trích từ Dhariwal & Nichol 2021. |
-| VAE khác autoencoder thường? Sao không decode $z\sim\mathcal N(0,I)$? | 8 (khung cam); công thức ở backup 16 | B | Encoder xuất phân phối + KL + reparameterization; latent sạch không phải $\mathcal N(0,I)$ nên phải dùng diffusion để học phân phối latent. |
+| VAE khác autoencoder thường? Sao không decode $z\sim\mathcal N(0,I)$? | 8 (khung 2 và 4); công thức ở backup 16 | B | Encoder xuất phân phối + KL + reparameterization; latent sạch không phải $\mathcal N(0,I)$ nên phải dùng diffusion để học phân phối latent. |
 | Vì sao latent phải giữ dạng lưới 2-D và chỉ nén nhẹ? | 7 (thẻ 2), 8 | B | U-Net xử lý được lưới 2-D; nén nhẹ ($f=4$–$8$) giữ ảnh tái tạo trung thực; các mô hình hai giai đoạn trước đó làm phẳng thành chuỗi token 1-D và phải nén mạnh hơn. |
-| Vì sao perceptual + adversarial thay vì MSE? | 8 | B | MSE theo pixel lấy trung bình các chi tiết khả dĩ nên ảnh mờ. |
+| Vì sao perceptual + adversarial thay vì MSE? | Backup 16 | B | MSE theo pixel lấy trung bình các chi tiết khả dĩ nên ảnh mờ. |
 | Encoder có dùng khi sinh ảnh không? | 9 | C | Không: sinh ảnh bắt đầu từ nhiễu latent $z_T$; encoder chỉ dùng khi train, decoder chạy một lần ở cuối. |
 | Cross-attention khác self-attention? Công thức cụ thể? | 10; công thức ở backup 16 | C | Q từ ảnh; K, V từ điều kiện (với self-attention thì cả ba từ ảnh); $O=\mathrm{softmax}(QK^\top/\sqrt d)V$. |
 | Vì sao LDM nhanh hơn mà tốn bộ nhớ đỉnh hơn? | 11 | C | Nói thật: nhóm chỉ đo, chưa phân tích. Hai checkpoint khác kiến trúc/decoder; đây là giả thuyết chưa kiểm chứng. |
