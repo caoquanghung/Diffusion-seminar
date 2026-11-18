@@ -191,30 +191,45 @@
 \end{center}
 \vspace{-2mm}
 \begin{columns}[T,onlytextwidth]
-\column{.56\textwidth}
-\begin{tbox}[fontupper=\small]{One step, and the jump to any $t$}{fwd}
-\setlength{\abovedisplayskip}{2pt}\setlength{\belowdisplayskip}{2pt}
-\[x_t=\sqrt{1-\beta_t}\,x_{t-1}+\sqrt{\beta_t}\,\eps,\quad \eps\sim\Normal(0,\Id)\]
-\[\boxed{\,x_t=\sqrt{\ab_t}\,x_0+\sqrt{1-\ab_t}\,\eps\,}\]
-\footnotesize $x_0\in[-1,1]^D$: clean image, unitless; $\beta_t\in(0,1)$: schedule; $\alpha_t=1-\beta_t$; $\ab_t=\prod_{j\le t}\alpha_j$; $\Id$: identity; $t\in\{1..T\}$: step index, not time.
+\column{.6\textwidth}
+\begin{tbox}[fontupper=\small,before skip=0pt,after skip=0pt]{Forward noising equations}{fwd}
+\setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{3pt}
+{\scriptsize\bfseries\color{fwd}(1) ONE STEP}
+{\large\[x_t=\underbrace{\sqrt{1-\beta_t}\,x_{t-1}}_{\text{shrink old signal}}+\underbrace{\sqrt{\beta_t}\,\eps}_{\text{add fresh noise}}\]}
+{\scriptsize\bfseries\color{fwd}(2) JUMP TO ANY $t$ IN ONE SHOT (closed form)}
+{\large\[\boxed{\,x_t=\sqrt{\ab_t}\,x_0+\sqrt{1-\ab_t}\,\eps\,}\]}
+\par{\color{fwd!40}\hrule height 0.4pt}\vspace{0.8mm}
+{\footnotesize\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.15}%
+\begin{tabular}{@{}l@{\ \ }l@{\hspace{2.2mm}}l@{\ \ }l@{}}
+$x_0\in[-1,1]^D$ & clean image, unitless & $\Id$ & identity matrix\\
+$\beta_t\in(0,1)$ & noise schedule & $\alpha_t$ & $=1-\beta_t$\\
+$t\in\{1..T\}$ & step index, not time & $\ab_t$ & $=\alpha_1\cdots\alpha_t\in(0,1]$\\
+$\eps\sim\Normal(0,\Id)$ & Gaussian noise, shape of $x_t$ & $T$ & number of steps\\
+\end{tabular}}
 \end{tbox}
-\column{.42\textwidth}
+\column{.38\textwidth}
 \footnotesize
-\begin{itemize}\setlength{\itemsep}{1.5pt}
-\item $\beta_t$ both \emph{shrinks} the old signal ($\sqrt{1-\beta_t}$) and \emph{sets} the new noise level ($\sqrt{\beta_t}$).
-\item $\Normal(0,\Id)$ is stationary: $x_T\approx\Normal(0,\Id)$, so we know where generation starts.
-\item DDPM schedule: $T=1000$, $\beta_t$ linear from $10^{-4}$ to $0.02$.
-\item \textbf{Assumptions:} Markov chain; fresh independent $\eps$ at each step; small $\beta_t$.
+\begin{itemize}\setlength{\itemsep}{2pt}
+\item \textbf{Why $x_T\approx\Normal(0,\Id)$:} $\Normal(0,\Id)$ is kept, as $(1-\beta_t)\Id+\beta_t\Id=\Id$; and $\ab_T\approx4\times10^{-5}$.
+\item \textbf{Signal traded for noise:} the squared weights in (2) sum to 1; $\ab_t$ shifts weight from $x_0$ to $\eps$ (plot).
+\item \textbf{Assumptions:} Markov; independent $\eps$ per step; small $\beta_t$.
 \end{itemize}
+\vspace{0.5mm}
+{\scriptsize\bfseries\color{hcmusblue}DDPM schedule: $T=1000$, $\beta_t$ linear $10^{-4}\to0.02$}\\[0.6mm]
+\begin{tikzpicture}[x=0.0465mm,y=9.8mm,font=\tiny]
+  \draw[black!30] (0,0) -- (1000,0) (0,0) -- (0,1.05);
+  \foreach \t in {0,500,1000}{\draw[black!30] (\t,0) -- (\t,-0.04) node[below,inner sep=1pt,text=muted]{\scriptsize $\t$};}
+  \node[below,inner sep=1pt,text=muted] at (760,-0.04) {\scriptsize step $t$};
+  \foreach \y in {0,1}{\node[left,inner sep=1.5pt,text=muted] at (0,\y) {\scriptsize $\y$};}
+  \draw[dashed,black!45] (260,0) -- (260,1.02) node[above,inner sep=0.5pt,text=black!60]{\scriptsize SNR$=1$, $t\approx260$};
+  \draw[fwd,line width=1.1pt] plot[smooth] coordinates {(0,1) (50,0.9854) (100,0.9471) (150,0.8879) (200,0.8118) (250,0.7239) (300,0.6296) (350,0.534) (400,0.4418) (450,0.3564) (500,0.2803) (600,0.1609) (700,0.0835) (800,0.0391) (900,0.0166) (1000,0.0064)};
+  \draw[rev,line width=1.1pt] plot[smooth] coordinates {(0,0) (1,0.01) (50,0.1702) (100,0.3209) (150,0.4601) (200,0.5839) (250,0.6899) (300,0.7769) (350,0.8455) (400,0.8971) (450,0.9344) (500,0.9599) (600,0.987) (700,0.9965) (800,0.9992) (900,0.9999) (1000,1)};
+  \node[anchor=west,text=fwd,inner sep=1pt] at (480,0.45) {\scriptsize signal $\sqrt{\ab_t}$};
+  \node[anchor=west,text=rev,inner sep=1pt] at (480,0.8) {\scriptsize noise $\sqrt{1-\ab_t}$};
+\end{tikzpicture}
 \end{columns}
-\begin{nbox}[fontupper=\footnotesize]{rev}
-\textbf{Why $T=1000$ small steps instead of one big step?}\quad
-\textbf{(1)}~Small steps keep each \emph{reverse} step easy: nearly Gaussian, a small correction.\quad
-\textbf{(2)}~Every noise level, from fine detail to coarse layout, becomes a training task \emph{(our reading)}.
-Training needs no $T$-step simulation (closed form); the cost is at sampling $\rightarrow$ slide~6.
-\end{nbox}
-\src{Sohl-Dickstein et al.\ 2015; Ho et al.\ 2020 (notation $\alpha_t,\ab_t$). Diagram: original schematic.}
-\note{\textbf{(~90 s)} The forward process is known and needs no learning: it hands us (noisy image, noise) pairs at every level. $t$ is a step index. Callout: one-step corruption is possible via the closed form, so training never simulates $T$ steps; the price of $T$ steps is paid at sampling.}
+\src{Sohl-Dickstein et al.\ 2015; Ho et al.\ 2020 (notation $\alpha_t,\ab_t$; schedule). Diagram and plot: ours, computed from the DDPM linear schedule.}
+\note{\textbf{(~90 s)} The forward process is known and needs no learning: it hands us (noisy image, noise) pairs at every level. $t$ is a step index. Read the underbraces of (1), then the boxed closed form (2): one-step corruption to any $t$. The squared weights of (2) sum to 1, so the plot shows signal being traded for noise; they cross at $t\approx260$ (SNR $=1$).}
 \end{frame}
 
 %% =====================================================================
