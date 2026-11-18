@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1794984537.75381 "main.tex" "main.pdf" "main" 1794984546.1488 0
+["pdflatex"] 1794985137.57164 "main.tex" "main.pdf" "main" 1794985140.41583 0
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc" 1254269338 2375 baa924870cfb487815765f9094cf3728 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathex.enc" 1202520719 3486 c7eadf5dcc57b3b2d11736679f6636ba ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc" 1202520719 2405 5dcf2c1b967ee25cc46c58cd52244aed ""
@@ -312,10 +312,10 @@
   "figures/prompt/2027_reference.png" 1794399065.12501 459909 4d5e9ffd9e036c10fde1ce3a5f5421e3 ""
   "figures/qualitative_comparison.png" 1794399065.10744 1770432 e981b160270b58f80a600a502c53f113 ""
   "figures/retriever_step25.png" 1794399065.10886 904844 5cfb6badfead9811d7f971c23f28f258 ""
-  "main.aux" 1794984545.18204 3103 b59c84b5a5ea30184b4e857acaaf2978 "pdflatex"
-  "main.nav" 1794984545.18365 1953 55c038ee6c684b7bdd1f8800aac90be7 "pdflatex"
-  "main.out" 1794984545.18327 81 5bcea9cf7d2d9aece7cac4018e9f6c5b "pdflatex"
-  "main.tex" 1794984537.29666 47479 8b318d57b036968b43d5d7e5c9c3b3d5 ""
+  "main.aux" 1794985140.18408 3145 edc0b59b1d63eea7da1bb5029ff2838e "pdflatex"
+  "main.nav" 1794985140.18502 1953 55c038ee6c684b7bdd1f8800aac90be7 "pdflatex"
+  "main.out" 1794985140.18481 81 5bcea9cf7d2d9aece7cac4018e9f6c5b "pdflatex"
+  "main.tex" 1794985137.41999 48697 0a386891cbdb0095adda821f7ff2698e ""
   (generated)
   "main.aux"
   "main.log"

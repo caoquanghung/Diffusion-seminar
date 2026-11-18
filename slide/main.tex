@@ -238,38 +238,50 @@ $\eps\sim\Normal(0,\Id)$ & Gaussian noise, shape of $x_t$ & $T$ & number of step
 \begin{frame}
 \frametitle{Forward noising by hand and by eye}
 \framesubtitle{A \textperiodcentered{} Forward noising}
-\begin{columns}[T,onlytextwidth]
-\column{.47\textwidth}
-\begin{tbox}[fontupper=\footnotesize]{1-D step (one pixel, $x_0\in[-1,1]$) \oursum}{ok}
+\tcbset{before skip=0pt,after skip=0pt}
+\begin{nbox}[fontupper=\scriptsize\raggedright,colback=lightgreen]{ok}
+\oursum\ \textbf{Chosen values:}\ \
+$x_0=0.8$ (one pixel, rescaled to $[-1,1]$) \textperiodcentered{}
+$\beta_1=0.1,\ \beta_2=0.2$ (schedule, large on purpose) \textperiodcentered{}
+$\eps_1=-0.5,\ \eps_2=-0.4$ (draws from $\Normal(0,1)$) \textperiodcentered{}
+$\alpha_t=1-\beta_t$: $\alpha_1=0.9,\ \alpha_2=0.8$ \textperiodcentered{}
+$\ab_2=\alpha_1\alpha_2=0.72$
+\end{nbox}
+\vspace{1.6mm}
+\begin{tcbraster}[raster columns=2,raster equal height,raster column skip=2.5mm,raster before skip=0pt,raster after skip=0pt,
+  raster every box/.style={base,fontupper=\scriptsize,coltitle=white}]
+\begin{tcolorbox}[colframe=fwd,colback=fwd!5!white,title={Way 1: step by step with the schedule $\beta_1,\beta_2$}]
 \setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{1pt}
-$x_0=0.8,\ \beta_1=0.1,\ \eps=-0.5\ \Rightarrow\ \alpha_1=0.9$
-\begin{align*}
-\sqrt{\alpha_1}\,x_0&=\sqrt{0.9}\,(0.8)=0.758947\\
-\sqrt{\beta_1}\,\eps&=\sqrt{0.1}\,(-0.5)=-0.158114\\
-x_1&=\boxed{0.600833}
-\end{align*}
-\end{tbox}
-\column{.51\textwidth}
-\footnotesize
-\begin{itemize}\setlength{\itemsep}{1pt}
-\item $q(x_1\mid x_0{=}0.8)=\Normal(0.758947,\,0.1)$: mean $\sqrt{0.9}\,x_0$, standard deviation $\sqrt{0.1}=0.316$.
-\item $\E[x_1\mid x_0]=\sqrt{0.9}\,x_0$ since $\E[\eps]=0$; the sample $0.6008$ differs because $\eps$ is one random draw.
-\item $\beta_1=0.1$ only makes the arithmetic visible; the image below uses the small DDPM schedule.
-\end{itemize}
+{\color{fwd}\bfseries Step 1:} $x_1=\sqrt{\alpha_1}\,x_0+\sqrt{\beta_1}\,\eps_1$
+\[x_1=\sqrt{0.9}\,(0.8)+\sqrt{0.1}\,(-0.5)=0.7589-0.1581=0.6008\]
+{\color{fwd}\bfseries Step 2:} $x_2=\sqrt{\alpha_2}\,x_1+\sqrt{\beta_2}\,\eps_2$
+\[x_2=\sqrt{0.8}\,(0.6008)+\sqrt{0.2}\,(-0.4)=0.5374-0.1789\]
+\[\boxed{x_2=0.3585}\]
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=hcmusblue,colback=hcmusblue!5!white,title={Way 2: one jump with the shortcut $\ab_2$}]
+\setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{1pt}
+{\color{hcmusblue}\bfseries Shortcut (2):} $x_2=\sqrt{\ab_2}\,x_0+\sqrt{1-\ab_2}\,\bar\eps$
+\[x_2=\sqrt{0.72}\,(0.8)+\sqrt{0.28}\,\bar\eps=0.6788+0.5292\,\bar\eps\]
+One Gaussian $\bar\eps$ replaces both noises (variance $\tfrac{0.08+0.2}{0.28}=1$):
+\[\bar\eps=\frac{\sqrt{\alpha_2\beta_1}\,\eps_1+\sqrt{\beta_2}\,\eps_2}{\sqrt{1-\ab_2}}=-0.6053\]
+\[\boxed{x_2=0.6788-0.3203=0.3585}\ \ \text{\yes\ same as Way 1}\]
+\end{tcolorbox}
+\end{tcbraster}
+\vspace{0.9mm}
+\begin{nbox}[fontupper=\scriptsize]{rev}
+\textbf{Interpreting the stochastic expectation.} As $\E[\eps]=0$: $\E[x_1\mid x_0]=\sqrt{\alpha_1}\,x_0=0.7589$ and $\E[x_2\mid x_0]=\sqrt{\ab_2}\,x_0=0.6788$, with $\mathrm{Var}[x_2\mid x_0]=1-\ab_2=0.28$ (SD $0.53$).
+Both ways describe the \emph{same} distribution $\Normal(0.6788,\,0.28)$. Our $0.3585$ is \emph{one} random draw (about $0.6$ SD below the mean); averaging many draws gives $0.6788$.
+\end{nbox}
+\vspace{0.9mm}
+\begin{columns}[c,onlytextwidth]
+\column{.49\textwidth}
+\includegraphics[width=\linewidth]{figures/noise_sequence.pdf}
+\column{.49\textwidth}
+\scriptsize
+\oursum\ \textbf{By eye: 28$\times$28 house}, DDPM schedule ($T=1000$, $\beta_t$: $10^{-4}\to0.02$), $t=0,50,200,500,1000$.\\[0.8mm]
+$\mathrm{SNR}=\ab_t/(1-\ab_t)$: $33.5$ at $t=50$ (clear), $1.93$ at $t=200$, $0.085$ at $t=500$ (noise dominates), $\approx4\times10^{-5}$ at $t=T$.
 \end{columns}
-\vspace{1mm}
-\begin{center}
-\begin{tikzpicture}
-  \node[inner sep=0] (img) {\includegraphics[width=9.4cm]{figures/noise_sequence.pdf}};
-  \foreach \xx/\snr in {0.933/{SNR $=\infty$},2.791/{SNR $=33.5$},4.650/{SNR $=1.93$},6.508/{SNR $=0.085$},8.366/{SNR $\approx4\times10^{-5}$}}{
-    \node[font=\scriptsize,text=hcmusblue,inner sep=1pt] at ($(img.south west)+(\xx cm,-1.8mm)$) {\snr};
-  }
-  \node[anchor=west,font=\scriptsize\bfseries,text=ok,align=left] at ($(img.east)+(0.2,0)$) {\oursum\\[2pt]28$\times$28\\house};
-\end{tikzpicture}\\[0.5mm]
-{\footnotesize $\mathrm{SNR}=\ab_t/(1-\ab_t)$: the house is clearly visible at $t=50$, noise dominates at $t=500$, almost nothing is left at $t=T$.}
-\end{center}
-\src{Our example (no model): synthetic house, $T=1000$, linear $\beta_t$ from $10^{-4}$ to $0.02$, one sampled trajectory.}
-\note{\textbf{(~80 s)} Walk the arithmetic aloud: 0.7589 - 0.1581 = 0.6008. Stress that the expectation is sqrt(0.9) x0, the realization differs. Then the image: house visible at t=50 (SNR 33.5), gone at t=500 (SNR below 0.1). The two examples use different betas on purpose.}
+\note{\textbf{(~80 s)} Define the chosen values first. Way 1: two steps aloud, 0.7589 - 0.1581 = 0.6008, then 0.5374 - 0.1789 = 0.3585. Way 2: one jump with alpha-bar = 0.72; the two noises merge into one Gaussian epsilon-bar = -0.6053 (variance check 0.08 + 0.2 = 0.28), same 0.3585. Expectation: E[x2|x0] = 0.6788, the draw differs. Then the image: house visible at t=50, gone at t=500. The betas here are larger than DDPM's on purpose.}
 \end{frame}
 
 %% =====================================================================
