@@ -154,7 +154,7 @@
 \textbf{Generative} learns $p(x)$ or $p(x\mid y)$: must capture shape, texture, lighting and layout.
 \end{nbox}
 \vspace{1mm}
-{\scriptsize\color{muted} Diffusion is the generative backbone of today's text-to-image systems, e.g.\ Stable Diffusion (slide~10).\par}
+{\scriptsize\color{muted} Diffusion is the generative backbone of today's text-to-image systems, e.g.\ Stable Diffusion (slides 7--10).\par}
 \column{.68\textwidth}
 \sech{Qualitative comparison: GAN vs.\ autoregressive vs.\ diffusion}
 \centering
@@ -408,7 +408,7 @@ Most pixels hold fine detail we barely perceive, yet the network re-processes \e
 \[\text{cost}\approx\underbrace{\#\text{steps}}_{25\text{--}1000}\times\underbrace{\text{one pass on all pixels}}_{256^2\times3\,=\,196{,}608\text{ values}}\]
 \begin{itemize}\setlength{\itemsep}{1pt}
 \item \paper\ Training: 150--1000 V100 GPU-days; 50k samples: $\approx$5 days on one A100\textsuperscript{*}.
-\item \ours\ Pixel DDPM, 50 DDIM steps: 6.10\,s per $256^2$ image on a T4 (slide~11).
+\item \paper\ Under the same compute budget, pixel-space LDM-1 needs far longer training than latent models (Rombach et al.\ 2022, Fig.~6).
 \end{itemize}
 {\scriptsize\color{muted}\textsuperscript{*}Dhariwal \& Nichol 2021, via Rombach et al.\ 2022, Sec.~1}\hfill\mbox{\color{ok!75!black}\bfseries$\rightarrow$ ideas 1, 2}
 \end{tbox}
@@ -428,7 +428,7 @@ DDPM learns $p(x)$ only: it returns \emph{some} image, and we cannot ask for ``a
 \textbf{3. General conditioning: cross-attention.} Text, a class or a layout is encoded into tokens and injected into the U-Net. {\color{muted}$\rightarrow$ slide 10}
 \end{nbox}
 \end{columns}
-\note{\textbf{(~60 s)} Two independent limitations. (1) Cost: number of steps times one network pass over all pixels, both large, while most pixels are imperceptible detail; evidence: the paper's GPU-days (cited from Dhariwal and Nichol) and our own 6.10 s per image; fixed by ideas 1 and 2. (2) Control: DDPM learns p(x) only, so a prompt cannot steer it; fixed by idea 3. Right: LDM's three ideas, each with the slide where we unpack it.}
+\note{\textbf{(~60 s)} Two independent limitations. (1) Cost: number of steps times one network pass over all pixels, both large, while most pixels are imperceptible detail; evidence: the paper's GPU-days (cited from Dhariwal and Nichol) and the LDM paper's own training comparison; fixed by ideas 1 and 2. (2) Control: DDPM learns p(x) only, so a prompt cannot steer it; fixed by idea 3. Right: LDM's three ideas, each with the slide where we unpack it.}
 \end{frame}
 
 %% =====================================================================
@@ -456,13 +456,13 @@ DDPM learns $p(x)$ only: it returns \emph{some} image, and we cannot ask for ``a
   \node[box,minimum width=2.3cm] (dec) at (10.35,0) {\textbf{VAE decoder}\\[-1pt]\scriptsize latent $\to$ image};
   \node[io,minimum width=2.4cm] (xh) at (13.2,0) {reconstruction\\[-1pt]\scriptsize $\hat x_0\approx x_0$};
   \draw[fl] (x)--(enc); \draw[fl] (enc.east)--node[above,font=\scriptsize,text=ok!70!black]{sample $z$}(6.7,0); \draw[fl] (8.05,0)--(dec.west); \draw[fl] (dec)--(xh);
-  \node[font=\scriptsize,inner sep=0] at (10.35,-0.88) {\oursum\ \textbf{48$\times$ fewer values}};
+  \node[font=\scriptsize,inner sep=0,text=ok!70!black] at (10.35,-0.88) {\textbf{48$\times$ fewer values} ($f=8$, 4 channels)};
 \end{tikzpicture}\par}
 \vspace{2.2mm}
 \begin{tcbraster}[raster columns=2,raster equal height=rows,raster column skip=2.5mm,raster row skip=1.8mm,raster before skip=0pt,raster after skip=0pt,
   raster every box/.style={base,fontupper=\footnotesize\raggedright,coltitle=white,top=0.6mm,bottom=0.6mm}]
 \begin{tcolorbox}[colframe=hcmusblue,colback=hcmusblue!5!white,title={1. What is a latent?}]
-In general, a \textbf{hidden, compressed representation} from which the data can be rebuilt (a textbook VAE uses a short flat vector). \textbf{In LDM}: a small image-shaped grid (here $32{\times}32{\times}4$) that keeps layout, shapes and colours.
+In general, a \textbf{hidden, compressed representation} from which the data can be rebuilt (a textbook VAE uses a short flat vector). \textbf{In LDM}: a small image-shaped grid (e.g.\ $32{\times}32{\times}4$ for a $256^2$ image) that keeps layout, shapes and colours.
 \end{tcolorbox}
 \begin{tcolorbox}[colframe=hcmusblue!70!black,colback=hcmusblue!5!white,title={2. VAE encoder and decoder}]
 The \textbf{encoder} maps an image to a small cloud of latents (mean, spread) and we sample $z$; the \textbf{decoder} maps $z$ back to an image. 
@@ -529,7 +529,7 @@ The VAE only restores images we \emph{already have}. A new image needs a new lat
 \textbf{Encoder only for training.} Generation starts from latent noise and calls the decoder \textbf{once} at the end.
 \end{nbox}
 \begin{nbox}[colback=lightorange]{rev}
-\textbf{Cheaper per step}: the U-Net sees $\approx$48$\times$ fewer values (our $f=8$). DDIM's fewer steps are a separate speedup. Measured cost: slide~11.
+\textbf{Cheaper per step}: the U-Net sees $\approx$48$\times$ fewer values ($f=8$). DDIM's fewer steps are a separate speedup. Measured cost: slide~11.
 \end{nbox}
 \end{tcbraster}
 \src{Pipeline: ours, after Rombach et al.\ 2022, Fig.~3 and Secs.~3.1--3.3; sampler: Song et al.\ 2021 (DDIM).}
@@ -565,156 +565,149 @@ Thick lines = high attention: the region becoming a bus pulls from \emph{red} an
 \begin{itemize}\setlength{\itemsep}{0.5pt}
 \item Repeated at every U-Net layer and step: the prompt steers each noise prediction, not the final pixels.
 \item Any condition works: only the encoder $\tau_\eta$ changes (text, class, layout).
-\item Guidance scale (CFG): higher = closer to the prompt, less diverse.
 \end{itemize}
 \column{.51\textwidth}
-{\footnotesize \ours\ \textbf{Stable Diffusion v1.4, seed 2027, same initial latent}}\\[1mm]
-\setlength{\tabcolsep}{1.5pt}
-\begin{tabular}{@{}p{2.2cm}p{2.2cm}p{2.2cm}@{}}
-\includegraphics[width=2.2cm]{figures/prompt/2027_reference.png} &
-\includegraphics[width=2.2cm]{figures/prompt/2027_change_color.png} &
-\includegraphics[width=2.2cm]{figures/prompt/2027_change_side.png}\\[-0.5mm]
-\raggedright\scriptsize\textbf{Reference}\newline\tiny``a red bus to the left of a blue car'' &
-\raggedright\scriptsize\textbf{red $\to$ green}\newline\tiny``a green bus to the left of a blue car'' &
-\raggedright\scriptsize\textbf{left $\to$ right}\newline\tiny``a red bus to the right of a blue car''
-\end{tabular}\\[1mm]
-\footnotesize
-\begin{itemize}\setlength{\itemsep}{1pt}
-\item Colour edit: green bus at \textbf{all 4 seeds} \yes, but no clear blue car; seed 2027 shows two green buses \no.
-\item Side edit: no clear left-to-right swap; the red bus stays on the left \no.
-\item Cross-attention is \emph{soft}: attributes can bind to the wrong object, or a token can be ignored.
-\end{itemize}
+\tcbset{before skip=0pt,after skip=2mm}
+\begin{tbox}[fontupper=\footnotesize\raggedright]{Guidance: closer to the prompt, less diverse}{hcmusblue}
+\paper\ Rombach et al.\ 2022, Table~3: class-conditional ImageNet LDM-4, 250 DDIM steps.\\[0.8mm]
+{\centering\setlength{\tabcolsep}{5pt}\renewcommand{\arraystretch}{1.05}%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ & FID$\downarrow$ & IS$\uparrow$ & Precision & Recall\\
+\midrule
+no guidance & 10.56 & 103.5 & 0.71 & \textbf{0.62}\\
+guidance $s=1.5$ & \textbf{3.60} & \textbf{247.7} & \textbf{0.87} & 0.48\\
+\bottomrule
+\end{tabular}\par}
+\vspace{0.8mm}
+Samples become more faithful (precision up) but cover less variety (recall down).
+\end{tbox}
+\begin{tbox}[fontupper=\footnotesize\raggedright,after skip=0pt]{Where soft attention fails}{rev}
+Nothing forces each word onto exactly one object or place. Chefer et al.\ (2023) show Stable Diffusion often \textbf{drops a subject} of the prompt (``catastrophic neglect'') or \textbf{binds an attribute to the wrong object} (e.g.\ the wrong colour).
+\end{tbox}
 \end{columns}
-\src{Rombach et al.\ 2022, Sec.~3.3; Ho \& Salimans 2022; Chefer et al.\ 2023. Images: our run (CFG 7.5, 50 DDIM steps).}
-\note{\textbf{(~80 s)} Mechanism first with the picture: one latent region (orange) asks, prompt words answer, thick lines are high attention. Then the evidence: colour changes succeed, object identity and left/right do not. Cross-attention is soft; guidance does not guarantee counting or spatial relations. Be explicit: 16 images, visual check only.}
+\src{Rombach et al.\ 2022, Sec.~3.3 and Table~3; Ho \& Salimans 2022; Chefer et al.\ 2023.}
+\note{\textbf{(~80 s)} Mechanism first with the picture: one latent region (orange) asks, prompt words answer, thick lines are high attention. Then the paper evidence: guidance (s = 1.5) cuts FID from 10.56 to 3.60 and raises precision, but recall drops, i.e.\ less variety. Finally the failure mode: attention is soft, so subjects can be dropped and attributes bound to the wrong object (Chefer et al.).}
 \end{frame}
 
 %% =====================================================================
-%% 10. Pixel vs latent on LSUN Churches  (~80 s)
+%% 11. Pixel vs latent on LSUN Churches  (~70 s)
 %% =====================================================================
 \begin{frame}
-\frametitle{Pixel vs.\ latent diffusion on LSUN Churches}
+\frametitle{Pixel vs.\ latent diffusion: what the LDM paper measured}
 \framesubtitle{D \textperiodcentered{} Evidence and limits}
-{\footnotesize \ours\ Pretrained checkpoints (no training by us) \textperiodcentered{} Tesla T4 \textperiodcentered{} batch 1 \textperiodcentered{} 50 DDIM steps ($\eta=0$) \textperiodcentered{} 4 seeds (2026--2029) \textperiodcentered{} warm-up excluded, GPU-synchronized timing\par}
-\vspace{1mm}
+{\footnotesize \paper\ Rombach et al.\ 2022, Table~6: inpainting on Places, same setup for both, one A100. Pixel = LDM-1 (no autoencoder); latent = LDM-4 (KL, $f=4$).\par}
+\vspace{1.5mm}
 \begin{columns}[T,onlytextwidth]
-\column{.52\textwidth}
+\column{.55\textwidth}
 {\footnotesize
-\renewcommand{\arraystretch}{1.3}
-\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{2.9cm}YY@{}}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\bfseries}p{3.35cm}ccY@{}}
 \toprule
-\rowcolor{hcmusblue!12}Criterion & Pixel DDPM & LDM-KL-8\\
+\rowcolor{hcmusblue!12}Criterion & Pixel & Latent & Ratio\\
 \midrule
-Denoising state & $256{\times}256{\times}3$ & $32{\times}32{\times}4$\\
-Median latency (s/img) & 6.10 & \textbf{2.44} ($2.5\times$ faster)\\
-Peak CUDA alloc.\ (GiB) & \textbf{0.75} & 1.68\\
+Training (samples/s) & 0.11 & 0.32 & 2.9$\times$\\
+Sampling @$256^2$ (samples/s) & 0.26 & 0.97 & \textbf{3.7$\times$}\\
+Sampling @$512^2$ (samples/s) & 0.07 & 0.34 & \textbf{4.9$\times$}\\
+Time per epoch (h) & 20.66 & 7.66 & 2.7$\times$ less\\
+FID@2k, epoch 6 $\downarrow$ & 24.74 & \textbf{15.21} & lower\\
 \bottomrule
 \end{tabularx}}
-\vspace{1.5mm}
-\begin{nbox}[fontupper=\footnotesize]{hcmusblue}
-\paper\ Rombach et al., Table 6 (Places inpainting, $256^2$): pixel LDM-1 vs.\ latent LDM-4 $=0.26\to0.97$ samples/s; FID@2k $24.74\to15.21$.
-\end{nbox}
-\column{.46\textwidth}
+\vspace{1mm}
+{\scriptsize\color{muted}Fixed number of epochs; the autoencoder's own pre-training is not included. A lower FID is a better score, not ``38\% better looking''.\par}
+\column{.42\textwidth}
 \centering
 \setlength{\tabcolsep}{1pt}
 \begin{tabular}{@{}rcccc@{}}
  & \scriptsize 2026 & \scriptsize 2027 & \scriptsize 2028 & \scriptsize 2029\\
 \raisebox{4mm}{\scriptsize DDPM} &
-\includegraphics[width=1.4cm]{figures/churches/ddpm_2026.png} &
-\includegraphics[width=1.4cm]{figures/churches/ddpm_2027.png} &
-\includegraphics[width=1.4cm]{figures/churches/ddpm_2028.png} &
-\includegraphics[width=1.4cm]{figures/churches/ddpm_2029.png}\\
+\includegraphics[width=1.22cm]{figures/churches/ddpm_2026.png} &
+\includegraphics[width=1.22cm]{figures/churches/ddpm_2027.png} &
+\includegraphics[width=1.22cm]{figures/churches/ddpm_2028.png} &
+\includegraphics[width=1.22cm]{figures/churches/ddpm_2029.png}\\
 \raisebox{4mm}{\scriptsize LDM} &
-\includegraphics[width=1.4cm]{figures/churches/ldm_2026.png} &
-\includegraphics[width=1.4cm]{figures/churches/ldm_2027.png} &
-\includegraphics[width=1.4cm]{figures/churches/ldm_2028.png} &
-\includegraphics[width=1.4cm]{figures/churches/ldm_2029.png}
-\end{tabular}\\[0.5mm]
-{\scriptsize\raggedright Pixel: clear steeple (2028), dark 2029 hides detail. Latent: clear facades (2027--2029), 2026 is a distant complex. Each model draws noise in its own state space.\par}
+\includegraphics[width=1.22cm]{figures/churches/ldm_2026.png} &
+\includegraphics[width=1.22cm]{figures/churches/ldm_2027.png} &
+\includegraphics[width=1.22cm]{figures/churches/ldm_2028.png} &
+\includegraphics[width=1.22cm]{figures/churches/ldm_2029.png}
+\end{tabular}\\[0.8mm]
+{\scriptsize\raggedright \ours\ Pretrained pixel (DDPM) and latent (LDM-KL-8) samples, LSUN Churches, 50 DDIM steps. \emph{Illustration only}: both look plausible.\par}
 \end{columns}
-\vspace{1.5mm}
-\begin{nbox}[fontupper=\footnotesize]{rev}
-\textbf{Takeaway:} the latent model was faster but used \emph{more} peak memory in our setup, so ``cheaper compute'' is not ``cheaper in every resource''. Four images per model, one checkpoint pair, no FID: an illustration, not a benchmark.
+\vspace{1.2mm}
+\begin{nbox}[fontupper=\footnotesize]{hcmusblue}
+\textbf{Takeaway:} on a $4{\times}$-downsampled latent, the same diffusion samples \textbf{3.7--4.9$\times$ faster} and trains \textbf{2.7$\times$ faster per epoch}, at equal or better FID; too much compression ($f=32$) costs quality (Sec.~4.1).
 \end{nbox}
-\src{Our run: ddpm-ema-church-256 vs.\ CompVis LDM-KL-8 (FP32); latency includes the decoder. Paper values: Rombach et al.\ 2022, Table 6.}
-\note{\textbf{(~80 s)} Read the table, then the caveat. If asked why LDM peak memory is higher: we only measured it; the two checkpoints differ in architecture/decoder, an untested hypothesis. Paper numbers are for a different task (inpainting), shown only as external evidence.}
+\src{Rombach et al.\ 2022, Table~6 and Sec.~4.1. Images: our run with pretrained checkpoints; its timing and memory are in backup slide 17.}
+\note{\textbf{(~70 s)} All numbers here are from the LDM paper, not from us. Read the table row by row: training throughput, sampling throughput at two resolutions, epoch time, FID. The church grid on the right is only an illustration that both models produce plausible images. Caveats: fixed epochs, autoencoder pre-training not counted, an inpainting task; too much compression (f = 32) hurts quality.}
 \end{frame}
 
 %% =====================================================================
-%% 11. Limitations  (~50 s)
+%% 12. Limitations and when to use  (~40 s)
 %% =====================================================================
 \begin{frame}
-\frametitle{Limitations: training data, copyright and bias}
+\frametitle{Limitations, and when to use diffusion}
 \framesubtitle{D \textperiodcentered{} Evidence and limits}
 \begin{columns}[T,onlytextwidth]
-\column{.325\textwidth}
-\begin{tbox}[fontupper=\small,height=4.0cm]{1. Training data}{hcmusblue}
-\emph{A model only knows what its data contains.}
-\begin{itemize}\setlength{\itemsep}{1.5pt}
-\item Church checkpoints specialize in churches.
-\item ImageNet conditioning uses a fixed class vocabulary.
-\item Text models inherit the attributes and relations present in captions.
+\column{.56\textwidth}
+\sech{Limitations and why}
+\begin{nbox}[fontupper=\small\raggedright,colback=bad!4!white,before skip=0pt,after skip=0pt]{bad}
+\begin{itemize}\setlength{\itemsep}{3.5pt}
+\item \textbf{Slow sampling}: many small steps, run one after another.
+\item \textbf{Quality ceiling}: the decoder only restores what the latent kept.
+\item \textbf{Soft prompt control}: words can be dropped or bound to the wrong object.
+\item \textbf{Data bias}: the model copies the gaps and stereotypes of its data.
+\item \textbf{Weak likelihood}: $L_{\text{simple}}$ favours sample quality over NLL.
 \end{itemize}
-\end{tbox}
-\column{.325\textwidth}
-\begin{tbox}[fontupper=\small,height=4.0cm]{2. Bias}{rev}
-Bianchi et al.\ (2023): ordinary prompts to text-to-image systems can yield \textbf{demographic stereotypes} at scale.
-
-\vspace{1.5mm}
-\textbf{Our bus-and-car demo does not measure bias.}
-\end{tbox}
-\column{.325\textwidth}
-\begin{tbox}[fontupper=\small,height=4.0cm]{3. Copyright and memorization}{bad}
-\begin{itemize}\setlength{\itemsep}{1.5pt}
-\item Carlini et al.\ (2023) extracted \textbf{memorized training images} from diffusion models.
-\item Data provenance matters for copyright; the U.S.\ Copyright Office (2025) analyses training under \emph{U.S.\ law}, not Vietnamese law.
-\item This does not mean every generated image is a copy.
-\end{itemize}
-\end{tbox}
-\end{columns}
-\vspace{1.5mm}
-\begin{nbox}[fontupper=\footnotesize]{muted}
-\textbf{Method limits:} many sampling steps \textperiodcentered{} quality capped by autoencoder reconstruction \textperiodcentered{} soft cross-attention (slide~10) \textperiodcentered{} our experiments are small illustrations (no FID, no bias metrics), not benchmarks.
 \end{nbox}
-\src{Bianchi et al.\ 2023; Carlini et al.\ 2023; U.S.\ Copyright Office 2025, Copyright and AI, Part 3 (pre-publication version).}
-\note{\textbf{(~50 s)} Critical analysis: say plainly what our experiments do not prove. The legal source is a US policy analysis, not a conclusion about every generated image, and not Vietnamese law.}
+\column{.42\textwidth}
+\sech{When to use which}
+\tcbset{before skip=0pt,after skip=1.6mm}
+\begin{nbox}[fontupper=\small\raggedright,colback=lightgreen]{ok}
+\textbf{Latent diffusion}: high resolution or text-to-image, when losing tiny details is acceptable.
+\end{nbox}
+\begin{nbox}[fontupper=\small\raggedright,colback=lightblue]{hcmusblue}
+\textbf{Pixel diffusion}: small images, or when exact fine detail matters.
+\end{nbox}
+\begin{nbox}[fontupper=\small\raggedright,colback=lightorange,after skip=0pt]{rev}
+\textbf{Neither}: real-time use, unless a fast sampler (e.g.\ DDIM) cuts the steps.
+\end{nbox}
+\end{columns}
+\src{Ho et al.\ 2020, Table~1; Rombach et al.\ 2022, Sec.~4.1; Chefer et al.\ 2023; Bianchi et al.\ 2023. ``When to use which'': our reading of these results.}
+\note{\textbf{(~40 s)} Left: one line per limitation, each with its cause. Right: when each option fits; this is our reading of the papers, not a paper's conclusion.}
 \end{frame}
 
 %% =====================================================================
-%% 12. Conclusion  (~45 s)
+%% 13. Conclusion  (~35 s)
 %% =====================================================================
 \begin{frame}
-\frametitle{Conclusion: answering the guiding question}
+\frametitle{Conclusion: the recipe behind today's image generators}
 \framesubtitle{Take-home}
-\begin{nbox}[colframe=rev,colback=lightorange,fontupper=\small]{rev}
-\textbf{How can learning to remove noise enable a model to generate new images?}\\[1mm]
-Because the forward process gives \textbf{free training pairs at every noise level}, a network trained to predict the noise learns \textbf{shared image structure}, and running it from \textbf{fresh noise in many small stochastic steps} turns noise into a new sample.
+\begin{nbox}[colframe=hcmusblue,colback=lightblue,fontupper=\small]{hcmusblue}
+\textbf{The big picture.} Diffusion turns generation into \textbf{many small, easy denoising steps} (DDPM). LDM makes each step \textbf{cheap} by working in a compact latent, and cross-attention makes it \textbf{controllable} by a prompt. Together they form the recipe behind text-to-image systems such as Stable Diffusion.
 \end{nbox}
 \vspace{1.5mm}
-\begin{columns}[T,onlytextwidth]
-\column{.325\textwidth}
-\begin{tbox}[fontupper=\footnotesize,height=2.5cm]{1. Forward noising}{fwd}
-Known Gaussian chain with schedule $\beta_t$; the closed form $x_t=\sqrt{\ab_t}\,x_0+\sqrt{1-\ab_t}\,\eps$ reaches any $t$ directly.
-\end{tbox}
-\column{.325\textwidth}
-\begin{tbox}[fontupper=\footnotesize,height=2.5cm]{2. Reverse denoising}{rev}
-Learn $p_\theta(x_{t-1}\mid x_t)$ by predicting the noise ($L_{\text{simple}}$); sample by iterating small steps from $\Normal(0,\Id)$.
-\end{tbox}
-\column{.325\textwidth}
-\begin{tbox}[fontupper=\footnotesize,height=2.5cm]{3. Latent diffusion}{ok}
-Same principle on autoencoder latents: cheaper steps ($\approx2.5\times$ faster in our run; $0.26\to0.97$ samples/s in the paper) and prompts via cross-attention. Costs: reconstruction limit, memory not necessarily lower.
-\end{tbox}
-\end{columns}
-\vspace{0.5mm}
+\begin{tcbraster}[raster columns=3,raster equal height,raster column skip=2.5mm,raster before skip=0pt,raster after skip=0pt,
+  raster every box/.style={base,fontupper=\footnotesize\raggedright,coltitle=white}]
+\begin{tcolorbox}[colframe=fwd,colback=fwd!5!white,title={1. Forward noising}]
+A known Gaussian chain trades signal for noise until $x_T\approx\Normal(0,\Id)$; the closed form jumps to any $t$ in one shot.
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=rev,colback=rev!5!white,title={2. Reverse denoising}]
+A network learns to predict the noise ($L_{\text{simple}}$); knowing the noise gives the image, so repeating small steps from pure noise creates a new one.
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=ok,colback=ok!5!white,title={3. Latent diffusion}]
+The same loop on a compact VAE latent: \textbf{48$\times$ fewer values} per step ($f=8$); the paper samples 3.7--4.9$\times$ faster at equal or better FID. Cost: a reconstruction ceiling.
+\end{tcolorbox}
+\end{tcbraster}
+\vspace{1.5mm}
 \begin{center}
-{\small\itshape Capability is bounded by the training data, and by what we actually measured.}\\[1.5mm]
+{\small\itshape Every stage is bounded by its training data and by what the latent can keep.}\\[1.5mm]
 {\large\bfseries\color{hcmusblue}Thank you \textperiodcentered{} Questions?}\\[0.5mm]{\scriptsize\color{muted}Notation, a denoising trace, LDM formulas, references and figure sources: backup slides}
 \end{center}
-\note{\textbf{(~45 s)} Close the loop on the guiding question in one sentence; the three recap cards mirror the learning objective. Hand over to Q\&A; every member answers at least one question.}
+\note{\textbf{(~35 s)} Do not re-answer the guiding question (slide 6 did that). Give the big picture in one breath: many easy steps (DDPM), cheap steps (latent), controllable steps (cross-attention), which is the recipe behind Stable Diffusion. Latent card: paper numbers only. The three cards mirror the learning objective. Hand over to Q\&A; every member answers at least one question.}
 \end{frame}
 
 %% =====================================================================
-%% Backup slides (not counted in the 12 content slides)
+%% Backup slides (not counted as content slides)
 %% =====================================================================
 \appendix
 \setbeamertemplate{footline}{%
@@ -753,7 +746,7 @@ $L_{\text{simple}}$, SNR & squared noise error, $t\sim\mathrm U\{1..T\}$; SNR $=
 $\mathcal E_\phi,\ D_\psi$ & encoder / decoder (weights $\phi,\psi$), frozen after training\\
 $\mu_\phi,\sigma_\phi,\tilde z$ & VAE posterior mean and SD ($>0$); sampled latent\\
 $z_0,\ z_t$ & $z_0=a\tilde z$ (fixed $a>0$); noisy latent; $\R^{h\times w\times c}$\\
-$f$ & $h=H/f$, $w=W/f$; $f=8$ (Churches), $f=4$ (ImageNet)\\
+$f$ & $h=H/f$, $w=W/f$; typically $f=4$--$8$\\
 $y,\ C$ & condition; $C=\tau_\eta(y)$ its token embeddings (weights $\eta$)\\
 $F,\ W_{Q,K,V}$ & U-Net features (one row per position); learned projections\\
 $Q,K,V,O,\ d$ & query, key, value, output matrices; key width $d$\\
@@ -830,6 +823,80 @@ $\eps_u,\eps_c$: prediction without/with the condition; $s=1$ is plain condition
 \end{frame}
 
 \begin{frame}
+\frametitle{Supplementary: our pixel vs.\ latent run on LSUN Churches}
+\framesubtitle{Backup}
+{\footnotesize \ours\ Pretrained checkpoints (no training by us) \textperiodcentered{} Tesla T4 \textperiodcentered{} batch 1 \textperiodcentered{} 50 DDIM steps ($\eta=0$) \textperiodcentered{} 4 seeds (2026--2029) \textperiodcentered{} warm-up excluded, GPU-synchronized timing\par}
+\vspace{1mm}
+\begin{columns}[T,onlytextwidth]
+\column{.55\textwidth}
+{\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{2.65cm}p{1.45cm}Y@{}}
+\toprule
+\rowcolor{hcmusblue!12}Criterion & Pixel DDPM & LDM-KL-8\\
+\midrule
+Sampling steps & 50 & 50\\
+Values per step & $196{,}608$ & $4{,}096$ (\textbf{48$\times$ fewer})\\
+Median latency (s/img) & 6.10 & \textbf{2.44} ($2.5\times$ faster)\\
+Peak GPU alloc.\ (GiB) & \textbf{0.75} & 1.68\\
+Quality (by eye, 4 imgs) & plausible & plausible\\
+\bottomrule
+\end{tabularx}}
+\vspace{1.5mm}
+
+\column{.43\textwidth}
+\centering
+\setlength{\tabcolsep}{1pt}
+\begin{tabular}{@{}rcccc@{}}
+ & \scriptsize 2026 & \scriptsize 2027 & \scriptsize 2028 & \scriptsize 2029\\
+\raisebox{4mm}{\scriptsize DDPM} &
+\includegraphics[width=1.32cm]{figures/churches/ddpm_2026.png} &
+\includegraphics[width=1.32cm]{figures/churches/ddpm_2027.png} &
+\includegraphics[width=1.32cm]{figures/churches/ddpm_2028.png} &
+\includegraphics[width=1.32cm]{figures/churches/ddpm_2029.png}\\
+\raisebox{4mm}{\scriptsize LDM} &
+\includegraphics[width=1.32cm]{figures/churches/ldm_2026.png} &
+\includegraphics[width=1.32cm]{figures/churches/ldm_2027.png} &
+\includegraphics[width=1.32cm]{figures/churches/ldm_2028.png} &
+\includegraphics[width=1.32cm]{figures/churches/ldm_2029.png}
+\end{tabular}\\[0.5mm]
+{\scriptsize\raggedright Pixel: clear steeple (2028), dark 2029 hides detail. Latent: clear facades (2027--2029), 2026 is a distant complex. Each model draws noise in its own state space.\par}
+\end{columns}
+\vspace{1.5mm}
+\begin{nbox}[fontupper=\footnotesize]{rev}
+\textbf{Takeaway:} 48$\times$ fewer values per step gave a 2.5$\times$ speed-up, not 48$\times$, and \emph{more} peak memory: real cost depends on more than state size. Four images per model, one checkpoint pair, no FID: an illustration, not a benchmark.
+\end{nbox}
+\src{Our run: ddpm-ema-church-256 vs.\ CompVis LDM-KL-8 (FP32); latency includes the decoder. Supplementary only; the main comparison (slide 11) uses the paper's numbers.}
+\end{frame}
+
+\begin{frame}
+\frametitle{Supplementary: our prompt-control test with Stable Diffusion}
+\framesubtitle{Backup}
+\begin{center}
+\begin{minipage}{.62\textwidth}
+
+{\footnotesize \ours\ \textbf{Stable Diffusion v1.4, seed 2027, same initial latent}}\\[1mm]
+\setlength{\tabcolsep}{1.5pt}
+\begin{tabular}{@{}p{2.2cm}p{2.2cm}p{2.2cm}@{}}
+\includegraphics[width=2.2cm]{figures/prompt/2027_reference.png} &
+\includegraphics[width=2.2cm]{figures/prompt/2027_change_color.png} &
+\includegraphics[width=2.2cm]{figures/prompt/2027_change_side.png}\\[-0.5mm]
+\raggedright\scriptsize\textbf{Reference}\newline\tiny``a red bus to the left of a blue car'' &
+\raggedright\scriptsize\textbf{red $\to$ green}\newline\tiny``a green bus to the left of a blue car'' &
+\raggedright\scriptsize\textbf{left $\to$ right}\newline\tiny``a red bus to the right of a blue car''
+\end{tabular}\\[1mm]
+\footnotesize
+\begin{itemize}\setlength{\itemsep}{1pt}
+\item Colour edit: green bus at \textbf{all 4 seeds} \yes, but no clear blue car; seed 2027 shows two green buses \no.
+\item Side edit: no clear left-to-right swap; the red bus stays on the left \no.
+\item Cross-attention is \emph{soft}: attributes can bind to the wrong object, or a token can be ignored.
+\end{itemize}
+\end{minipage}
+\end{center}
+\src{Our run: Stable Diffusion v1.4, CFG 7.5, 50 DDIM steps, 4 seeds $\times$ 4 prompts, checked by eye. An illustration, not a general conclusion.}
+\end{frame}
+
+\begin{frame}
 \frametitle{References (1/2)}
 \framesubtitle{Backup}
 \fontsize{7}{8.4}\selectfont
@@ -864,12 +931,10 @@ $\eps_u,\eps_c$: prediction without/with the condition; $s=1$ is plain condition
 \column{.49\textwidth}
 \refitem{R.~Rombach, P.~Esser. Stable Diffusion v1.4 Model Card (CompVis). Hugging Face, 2022.}
 \refitem{F.~Bianchi et al. Easily Accessible Text-to-Image Generation Amplifies Demographic Stereotypes at Large Scale. \emph{FAccT}, 2023.}
-\refitem{N.~Carlini et al. Extracting Training Data from Diffusion Models. \emph{USENIX Security}, 2023.}
-\refitem{U.S.~Copyright Office. Copyright and Artificial Intelligence, Part 3: Generative AI Training (pre-publication version), 2025. A U.S.\ policy analysis, not a statement of Vietnamese law.}
 \end{columns}
 \vspace{2mm}
 \begin{nbox}[fontupper=\fontsize{7}{8.4}\selectfont]{muted}
-\textbf{Figures and results.} The schematics (slides 3, 5, 8, 9, 10) are original drawings of the cited methods. The 1-D calculation, the 28$\times$28 noising sequence, the LSUN Churches timing, the ImageNet denoising traces and the Stable Diffusion prompt test are our own runs with pretrained checkpoints (no training by us); published numbers are attributed to Ho et al.\ 2020 and Rombach et al.\ 2022.\\[1mm]
+\textbf{Figures and results.} The schematics (slides 3, 5, 8, 9, 10) are original drawings of the cited methods. The 1-D calculation and the 28$\times$28 noising sequence are our own examples. All evidence on the main slides comes from the cited papers (Ho et al.\ 2020; Rombach et al.\ 2022). Our small runs with pretrained checkpoints appear only as illustrations: the LSUN Churches samples on slide 11, and the denoising trace, timing and prompt test in backup slides 15, 17 and 18.\\[1mm]
 \textbf{AI assistance.} OpenAI Codex (report drafting, code, checks); Claude (slide drafting and Beamer preparation).
 \end{nbox}
 \end{frame}
