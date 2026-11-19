@@ -1,6 +1,6 @@
 # Presentation script: Diffusion Models, From Adding Noise to Generating Images
 
-Script thuyết trình cho deck [main.tex](main.tex): 13 slide (slide 1 là title kèm guiding question; 12 slide nội dung), cộng 7 slide backup (14: Notation, 15: Inside one denoising step, 16: LDM details, 17: our LSUN run, 18: our Stable Diffusion test, 19–20: References). Mọi bằng chứng trên slide chính đều lấy từ paper; các run tự chạy của nhóm chỉ nằm ở backup 15, 17, 18.
+Script thuyết trình cho deck [main.tex](main.tex): 13 slide (slide 1 là title kèm guiding question; 12 slide nội dung), cộng 7 slide backup (14: Notation, 15: Inside one denoising step, 16: LDM details, 17: our LSUN run, 18: our Stable Diffusion test, 19–20: References). Mọi bằng chứng trên slide chính đều lấy từ paper. Run tự chạy của nhóm chỉ xuất hiện dưới dạng minh họa: lưới ảnh nhà thờ ở slide 11, và backup 15, 17, 18.
 
 **Cách đọc file này**
 
@@ -16,9 +16,9 @@ Script thuyết trình cho deck [main.tex](main.tex): 13 slide (slide 1 là titl
 | Màu | Ý nghĩa | Ví dụ |
 |---|---|---|
 | Xanh dương nhạt (`fwd`) | Forward noising: cố định, đã biết | khung "Forward noising equations" slide 3, đường "signal" trong biểu đồ |
-| Cam (`rev`) | Reverse denoising: học được; nhãn **OUR RUN** (chỉ còn ở backup) | dải REVERSE và khung Sampling slide 5 |
+| Cam (`rev`) | Reverse denoising: học được; nhãn **OUR RUN** (ảnh minh họa slide 11 và backup) | dải REVERSE và khung Sampling slide 5 |
 | Xanh lá (`ok`) | Latent diffusion / autoencoder; nhãn **OUR EXAMPLE**; khung câu trả lời slide 6 | khung "Chosen values" slide 4, khung "Why removing noise generates new images" slide 6 |
-| Xanh đậm | Nhãn **PAPER REPORTS**: số liệu của paper, không phải của nhóm | thẻ Paper review slide 1, bảng FID slide 5, slide 8, 10 |
+| Xanh đậm | Nhãn **PAPER REPORTS**: số liệu của paper, không phải của nhóm | thẻ Paper review slide 1, bảng FID slide 5, khung chi phí slide 7, bảng guidance slide 10, bảng Table 6 slide 11 |
 
 Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OUR EXAMPLE bên cạnh** để người nghe biết số đó của ai.
 
@@ -37,7 +37,7 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 | 7 | From DDPM to LDM: the cost of pixels, and three ideas | B | 60s | C · Latent | Pixel diffusion tốn kém vì mọi bước chạm mọi pixel; LDM có 3 ý tưởng chính. |
 | 8 | Latent space: what it is, and why it helps | B | 65s | C · Latent | VAE nén ảnh thành latent gọn (mean, spread, sample); mỗi bước xử lý ít hơn 48× giá trị; vẫn cần diffusion để *tạo* latent mới. |
 | 9 | Operations in latent space: the whole LDM pipeline | C | 75s | C · Latent | Vòng lặp DDPM giữ nguyên nhưng chạy trên $z$ nhỏ; encoder chỉ dùng khi train, decoder chạy một lần. |
-| 10 | Cross-attention: steering the denoiser with a prompt | C | 80s | C · Latent | Vùng ảnh "hỏi", từ trong prompt "trả lời"; đổi màu được, đổi trái/phải thì không. |
+| 10 | Cross-attention: steering the denoiser with a prompt | C | 80s | C · Latent | Vùng ảnh "hỏi", từ trong prompt "trả lời"; guidance đổi đa dạng lấy độ trung thực; attention mềm nên có thể bỏ sót hoặc gán nhầm. |
 | 11 | Pixel vs. latent diffusion: what the LDM paper measured | C | 70s | D · Evidence | Số liệu của paper: latent sample nhanh 3.7–4.9×, mỗi epoch nhanh 2.7×, FID không tệ hơn; ảnh nhà thờ của nhóm chỉ để minh họa. |
 | 12 | Limitations, and when to use diffusion | C | 40s | D · Evidence | 5 giới hạn, mỗi giới hạn một lý do ngắn; khi nào dùng latent, pixel, hay không dùng diffusion. |
 | 13 | Conclusion: the recipe behind today's image generators | C | 35s | Kết | Bức tranh tổng: nhiều bước dễ (DDPM), bước rẻ (latent), điều khiển được (cross-attention); 3 thẻ theo learning objective. |
@@ -105,7 +105,7 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 **👉 [Dòng chữ nhỏ dưới ô Generative] (cắt được)**
 
-> This is also the backbone of today's text-to-image systems, such as Stable Diffusion, which we test on slide 10.
+> This is also the backbone of today's text-to-image systems, such as Stable Diffusion, which we unpack on slides 7 to 10.
 
 **Chuyển ý**: "Let's start with the easy direction: forward noising."
 
@@ -309,7 +309,7 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 **👉 [Sơ đồ: VAE encoder → "sample $z$" → lưới → VAE decoder → reconstruction; rồi khung 2 "VAE encoder and decoder"]**
 
-> How do we get it? With a VAE. The encoder maps an image not to a single point but to a small *cloud* of possible latents, a mean and a spread, and we sample $z$ from it. The decoder maps $z$ back to an image. A weak KL term keeps the latent values tame.
+> How do we get it? With a VAE. The encoder maps an image not to a single point but to a small *cloud* of possible latents, a mean and a spread, and we sample $z$ from it. The decoder maps $z$ back to an image.
 
 **👉 [Khung đứt nét "stage 1: trained once, then frozen"]**
 
@@ -470,7 +470,8 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 | Encoder có dùng khi sinh ảnh không? | 9 | C | Không: sinh ảnh bắt đầu từ nhiễu latent $z_T$; encoder chỉ dùng khi train, decoder chạy một lần ở cuối. |
 | Cross-attention khác self-attention? Công thức cụ thể? | 10; công thức ở backup 16 | C | Q từ ảnh; K, V từ điều kiện (với self-attention thì cả ba từ ảnh); $O=\mathrm{softmax}(QK^\top/\sqrt d)V$. |
 | Latent diffusion thực sự rẻ hơn bao nhiêu? | 11 | C | Theo LDM Table 6: sampling nhanh 3.7–4.9×, mỗi epoch nhanh 2.7×, FID@2k 24.74 → 15.21; caveat: số epoch cố định, chưa tính thời gian pre-train autoencoder. |
-| Nhóm có tự kiểm chứng không? | Backup 17 | C | Run LSUN Churches: nhanh 2.5× nhưng bộ nhớ đỉnh cao hơn (1.68 so với 0.75 GiB); chỉ 4 ảnh, 1 cặp checkpoint, không FID; lý do bộ nhớ cao hơn chưa được phân tích. |
+| Nhóm có thử điều khiển bằng prompt không? | Backup 18 | C | Thử Stable Diffusion v1.4 với 4 seed × 4 prompt: đổi màu bus thành công, đổi trái/phải thì không; chỉ là minh họa 16 ảnh, khớp với lỗi mà Chefer et al. mô tả. |
+| Nhóm có tự kiểm chứng tốc độ không? | Backup 17 | C | Run LSUN Churches: nhanh 2.5× nhưng bộ nhớ đỉnh cao hơn (1.68 so với 0.75 GiB); chỉ 4 ảnh, 1 cặp checkpoint, không FID; lý do bộ nhớ cao hơn chưa được phân tích. |
 | Guidance có đánh đổi gì? | 10 | C | LDM Table 3: guidance s = 1.5 giảm FID 10.56 → 3.60, tăng precision, nhưng recall giảm 0.62 → 0.48 (kém đa dạng hơn). |
 | Vì sao sampling chậm, và có cách nào nhanh hơn? | 12 (dòng 1 và khung "Neither") | C | Bước ngược phải nhỏ để gần Gaussian nên cần nhiều lượt gọi mạng tuần tự; DDIM giảm số bước, đổi lại chất lượng giảm phần nào. |
 | Một ký hiệu nghĩa là gì / miền giá trị? | Backup 14 | ai cũng được | Bảng Notation, value ranges and modelling assumptions. |

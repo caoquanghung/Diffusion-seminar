@@ -133,7 +133,7 @@
       \paper\ FID 3.17; NLL 3.75 bits/dim, not competitive.\\[0.1mm]
       {\color{ok}\bfseries 2022 LDM:} same $\eps$-loss in an autoencoder latent + cross-attention.}};
 \end{tikzpicture}
-\note{\textbf{(~45 s)} Hook: a denoiser repairs an image that exists; a generator must produce an image that never existed. What bridges the two? State the guiding question, then the learning objective: by the end we explain forward noising, reverse denoising, and why latent diffusion is cheaper. The paper-review card places the two focus papers (DDPM, LDM) after their predecessors.}
+\note{\textbf{(~40 s)} Hook: a denoiser repairs an image that exists; a generator must produce an image that never existed. What bridges the two? State the guiding question, then the learning objective: by the end we explain forward noising, reverse denoising, and why latent diffusion is cheaper. The paper-review card places the two focus papers (DDPM, LDM) after their predecessors.}
 \end{frame}
 
 %% =====================================================================
@@ -161,7 +161,7 @@
 \adjustbox{width=\linewidth,trim={0 0 0 {.12\height}},clip}{\includegraphics{figures/qualitative_comparison.png}}
 \end{columns}
 % \src{Project illustration; sources: Goodfellow et al.\ 2014, van den Oord et al.\ 2016, Ho et al.\ 2020. Typical behaviour, not universal guarantees.}
-\note{\textbf{(~70 s)} Walk the figure left to right: GAN = one pass but adversarial training; autoregressive = token by token; diffusion = denoise over many steps. Diffusion does not learn class boundaries; it learns the statistical structure of images by reversing a corruption we already know. Mention the cost: many sampling steps.}
+\note{\textbf{(~60 s)} Walk the figure left to right: GAN = one pass but adversarial training; autoregressive = token by token; diffusion = denoise over many steps. Diffusion does not learn class boundaries; it learns the statistical structure of images by reversing a corruption we already know. Mention the cost: many sampling steps.}
 \end{frame}
 
 %% =====================================================================
@@ -229,7 +229,7 @@ $\eps\sim\Normal(0,\Id)$ & Gaussian noise, shape of $x_t$ & $T$ & number of step
 \end{tikzpicture}
 \end{columns}
 \src{Sohl-Dickstein et al.\ 2015; Ho et al.\ 2020 (notation $\alpha_t,\ab_t$; schedule). Diagram and plot: ours, computed from the DDPM linear schedule.}
-\note{\textbf{(~90 s)} The forward process is known and needs no learning: it hands us (noisy image, noise) pairs at every level. $t$ is a step index. Read the underbraces of (1), then the boxed closed form (2): one-step corruption to any $t$. The squared weights of (2) sum to 1, so the plot shows signal being traded for noise; they cross at $t\approx260$ (SNR $=1$).}
+\note{\textbf{(~85 s)} The forward process is known and needs no learning: it hands us (noisy image, noise) pairs at every level. $t$ is a step index. Read the underbraces of (1), then the boxed closed form (2): one-step corruption to any $t$. The squared weights of (2) sum to 1, so the plot shows signal being traded for noise; they cross at $t\approx260$ (SNR $=1$).}
 \end{frame}
 
 %% =====================================================================
@@ -281,7 +281,7 @@ Both ways describe the \emph{same} distribution $\Normal(0.6788,\,0.28)$. Our $0
 \oursum\ \textbf{By eye: 28$\times$28 house}, DDPM schedule ($T=1000$, $\beta_t$: $10^{-4}\to0.02$), $t=0,50,200,500,1000$.\\[0.8mm]
 $\mathrm{SNR}=\ab_t/(1-\ab_t)$: $33.5$ at $t=50$ (clear), $1.93$ at $t=200$, $0.085$ at $t=500$ (noise dominates), $\approx4\times10^{-5}$ at $t=T$.
 \end{columns}
-\note{\textbf{(~80 s)} Define the chosen values first. Way 1: two steps aloud, 0.7589 - 0.1581 = 0.6008, then 0.5374 - 0.1789 = 0.3585. Way 2: one jump with alpha-bar = 0.72; the two noises merge into one Gaussian epsilon-bar = -0.6053 (variance check 0.08 + 0.2 = 0.28), same 0.3585. Expectation: E[x2|x0] = 0.6788, the draw differs. Then the image: house visible at t=50, gone at t=500. The betas here are larger than DDPM's on purpose.}
+\note{\textbf{(~90 s)} Define the chosen values first. Way 1: two steps aloud, 0.7589 - 0.1581 = 0.6008, then 0.5374 - 0.1789 = 0.3585. Way 2: one jump with alpha-bar = 0.72; the two noises merge into one Gaussian epsilon-bar = -0.6053 (variance check 0.08 + 0.2 = 0.28), same 0.3585. Expectation: E[x2|x0] = 0.6788, the draw differs. Then the image: house visible at t=50, gone at t=500. The betas here are larger than DDPM's on purpose.}
 \end{frame}
 
 %% =====================================================================
@@ -347,7 +347,7 @@ $\sigma_t^2=\beta_t$ \emph{fixed}, not learned
 $\theta$: U-Net weights. Only the bold $\eps_\theta$ is learned; $\beta_t,\alpha_t,\ab_t$ come from the fixed schedule.
 \end{minipage}
 \end{tbox}
-\note{\textbf{(~90 s)} Diagram: the learned reverse chain runs right to left, from noise $x_T$ to $x_0$. Sampling in 3 lines: start from noise, repeat the reverse step, no image needed. Why epsilon rather than the mean: both define the same Gaussian step, but predicting the mean only trains well on the weighted bound (FID 13.22) and is unstable with plain MSE; epsilon has unit scale at every t, so L_simple works (FID 3.17). Bottom box: how the predicted noise becomes the mean of one step.}
+\note{\textbf{(~85 s)} Diagram: the learned reverse chain runs right to left, from noise $x_T$ to $x_0$. Sampling in 3 lines: start from noise, repeat the reverse step, no image needed. Why epsilon rather than the mean: both define the same Gaussian step, but predicting the mean only trains well on the weighted bound (FID 13.22) and is unstable with plain MSE; epsilon has unit scale at every t, so L_simple works (FID 3.17). Bottom box: how the predicted noise becomes the mean of one step.}
 \end{frame}
 
 %% =====================================================================
@@ -390,7 +390,7 @@ Each step moves \emph{uphill in density}, then adds noise: like annealed Langevi
 {\color{ok!70!black}\itshape Like a sculptor: learn what is \emph{not} the statue, then chip it away layer by layer.}
 \end{tbox}
 \end{columns}
-\note{\textbf{(~110 s)} Training in 3 lines (real image, closed form, regress the noise). Score box: the MSE optimum makes the noise prediction a scaled score, so each step climbs the noisy-data density, like annealed Langevin dynamics. Green box is our answer to the guiding question: know the noise, know the image; remove a little at a time; removing noise climbs toward real images; coarse to fine; why epsilon. Inside-a-step figure from our run: backup slide 15.}
+\note{\textbf{(~100 s)} Training in 3 lines (real image, closed form, regress the noise). Score box: the MSE optimum makes the noise prediction a scaled score, so each step climbs the noisy-data density, like annealed Langevin dynamics. Green box is our answer to the guiding question: know the noise, know the image; remove a little at a time; removing noise climbs toward real images; coarse to fine; why epsilon. Inside-a-step figure from our run: backup slide 15.}
 \end{frame}
 
 %% =====================================================================
