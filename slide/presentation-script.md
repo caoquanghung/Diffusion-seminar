@@ -361,7 +361,7 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 ## Slide 10: Cross-attention: steering the denoiser with a prompt (C · ~80s)
 
-**Bố cục**: **trái, trên**: khung cam *The formula behind the picture* (công thức $O=\mathrm{softmax}(QK^\top/\sqrt d)\,V$, chú thích "line thickness" dưới phần softmax; $Q$ màu xanh, $K, V$ màu như token; một dòng định nghĩa $Q$, $K,V$, $O$) · **trái, dưới**: khung xanh lá *Image regions ask, prompt words answer* (lưới latent với một ô cam; các token a / red / bus / left / blue / car; đường nối dày tới "red" và "bus"; nhãn cam "softmax weights") · **phải**: nhãn OUR RUN "Stable Diffusion v1.4, same seed and initial latent", 3 ảnh *Reference* | *red → green* | *left → right*, một dòng kết quả ✓/✗, 3 gạch đầu dòng (Repeated at every U-Net layer…, Any condition works…, The weights are soft…).
+**Bố cục**: **trái, trên**: khung cam *The formula behind the picture* (công thức $O=\mathrm{softmax}(QK^\top/\sqrt d)\,V$, chú thích "line thickness" dưới phần softmax; $Q$ màu xanh, $K, V$ màu như token; một dòng định nghĩa $Q$, $K,V$, $O$) · **trái, dưới**: khung xanh lá *Image regions ask, prompt words answer* (lưới latent với một ô cam; các token a / red / bus / left / blue / car; đường nối dày tới "red" và "bus"; nhãn cam "softmax weights") · **phải**: trên cùng là 3 gạch đầu dòng (Repeated at every U-Net layer…, Any condition works…, The weights are soft…); bên dưới là nhãn OUR RUN "Stable Diffusion v1.4, same seed and initial latent", 3 ảnh *Reference* | *red → green* | *left → right*, và một dòng kết quả ✓/✗.
 
 **👉 [Khung cam "The formula behind the picture": cả công thức] ✋**
 
@@ -383,13 +383,13 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 > Multiplying by $V$ gives each region a **weighted mix** of the token values. The region that is becoming a bus pulls mostly from "red" and "bus".
 
+**👉 [3 gạch đầu dòng trên cùng bên phải, dừng ở gạch cuối] ✋**
+
+> This attention is repeated at every U-Net layer and every step, so the prompt steers each noise prediction, not the final pixels; and only the encoder changes for other conditions, such as a class or a layout. But the weights are **soft**: no word is forced onto one object, so colours and positions can go wrong, as Chefer et al. report.
+
 **👉 [Nhãn OUR RUN, rồi 3 ảnh lần lượt, rồi dòng kết quả ✓/✗]**
 
-> Does it always work? A small illustration from Stable Diffusion: same seed, same initial latent, three prompts. Changing red to green works at all four seeds we tried, though there is no clear blue car. Changing left to right fails: the red bus stays on the left.
-
-**👉 [3 gạch đầu dòng bên phải, dừng ở gạch cuối] ✋**
-
-> This attention is repeated at every U-Net layer and every step, so the prompt steers each noise prediction, not the final pixels; and only the encoder changes for other conditions, such as a class or a layout. But the weights are **soft**: no word is forced onto one object, so colours and positions can go wrong, as Chefer et al. also report.
+> A small illustration from Stable Diffusion: same seed, same initial latent, three prompts. Changing red to green works at all four seeds we tried, though there is no clear blue car. Changing left to right fails: the red bus stays on the left.
 
 ⚠️ Ảnh bus là **minh họa** (16 ảnh, kiểm bằng mắt), không phải bằng chứng; bằng chứng là Chefer et al. 2023. Định nghĩa đầy đủ $Q=FW_Q$, $K=CW_K$, $V=CW_V$ và công thức CFG ở **backup 16**; đủ 4 seed của thí nghiệm ở **backup 18**.
 

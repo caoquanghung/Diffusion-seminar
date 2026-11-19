@@ -568,27 +568,27 @@ The VAE only restores images we \emph{already have}. A new image needs a new lat
 Thick lines = high attention: the region becoming a bus pulls from \emph{red} and \emph{bus}.
 \end{tbox}
 \column{.51\textwidth}
+{\footnotesize
+\begin{itemize}\setlength{\itemsep}{1.5pt}
+\item Repeated at every U-Net layer and step: the prompt steers each noise prediction, not the final pixels.
+\item Any condition works: only the encoder $\tau_\eta$ changes (text, class, layout).
+\item The weights are \textbf{soft}: no word is forced onto one object, so colours and positions can go wrong (Chefer et al.\ 2023).
+\end{itemize}}
+\vspace{1mm}
 {\footnotesize \ours\ \textbf{Stable Diffusion v1.4, same seed and initial latent}}\\[0.5mm]
 \setlength{\tabcolsep}{1.5pt}
-\begin{tabular}{@{}p{2.15cm}p{2.15cm}p{2.15cm}@{}}
-\includegraphics[width=2.15cm]{figures/prompt/2027_reference.png} &
-\includegraphics[width=2.15cm]{figures/prompt/2027_change_color.png} &
-\includegraphics[width=2.15cm]{figures/prompt/2027_change_side.png}\\[-0.5mm]
+\begin{tabular}{@{}p{2.05cm}p{2.05cm}p{2.05cm}@{}}
+\includegraphics[width=2.05cm]{figures/prompt/2027_reference.png} &
+\includegraphics[width=2.05cm]{figures/prompt/2027_change_color.png} &
+\includegraphics[width=2.05cm]{figures/prompt/2027_change_side.png}\\[-0.5mm]
 \raggedright\scriptsize\textbf{Reference}\newline{\fontsize{5.6}{6.4}\selectfont``a red bus to the left of a blue car''} &
 \raggedright\scriptsize\textbf{red $\to$ green}\newline{\fontsize{5.6}{6.4}\selectfont``a green bus to the left of a blue car''} &
 \raggedright\scriptsize\textbf{left $\to$ right}\newline{\fontsize{5.6}{6.4}\selectfont``a red bus to the right of a blue car''}
 \end{tabular}\\[0.5mm]
 {\footnotesize Colour edit works at all 4 seeds \yes{} (but no clear blue car \no); side edit fails, the bus stays left \no.\par}
-\vspace{1mm}
-\footnotesize
-\begin{itemize}\setlength{\itemsep}{1.5pt}
-\item Repeated at every U-Net layer and step: the prompt steers each noise prediction, not the final pixels.
-\item Any condition works: only the encoder $\tau_\eta$ changes (text, class, layout).
-\item The weights are \textbf{soft}: no word is forced onto one object, so colours and positions can go wrong (Chefer et al.\ 2023).
-\end{itemize}
 \end{columns}
 \src{Rombach et al.\ 2022, Sec.~3.3; Vaswani et al.\ 2017; Chefer et al.\ 2023. Images: our run (50 DDIM steps), an illustration only.}
-\note{\textbf{(~80 s)} Formula first (top left), then the picture below it: Q = latent regions, K and V = prompt tokens, softmax weights = line thickness, O = weighted mix of token values. Then the bus images from our run, as an illustration: the colour edit works, the side edit fails. Last bullet explains why: the weights are soft (Chefer et al.).}
+\note{\textbf{(~80 s)} Formula first (top left), then the picture below it: Q = latent regions, K and V = prompt tokens, softmax weights = line thickness, O = weighted mix of token values. Then the three bullets on the right, ending with soft weights (Chefer et al.); the bus images below illustrate it: the colour edit works, the side edit fails.}
 \end{frame}
 
 %% =====================================================================
