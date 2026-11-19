@@ -565,29 +565,32 @@ Thick lines = high attention: the region becoming a bus pulls from \emph{red} an
 \begin{itemize}\setlength{\itemsep}{0.5pt}
 \item Repeated at every U-Net layer and step: the prompt steers each noise prediction, not the final pixels.
 \item Any condition works: only the encoder $\tau_\eta$ changes (text, class, layout).
+\item Guidance (CFG): closer to the prompt, but less diverse; \paper\ recall $0.62\to0.48$ (LDM Table~3).
 \end{itemize}
 \column{.51\textwidth}
 \tcbset{before skip=0pt,after skip=2mm}
-\begin{tbox}[fontupper=\footnotesize\raggedright]{Guidance: closer to the prompt, less diverse}{hcmusblue}
-\paper\ Rombach et al.\ 2022, Table~3: class-conditional ImageNet LDM-4, 250 DDIM steps.\\[0.8mm]
-{\centering\setlength{\tabcolsep}{5pt}\renewcommand{\arraystretch}{1.05}%
-\begin{tabular}{@{}lcccc@{}}
-\toprule
- & FID$\downarrow$ & IS$\uparrow$ & Precision & Recall\\
-\midrule
-no guidance & 10.56 & 103.5 & 0.71 & \textbf{0.62}\\
-guidance $s=1.5$ & \textbf{3.60} & \textbf{247.7} & \textbf{0.87} & 0.48\\
-\bottomrule
-\end{tabular}\par}
-\vspace{0.8mm}
-Samples become more faithful (precision up) but cover less variety (recall down).
-\end{tbox}
-\begin{tbox}[fontupper=\footnotesize\raggedright,after skip=0pt]{Where soft attention fails}{rev}
-Nothing forces each word onto exactly one object or place. Chefer et al.\ (2023) show Stable Diffusion often \textbf{drops a subject} of the prompt (``catastrophic neglect'') or \textbf{binds an attribute to the wrong object} (e.g.\ the wrong colour).
+{\footnotesize \ours\ \textbf{Stable Diffusion v1.4, same seed and initial latent}}\\[0.8mm]
+\setlength{\tabcolsep}{1.5pt}
+\begin{tabular}{@{}p{2.15cm}p{2.15cm}p{2.15cm}@{}}
+\includegraphics[width=2.15cm]{figures/prompt/2027_reference.png} &
+\includegraphics[width=2.15cm]{figures/prompt/2027_change_color.png} &
+\includegraphics[width=2.15cm]{figures/prompt/2027_change_side.png}\\[-0.5mm]
+\raggedright\scriptsize\textbf{Reference}\newline{\fontsize{5.6}{6.4}\selectfont``a red bus to the left of a blue car''} &
+\raggedright\scriptsize\textbf{red $\to$ green}\newline{\fontsize{5.6}{6.4}\selectfont``a green bus to the left of a blue car''} &
+\raggedright\scriptsize\textbf{left $\to$ right}\newline{\fontsize{5.6}{6.4}\selectfont``a red bus to the right of a blue car''}
+\end{tabular}\\[0.6mm]
+{\footnotesize
+\begin{itemize}\setlength{\itemsep}{0.5pt}
+\item Colour edit: green bus at all 4 seeds \yes, but no clear blue car \no.
+\item Side edit: no swap; the red bus stays on the left \no.
+\end{itemize}}
+\vspace{0.6mm}
+\begin{tbox}[fontupper=\footnotesize\raggedright,before skip=0pt,after skip=0pt]{Why: attention is soft}{rev}
+Nothing forces each word onto one object or place. Chefer et al.\ (2023) report the same failures: Stable Diffusion \textbf{drops subjects} and \textbf{binds attributes to the wrong object}.
 \end{tbox}
 \end{columns}
-\src{Rombach et al.\ 2022, Sec.~3.3 and Table~3; Ho \& Salimans 2022; Chefer et al.\ 2023.}
-\note{\textbf{(~80 s)} Mechanism first with the picture: one latent region (orange) asks, prompt words answer, thick lines are high attention. Then the paper evidence: guidance (s = 1.5) cuts FID from 10.56 to 3.60 and raises precision, but recall drops, i.e.\ less variety. Finally the failure mode: attention is soft, so subjects can be dropped and attributes bound to the wrong object (Chefer et al.).}
+\src{Rombach et al.\ 2022, Sec.~3.3 and Table~3; Ho \& Salimans 2022; Chefer et al.\ 2023. Images: our run (CFG 7.5, 50 DDIM steps), an illustration only.}
+\note{\textbf{(~80 s)} Mechanism first with the picture: one latent region (orange) asks, prompt words answer, thick lines are high attention. Guidance in one line (paper: recall 0.62 to 0.48, less variety). Then the bus images from our run, as an illustration: the colour edit works, the side edit fails. The orange box explains why: attention is soft, and Chefer et al. report the same failures.}
 \end{frame}
 
 %% =====================================================================
@@ -934,7 +937,7 @@ Quality (by eye, 4 imgs) & plausible & plausible\\
 \end{columns}
 \vspace{2mm}
 \begin{nbox}[fontupper=\fontsize{7}{8.4}\selectfont]{muted}
-\textbf{Figures and results.} The schematics (slides 3, 5, 8, 9, 10) are original drawings of the cited methods. The 1-D calculation and the 28$\times$28 noising sequence are our own examples. All evidence on the main slides comes from the cited papers (Ho et al.\ 2020; Rombach et al.\ 2022). Our small runs with pretrained checkpoints appear only as illustrations: the LSUN Churches samples on slide 11, and the denoising trace, timing and prompt test in backup slides 15, 17 and 18.\\[1mm]
+\textbf{Figures and results.} The schematics (slides 3, 5, 8, 9, 10) are original drawings of the cited methods. The 1-D calculation and the 28$\times$28 noising sequence are our own examples. All evidence on the main slides comes from the cited papers (Ho et al.\ 2020; Rombach et al.\ 2022). Our small runs with pretrained checkpoints appear only as illustrations: the Stable Diffusion bus images on slide 10, the LSUN Churches samples on slide 11, and the denoising trace, timing and full prompt test in backup slides 15, 17 and 18.\\[1mm]
 \textbf{AI assistance.} OpenAI Codex (report drafting, code, checks); Claude (slide drafting and Beamer preparation).
 \end{nbox}
 \end{frame}

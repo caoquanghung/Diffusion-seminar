@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2026.2.2)  19 NOV 2026 08:56
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2026.2.2)  19 NOV 2026 10:39
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1293,56 +1293,76 @@ Overfull \hbox (0.39966pt too wide) in paragraph at lines 479--479
 [9
 
 ]
+<figures/prompt/2027_reference.png, id=96, 513.92pt x 513.92pt>
+File: figures/prompt/2027_reference.png Graphic file (type png)
+<use figures/prompt/2027_reference.png>
+Package pdftex.def Info: figures/prompt/2027_reference.png  used on input line 
+594.
+(pdftex.def)             Requested size: 61.17325pt x 61.16586pt.
+<figures/prompt/2027_change_color.png, id=97, 513.92pt x 513.92pt>
+File: figures/prompt/2027_change_color.png Graphic file (type png)
+<use figures/prompt/2027_change_color.png>
+Package pdftex.def Info: figures/prompt/2027_change_color.png  used on input li
+ne 594.
+(pdftex.def)             Requested size: 61.17325pt x 61.16586pt.
+<figures/prompt/2027_change_side.png, id=98, 513.92pt x 513.92pt>
+File: figures/prompt/2027_change_side.png Graphic file (type png)
+<use figures/prompt/2027_change_side.png>
+Package pdftex.def Info: figures/prompt/2027_change_side.png  used on input lin
+e 594.
+(pdftex.def)             Requested size: 61.17325pt x 61.16586pt.
+
 
 [10
 
-]
-<figures/churches/ddpm_2026.png, id=101, 256.96pt x 256.96pt>
+ <./figures/prompt/2027_reference.png (PNG copy)> <./figures/prompt/2027_change
+_color.png (PNG copy)> <./figures/prompt/2027_change_side.png (PNG copy)>]
+<figures/churches/ddpm_2026.png, id=104, 256.96pt x 256.96pt>
 File: figures/churches/ddpm_2026.png Graphic file (type png)
 <use figures/churches/ddpm_2026.png>
-Package pdftex.def Info: figures/churches/ddpm_2026.png  used on input line 642
+Package pdftex.def Info: figures/churches/ddpm_2026.png  used on input line 645
 .
 (pdftex.def)             Requested size: 34.71239pt x 34.71162pt.
-<figures/churches/ddpm_2027.png, id=102, 256.96pt x 256.96pt>
+<figures/churches/ddpm_2027.png, id=105, 256.96pt x 256.96pt>
 File: figures/churches/ddpm_2027.png Graphic file (type png)
 <use figures/churches/ddpm_2027.png>
-Package pdftex.def Info: figures/churches/ddpm_2027.png  used on input line 642
+Package pdftex.def Info: figures/churches/ddpm_2027.png  used on input line 645
 .
 (pdftex.def)             Requested size: 34.71239pt x 34.71162pt.
-<figures/churches/ddpm_2028.png, id=103, 256.96pt x 256.96pt>
+<figures/churches/ddpm_2028.png, id=106, 256.96pt x 256.96pt>
 File: figures/churches/ddpm_2028.png Graphic file (type png)
 <use figures/churches/ddpm_2028.png>
-Package pdftex.def Info: figures/churches/ddpm_2028.png  used on input line 642
+Package pdftex.def Info: figures/churches/ddpm_2028.png  used on input line 645
 .
 (pdftex.def)             Requested size: 34.71239pt x 34.71162pt.
-<figures/churches/ddpm_2029.png, id=104, 256.96pt x 256.96pt>
+<figures/churches/ddpm_2029.png, id=107, 256.96pt x 256.96pt>
 File: figures/churches/ddpm_2029.png Graphic file (type png)
 <use figures/churches/ddpm_2029.png>
-Package pdftex.def Info: figures/churches/ddpm_2029.png  used on input line 642
+Package pdftex.def Info: figures/churches/ddpm_2029.png  used on input line 645
 .
 (pdftex.def)             Requested size: 34.71239pt x 34.71162pt.
-<figures/churches/ldm_2026.png, id=105, 256.96pt x 256.96pt>
+<figures/churches/ldm_2026.png, id=108, 256.96pt x 256.96pt>
 File: figures/churches/ldm_2026.png Graphic file (type png)
 <use figures/churches/ldm_2026.png>
-Package pdftex.def Info: figures/churches/ldm_2026.png  used on input line 642.
+Package pdftex.def Info: figures/churches/ldm_2026.png  used on input line 645.
 
 (pdftex.def)             Requested size: 34.71239pt x 34.71162pt.
-<figures/churches/ldm_2027.png, id=106, 256.96pt x 256.96pt>
+<figures/churches/ldm_2027.png, id=109, 256.96pt x 256.96pt>
 File: figures/churches/ldm_2027.png Graphic file (type png)
 <use figures/churches/ldm_2027.png>
-Package pdftex.def Info: figures/churches/ldm_2027.png  used on input line 642.
+Package pdftex.def Info: figures/churches/ldm_2027.png  used on input line 645.
 
 (pdftex.def)             Requested size: 34.71239pt x 34.71162pt.
-<figures/churches/ldm_2028.png, id=107, 256.96pt x 256.96pt>
+<figures/churches/ldm_2028.png, id=110, 256.96pt x 256.96pt>
 File: figures/churches/ldm_2028.png Graphic file (type png)
 <use figures/churches/ldm_2028.png>
-Package pdftex.def Info: figures/churches/ldm_2028.png  used on input line 642.
+Package pdftex.def Info: figures/churches/ldm_2028.png  used on input line 645.
 
 (pdftex.def)             Requested size: 34.71239pt x 34.71162pt.
-<figures/churches/ldm_2029.png, id=108, 256.96pt x 256.96pt>
+<figures/churches/ldm_2029.png, id=111, 256.96pt x 256.96pt>
 File: figures/churches/ldm_2029.png Graphic file (type png)
 <use figures/churches/ldm_2029.png>
-Package pdftex.def Info: figures/churches/ldm_2029.png  used on input line 642.
+Package pdftex.def Info: figures/churches/ldm_2029.png  used on input line 645.
 
 (pdftex.def)             Requested size: 34.71239pt x 34.71162pt.
 
@@ -1359,7 +1379,7 @@ y)> <./figures/churches/ldm_2029.png (PNG copy)>]
 
 ]
 LaTeX Font Info:    Font shape `T1/lmss/m/it' in size <8> not available
-(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 707.
+(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 710.
 
 
 [13
@@ -1367,26 +1387,26 @@ LaTeX Font Info:    Font shape `T1/lmss/m/it' in size <8> not available
 ]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\translate ' on input line 712.
+(hyperref)                removing `\translate ' on input line 715.
 
 LaTeX Font Info:    Font shape `T1/lmss/m/it' in size <6.6> not available
-(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 765.
-LaTeX Font Info:    Calculating math sizes for size <6.6> on input line 765.
+(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 768.
+LaTeX Font Info:    Calculating math sizes for size <6.6> on input line 768.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6.6> on input line 765.
+(Font)              <6.6> on input line 768.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <4.61998> on input line 765.
+(Font)              <4.61998> on input line 768.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <3.3> on input line 765.
+(Font)              <3.3> on input line 768.
 
 
 [14
 
 ]
-<figures/retriever_step25.png, id=131, 925.4575pt x 602.25pt>
+<figures/retriever_step25.png, id=134, 925.4575pt x 602.25pt>
 File: figures/retriever_step25.png Graphic file (type png)
 <use figures/retriever_step25.png>
-Package pdftex.def Info: figures/retriever_step25.png  used on input line 787.
+Package pdftex.def Info: figures/retriever_step25.png  used on input line 790.
 (pdftex.def)             Requested size: 245.8343pt x 159.97226pt.
 
 
@@ -1399,46 +1419,46 @@ Package pdftex.def Info: figures/retriever_step25.png  used on input line 787.
 ]
 File: figures/churches/ddpm_2026.png Graphic file (type png)
 <use figures/churches/ddpm_2026.png>
-Package pdftex.def Info: figures/churches/ddpm_2026.png  used on input line 870
+Package pdftex.def Info: figures/churches/ddpm_2026.png  used on input line 873
 .
 (pdftex.def)             Requested size: 37.55785pt x 37.55426pt.
 File: figures/churches/ddpm_2027.png Graphic file (type png)
 <use figures/churches/ddpm_2027.png>
-Package pdftex.def Info: figures/churches/ddpm_2027.png  used on input line 870
+Package pdftex.def Info: figures/churches/ddpm_2027.png  used on input line 873
 .
 (pdftex.def)             Requested size: 37.55785pt x 37.55426pt.
 File: figures/churches/ddpm_2028.png Graphic file (type png)
 <use figures/churches/ddpm_2028.png>
-Package pdftex.def Info: figures/churches/ddpm_2028.png  used on input line 870
+Package pdftex.def Info: figures/churches/ddpm_2028.png  used on input line 873
 .
 (pdftex.def)             Requested size: 37.55785pt x 37.55426pt.
 File: figures/churches/ddpm_2029.png Graphic file (type png)
 <use figures/churches/ddpm_2029.png>
-Package pdftex.def Info: figures/churches/ddpm_2029.png  used on input line 870
+Package pdftex.def Info: figures/churches/ddpm_2029.png  used on input line 873
 .
 (pdftex.def)             Requested size: 37.55785pt x 37.55426pt.
 File: figures/churches/ldm_2026.png Graphic file (type png)
 <use figures/churches/ldm_2026.png>
-Package pdftex.def Info: figures/churches/ldm_2026.png  used on input line 870.
+Package pdftex.def Info: figures/churches/ldm_2026.png  used on input line 873.
 
 (pdftex.def)             Requested size: 37.55785pt x 37.55426pt.
 File: figures/churches/ldm_2027.png Graphic file (type png)
 <use figures/churches/ldm_2027.png>
-Package pdftex.def Info: figures/churches/ldm_2027.png  used on input line 870.
+Package pdftex.def Info: figures/churches/ldm_2027.png  used on input line 873.
 
 (pdftex.def)             Requested size: 37.55785pt x 37.55426pt.
 File: figures/churches/ldm_2028.png Graphic file (type png)
 <use figures/churches/ldm_2028.png>
-Package pdftex.def Info: figures/churches/ldm_2028.png  used on input line 870.
+Package pdftex.def Info: figures/churches/ldm_2028.png  used on input line 873.
 
 (pdftex.def)             Requested size: 37.55785pt x 37.55426pt.
 File: figures/churches/ldm_2029.png Graphic file (type png)
 <use figures/churches/ldm_2029.png>
-Package pdftex.def Info: figures/churches/ldm_2029.png  used on input line 870.
+Package pdftex.def Info: figures/churches/ldm_2029.png  used on input line 873.
 
 (pdftex.def)             Requested size: 37.55785pt x 37.55426pt.
 
-Overfull \hbox (0.89915pt too wide) in paragraph at lines 870--870
+Overfull \hbox (0.89915pt too wide) in paragraph at lines 873--873
  [][] 
  []
 
@@ -1447,30 +1467,26 @@ Overfull \hbox (0.89915pt too wide) in paragraph at lines 870--870
 [17
 
 ]
-<figures/prompt/2027_reference.png, id=147, 513.92pt x 513.92pt>
 File: figures/prompt/2027_reference.png Graphic file (type png)
 <use figures/prompt/2027_reference.png>
 Package pdftex.def Info: figures/prompt/2027_reference.png  used on input line 
-897.
+900.
 (pdftex.def)             Requested size: 62.59596pt x 62.59306pt.
-<figures/prompt/2027_change_color.png, id=148, 513.92pt x 513.92pt>
 File: figures/prompt/2027_change_color.png Graphic file (type png)
 <use figures/prompt/2027_change_color.png>
 Package pdftex.def Info: figures/prompt/2027_change_color.png  used on input li
-ne 897.
+ne 900.
 (pdftex.def)             Requested size: 62.59596pt x 62.59306pt.
-<figures/prompt/2027_change_side.png, id=149, 513.92pt x 513.92pt>
 File: figures/prompt/2027_change_side.png Graphic file (type png)
 <use figures/prompt/2027_change_side.png>
 Package pdftex.def Info: figures/prompt/2027_change_side.png  used on input lin
-e 897.
+e 900.
 (pdftex.def)             Requested size: 62.59596pt x 62.59306pt.
 
 
 [18
 
- <./figures/prompt/2027_reference.png (PNG copy)> <./figures/prompt/2027_change
-_color.png (PNG copy)> <./figures/prompt/2027_change_side.png (PNG copy)>]
+]
 
 [19
 
@@ -1497,11 +1513,11 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 5BCEA9CF7D2D9AECE7CAC4018E9F6C5B;81.
  ) 
 Here is how much of TeX's memory you used:
- 31584 strings out of 473190
- 647785 string characters out of 5715801
+ 31585 strings out of 473190
+ 647803 string characters out of 5715801
  1085340 words of memory out of 5000000
- 54136 multiletter control sequences out of 15000+600000
- 803682 words of font info for 203 fonts, out of 8000000 for 9000
+ 54137 multiletter control sequences out of 15000+600000
+ 806453 words of font info for 204 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  128i,18n,123p,576b,1469s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx6.pfb></usr/loc
@@ -1527,7 +1543,7 @@ lic/lm/lmsy6.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmsy
 /local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb><
 /usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm7.pf
 b></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/zapfding/uzdr.pfb>
-Output written on main.pdf (20 pages, 5396949 bytes).
+Output written on main.pdf (20 pages, 5396913 bytes).
 PDF statistics:
  296 PDF objects out of 1000 (max. 8388607)
  198 compressed objects within 2 object streams
