@@ -17,4 +17,10 @@ After any slide edit, check and update these parts of the script:
 
 Conventions for the script: stage directions are in Vietnamese, spoken lines are in English. Use **👉 [...]** for pointing, **✋** for emphasis, **(cắt được)** for optional lines. If a slide change makes a spoken claim unsupported, remove or rewrite that claim; do not leave it in.
 
+## Vietnamese script
+
+`slide/presentation-script-vi.md` is the Vietnamese version of the same script. It mirrors `slide/presentation-script.md` section by section (layout lines, 👉 cues, ✋, (cắt được), ⚠️, skeleton, Q&A, checklist), with spoken lines in Vietnamese and technical terms kept in the original English (forward noising, latent, score, guidance, FID, U-Net, VAE, encoder, decoder, sampler, …). Box titles and labels in 👉 cues stay in English, as on the slides. Write team members' names exactly as they appear on slide 1.
+
+**Whenever you update the English script, apply the same change to the Vietnamese script** so that the two stay equivalent.
+
 When you report a slide edit to the user, also say what changed in the script. If the script needed no change, say that too.
