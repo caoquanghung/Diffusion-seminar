@@ -544,7 +544,13 @@ The VAE only restores images we \emph{already have}. A new image needs a new lat
 \framesubtitle{C \textperiodcentered{} Latent diffusion}
 \begin{columns}[T,onlytextwidth]
 \column{.47\textwidth}
-\begin{tbox}[fontupper=\footnotesize]{Image regions ask, prompt words answer}{ok}
+\tcbset{before skip=0pt,after skip=1.8mm}
+\begin{tbox}[fontupper=\footnotesize\raggedright]{The formula behind the picture}{rev}
+\setlength{\abovedisplayskip}{0pt}\setlength{\belowdisplayskip}{1pt}
+\[O=\underbrace{\softmax\big({\color{hcmusblue}Q}{\color{fwd}K}^{\top}/\sqrt{d}\big)}_{\text{\scriptsize\color{rev}line thickness}}\;{\color{fwd}V}\]
+{\color{hcmusblue}$Q$}: latent regions \textperiodcentered{} {\color{fwd}$K,V$}: prompt tokens \textperiodcentered{} $O$: a \textbf{weighted mix} of token values for each region.
+\end{tbox}
+\begin{tbox}[fontupper=\footnotesize,after skip=0pt]{Image regions ask, prompt words answer}{ok}
 {\centering
 \begin{tikzpicture}[font=\scriptsize]
   \fill[lightblue,draw=hcmusblue!60] (0,0) rectangle (1.4,1.4);
@@ -556,20 +562,13 @@ The VAE only restores images we \emph{already have}. A new image needs a new lat
     \draw[line width=\lw pt,\c] (0.7,0.88) -- (t\w.west);
   }
   \node[text=fwd] at (4.0,-0.48) {prompt tokens ($K$, $V$)};
+  \node[text=rev,font=\scriptsize\bfseries] at (2.25,1.62) {softmax weights};
 \end{tikzpicture}\par}
 \vspace{0.3mm}
 Thick lines = high attention: the region becoming a bus pulls from \emph{red} and \emph{bus}.
 \end{tbox}
-\vspace{0.3mm}
-\footnotesize
-\begin{itemize}\setlength{\itemsep}{0.5pt}
-\item Repeated at every U-Net layer and step: the prompt steers each noise prediction, not the final pixels.
-\item Any condition works: only the encoder $\tau_\eta$ changes (text, class, layout).
-\item Guidance (CFG): closer to the prompt, but less diverse; \paper\ recall $0.62\to0.48$ (LDM Table~3).
-\end{itemize}
 \column{.51\textwidth}
-\tcbset{before skip=0pt,after skip=2mm}
-{\footnotesize \ours\ \textbf{Stable Diffusion v1.4, same seed and initial latent}}\\[0.8mm]
+{\footnotesize \ours\ \textbf{Stable Diffusion v1.4, same seed and initial latent}}\\[0.5mm]
 \setlength{\tabcolsep}{1.5pt}
 \begin{tabular}{@{}p{2.15cm}p{2.15cm}p{2.15cm}@{}}
 \includegraphics[width=2.15cm]{figures/prompt/2027_reference.png} &
@@ -578,19 +577,18 @@ Thick lines = high attention: the region becoming a bus pulls from \emph{red} an
 \raggedright\scriptsize\textbf{Reference}\newline{\fontsize{5.6}{6.4}\selectfont``a red bus to the left of a blue car''} &
 \raggedright\scriptsize\textbf{red $\to$ green}\newline{\fontsize{5.6}{6.4}\selectfont``a green bus to the left of a blue car''} &
 \raggedright\scriptsize\textbf{left $\to$ right}\newline{\fontsize{5.6}{6.4}\selectfont``a red bus to the right of a blue car''}
-\end{tabular}\\[0.6mm]
-{\footnotesize
-\begin{itemize}\setlength{\itemsep}{0.5pt}
-\item Colour edit: green bus at all 4 seeds \yes, but no clear blue car \no.
-\item Side edit: no swap; the red bus stays on the left \no.
-\end{itemize}}
-\vspace{0.6mm}
-\begin{tbox}[fontupper=\footnotesize\raggedright,before skip=0pt,after skip=0pt]{Why: attention is soft}{rev}
-Nothing forces each word onto one object or place. Chefer et al.\ (2023) report the same failures: Stable Diffusion \textbf{drops subjects} and \textbf{binds attributes to the wrong object}.
-\end{tbox}
+\end{tabular}\\[0.5mm]
+{\footnotesize Colour edit works at all 4 seeds \yes{} (but no clear blue car \no); side edit fails, the bus stays left \no.\par}
+\vspace{1mm}
+\footnotesize
+\begin{itemize}\setlength{\itemsep}{1.5pt}
+\item Repeated at every U-Net layer and step: the prompt steers each noise prediction, not the final pixels.
+\item Any condition works: only the encoder $\tau_\eta$ changes (text, class, layout).
+\item The weights are \textbf{soft}: no word is forced onto one object, so colours and positions can go wrong (Chefer et al.\ 2023).
+\end{itemize}
 \end{columns}
-\src{Rombach et al.\ 2022, Sec.~3.3 and Table~3; Ho \& Salimans 2022; Chefer et al.\ 2023. Images: our run (CFG 7.5, 50 DDIM steps), an illustration only.}
-\note{\textbf{(~80 s)} Mechanism first with the picture: one latent region (orange) asks, prompt words answer, thick lines are high attention. Guidance in one line (paper: recall 0.62 to 0.48, less variety). Then the bus images from our run, as an illustration: the colour edit works, the side edit fails. The orange box explains why: attention is soft, and Chefer et al. report the same failures.}
+\src{Rombach et al.\ 2022, Sec.~3.3; Vaswani et al.\ 2017; Chefer et al.\ 2023. Images: our run (50 DDIM steps), an illustration only.}
+\note{\textbf{(~80 s)} Formula first (top left), then the picture below it: Q = latent regions, K and V = prompt tokens, softmax weights = line thickness, O = weighted mix of token values. Then the bus images from our run, as an illustration: the colour edit works, the side edit fails. Last bullet explains why: the weights are soft (Chefer et al.).}
 \end{frame}
 
 %% =====================================================================

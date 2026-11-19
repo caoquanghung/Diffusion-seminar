@@ -37,7 +37,7 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 | 7 | From DDPM to LDM: the cost of pixels, and three ideas | B | 60s | C · Latent | Pixel diffusion tốn kém vì mọi bước chạm mọi pixel; LDM có 3 ý tưởng chính. |
 | 8 | Latent space: what it is, and why it helps | B | 65s | C · Latent | VAE nén ảnh thành latent gọn (mean, spread, sample); mỗi bước xử lý ít hơn 48× giá trị; vẫn cần diffusion để *tạo* latent mới. |
 | 9 | Operations in latent space: the whole LDM pipeline | C | 75s | C · Latent | Vòng lặp DDPM giữ nguyên nhưng chạy trên $z$ nhỏ; encoder chỉ dùng khi train, decoder chạy một lần. |
-| 10 | Cross-attention: steering the denoiser with a prompt | C | 80s | C · Latent | Vùng ảnh "hỏi", từ trong prompt "trả lời"; minh họa bus: đổi màu được, đổi trái/phải thì không, vì attention mềm. |
+| 10 | Cross-attention: steering the denoiser with a prompt | C | 80s | C · Latent | Vùng ảnh "hỏi", từ trong prompt "trả lời"; công thức softmax × V chính là hình minh họa; trọng số mềm nên đổi màu được, đổi trái/phải thì không. |
 | 11 | Pixel vs. latent diffusion: what the LDM paper measured | C | 70s | D · Evidence | Số liệu của paper: latent sample nhanh 3.7–4.9×, mỗi epoch nhanh 2.7×, FID không tệ hơn; ảnh nhà thờ của nhóm chỉ để minh họa. |
 | 12 | Limitations, and when to use diffusion | C | 40s | D · Evidence | 5 giới hạn, mỗi giới hạn một lý do ngắn; khi nào dùng latent, pixel, hay không dùng diffusion. |
 | 13 | Conclusion: the recipe behind today's image generators | C | 35s | Kết | Bức tranh tổng: nhiều bước dễ (DDPM), bước rẻ (latent), điều khiển được (cross-attention); 3 thẻ theo learning objective. |
@@ -361,33 +361,37 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 ## Slide 10: Cross-attention: steering the denoiser with a prompt (C · ~80s)
 
-**Bố cục**: **trái**: khung xanh lá *Image regions ask, prompt words answer* (lưới latent với một ô cam; các token a / red / bus / left / blue / car; đường nối dày tới "red" và "bus"), 3 gạch đầu dòng (gạch cuối về guidance, có nhãn PAPER REPORTS) · **phải**: nhãn OUR RUN "Stable Diffusion v1.4, same seed and initial latent", 3 ảnh *Reference* | *red → green* | *left → right*, 2 gạch đầu dòng với ✓/✗, khung cam *Why: attention is soft* (Chefer et al. 2023).
+**Bố cục**: **trái, trên**: khung cam *The formula behind the picture* (công thức $O=\mathrm{softmax}(QK^\top/\sqrt d)\,V$, chú thích "line thickness" dưới phần softmax; $Q$ màu xanh, $K, V$ màu như token; một dòng định nghĩa $Q$, $K,V$, $O$) · **trái, dưới**: khung xanh lá *Image regions ask, prompt words answer* (lưới latent với một ô cam; các token a / red / bus / left / blue / car; đường nối dày tới "red" và "bus"; nhãn cam "softmax weights") · **phải**: nhãn OUR RUN "Stable Diffusion v1.4, same seed and initial latent", 3 ảnh *Reference* | *red → green* | *left → right*, một dòng kết quả ✓/✗, 3 gạch đầu dòng (Repeated at every U-Net layer…, Any condition works…, The weights are soft…).
 
-**👉 [Hình bên trái: ô cam trên lưới latent, rồi các đường nối dày tới "red" và "bus"] ✋**
+**👉 [Khung cam "The formula behind the picture": cả công thức] ✋**
 
-> How does the prompt steer the denoiser? Through cross-attention: **image regions ask, prompt words answer**. Each region of the latent, like this orange one, looks up the prompt tokens; thick lines mean high attention. A region that is becoming a bus pulls information from "red" and "bus".
+> How does the prompt steer the denoiser? Through cross-attention, and this is the whole computation: $O$ equals softmax of $Q$ times $K$ transposed, over root $d$, times $V$.
 
-**👉 [3 gạch đầu dòng bên trái]**
+**👉 [Chỉ $Q$ trong công thức, rồi chỉ xuống lưới latent và ô cam trong hình]**
 
-> This happens at every U-Net layer and every step, so the prompt steers each noise prediction, not the final pixels. The same mechanism works for any condition: only the encoder changes, for text, a class or a layout. **(cắt được)** And a guidance scale pulls samples closer to the prompt, but makes them less diverse: in the LDM paper, recall drops from 0.62 to 0.48.
+> The queries $Q$ come from the image: one per latent region, like this orange cell.
 
-**👉 [Nhãn OUR RUN, rồi ảnh 1 "Reference"]**
+**👉 [Chỉ $K, V$, rồi chỉ xuống cột các token]**
 
-> Does it always work? A small illustration from Stable Diffusion: same seed, same initial latent, three prompts. Reference: "a red bus to the left of a blue car."
+> The keys and values $K$ and $V$ come from the prompt tokens.
 
-**👉 [Ảnh 2 "red → green" rồi gạch ✓ đầu tiên]**
+**👉 [Chỉ chú thích "line thickness", rồi chỉ xuống các đường nối và nhãn "softmax weights"]**
 
-> Change red to green: the bus turns green at all four seeds we tried, but there is no clear blue car.
+> The softmax term is exactly the **line thickness** in the picture: how strongly each region attends to each word. **Image regions ask, prompt words answer.**
 
-**👉 [Ảnh 3 "left → right" rồi gạch ✗ thứ hai]**
+**👉 [Chữ "weighted mix" trong khung cam, rồi các đường dày tới "red" và "bus"]**
 
-> Change left to right: no swap. The red bus stays on the left.
+> Multiplying by $V$ gives each region a **weighted mix** of the token values. The region that is becoming a bus pulls mostly from "red" and "bus".
 
-**👉 [Khung cam "Why: attention is soft"] ✋**
+**👉 [Nhãn OUR RUN, rồi 3 ảnh lần lượt, rồi dòng kết quả ✓/✗]**
 
-> Why? Attention is **soft**: nothing forces each word onto exactly one object or place. Chefer et al. report the same failures in Stable Diffusion: subjects get dropped, and attributes land on the wrong object.
+> Does it always work? A small illustration from Stable Diffusion: same seed, same initial latent, three prompts. Changing red to green works at all four seeds we tried, though there is no clear blue car. Changing left to right fails: the red bus stays on the left.
 
-⚠️ Ảnh bus là **minh họa** (16 ảnh, kiểm bằng mắt), không phải bằng chứng; bằng chứng là Chefer et al. 2023. Công thức $Q, K, V$, softmax và CFG ở **backup 16**; đủ 4 seed của thí nghiệm ở **backup 18**.
+**👉 [3 gạch đầu dòng bên phải, dừng ở gạch cuối] ✋**
+
+> This attention is repeated at every U-Net layer and every step, so the prompt steers each noise prediction, not the final pixels; and only the encoder changes for other conditions, such as a class or a layout. But the weights are **soft**: no word is forced onto one object, so colours and positions can go wrong, as Chefer et al. also report.
+
+⚠️ Ảnh bus là **minh họa** (16 ảnh, kiểm bằng mắt), không phải bằng chứng; bằng chứng là Chefer et al. 2023. Định nghĩa đầy đủ $Q=FW_Q$, $K=CW_K$, $V=CW_V$ và công thức CFG ở **backup 16**; đủ 4 seed của thí nghiệm ở **backup 18**.
 
 ---
 
@@ -472,11 +476,11 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 | Vì sao latent phải giữ dạng lưới 2-D và chỉ nén nhẹ? | 7 (thẻ 2), 8 | B | U-Net xử lý được lưới 2-D; nén nhẹ ($f=4$–$8$) giữ ảnh tái tạo trung thực; các mô hình hai giai đoạn trước đó làm phẳng thành chuỗi token 1-D và phải nén mạnh hơn. |
 | Vì sao perceptual + adversarial thay vì MSE? | Backup 16 | B | MSE theo pixel lấy trung bình các chi tiết khả dĩ nên ảnh mờ. |
 | Encoder có dùng khi sinh ảnh không? | 9 | C | Không: sinh ảnh bắt đầu từ nhiễu latent $z_T$; encoder chỉ dùng khi train, decoder chạy một lần ở cuối. |
-| Cross-attention khác self-attention? Công thức cụ thể? | 10; công thức ở backup 16 | C | Q từ ảnh; K, V từ điều kiện (với self-attention thì cả ba từ ảnh); $O=\mathrm{softmax}(QK^\top/\sqrt d)V$. |
+| Cross-attention khác self-attention? Công thức cụ thể? | 10 (khung cam); định nghĩa đầy đủ ở backup 16 | C | Q từ ảnh; K, V từ điều kiện (với self-attention thì cả ba từ ảnh); $O=\mathrm{softmax}(QK^\top/\sqrt d)V$. |
 | Latent diffusion thực sự rẻ hơn bao nhiêu? | 11 | C | Theo LDM Table 6: sampling nhanh 3.7–4.9×, mỗi epoch nhanh 2.7×, FID@2k 24.74 → 15.21; caveat: số epoch cố định, chưa tính thời gian pre-train autoencoder. |
 | Ảnh bus có phải bằng chứng không? | 10; đủ 4 seed ở backup 18 | C | Không: chỉ là minh họa 16 ảnh (4 seed × 4 prompt) kiểm bằng mắt; bằng chứng là Chefer et al. 2023, và kết quả của nhóm khớp với lỗi họ mô tả. |
 | Nhóm có tự kiểm chứng tốc độ không? | Backup 17 | C | Run LSUN Churches: nhanh 2.5× nhưng bộ nhớ đỉnh cao hơn (1.68 so với 0.75 GiB); chỉ 4 ảnh, 1 cặp checkpoint, không FID; lý do bộ nhớ cao hơn chưa được phân tích. |
-| Guidance có đánh đổi gì? | 10 | C | LDM Table 3: guidance s = 1.5 giảm FID 10.56 → 3.60, tăng precision, nhưng recall giảm 0.62 → 0.48 (kém đa dạng hơn). |
+| Guidance (CFG) có đánh đổi gì? | Backup 16 (công thức CFG) | C | LDM Table 3: guidance s = 1.5 giảm FID 10.56 → 3.60, tăng precision, nhưng recall giảm 0.62 → 0.48 (kém đa dạng hơn). |
 | Vì sao sampling chậm, và có cách nào nhanh hơn? | 12 (dòng 1 và khung "Neither") | C | Bước ngược phải nhỏ để gần Gaussian nên cần nhiều lượt gọi mạng tuần tự; các sampler nhanh hơn có thể giảm số bước, đổi lại chất lượng giảm phần nào. |
 | Một ký hiệu nghĩa là gì / miền giá trị? | Backup 14 | ai cũng được | Bảng Notation, value ranges and modelling assumptions. |
 | Có bằng chứng nào mạng "thấy" ảnh khi trạng thái còn đầy nhiễu? | Backup 15 | B | Run của nhóm: ở bước DDIM 25/50, clean estimate $\hat x_0$ đã thấy con chó (cả pixel ADM và latent LDM); updated state chỉ nhích một bước nhỏ. |
