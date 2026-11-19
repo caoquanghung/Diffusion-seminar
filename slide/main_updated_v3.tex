@@ -1,0 +1,956 @@
+% Beamer deck: Diffusion Models -- From Adding Noise to Generating Images
+% 12 content slides (+ 3 backup slides). Build: latexmk -pdf main.tex
+% Speaker notes are kept in \note{...}; to print them instead of the slides, uncomment
+%   \setbeameroption{show only notes}   (line below).
+\documentclass[aspectratio=169,9pt,xcolor=table]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,mathtools,booktabs,array,tabularx,pifont}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,fit}
+\usepackage[skins,raster]{tcolorbox}
+\usepackage{appendixnumberbeamer}
+
+% \setbeameroption{show only notes}   % uncomment to typeset the speaker notes only
+
+%% ---------- colours (same palette as the report) ----------
+\definecolor{hcmusblue}{HTML}{154A78}
+\definecolor{fwd}{HTML}{247BA0}
+\definecolor{rev}{HTML}{B96532}
+\definecolor{ok}{HTML}{2E7D4F}
+\definecolor{bad}{HTML}{B3372F}
+\definecolor{muted}{HTML}{5A6572}
+\definecolor{lightblue}{HTML}{EDF4FA}
+\definecolor{lightgreen}{HTML}{EDF5F0}
+\definecolor{lightorange}{HTML}{FFF3E7}
+
+%% ---------- math shortcuts ----------
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Normal}{\mathcal{N}}
+\newcommand{\Id}{\mathbf{I}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\ab}{\bar{\alpha}}
+\DeclareMathOperator{\softmax}{softmax}
+\DeclareMathOperator{\KL}{D_{KL}}
+
+%% ---------- theme ----------
+\usetheme{default}
+\usefonttheme[onlymath]{serif}
+\setbeamertemplate{navigation symbols}{}
+\setbeamercolor{normal text}{fg=black!85}
+\setbeamercolor{itemize item}{fg=hcmusblue}
+\setbeamercolor{enumerate item}{fg=hcmusblue}
+\setbeamertemplate{itemize item}{\small\raise0.1ex\hbox{$\blacktriangleright$}}
+\setbeamertemplate{itemize subitem}{\footnotesize$\circ$}
+\setbeamersize{text margin left=8mm,text margin right=8mm}
+\setlength{\leftmargini}{1.1em}
+\hyphenpenalty=5000 \exhyphenpenalty=5000 \tolerance=1500 \emergencystretch=2em
+\setbeamertemplate{frametitle}{%
+  \vskip 1.6mm
+  {\color{rev}\fontsize{6}{7}\selectfont\bfseries\MakeUppercase{\insertframesubtitle}}\par
+  \vskip -0.6mm
+  {\color{hcmusblue}\fontsize{12.5}{14}\selectfont\bfseries\insertframetitle}\par
+  \vskip 0.1mm
+  {\color{hcmusblue!45}\rule{\textwidth}{0.4pt}}\par
+  \vskip 0.6mm
+}
+\setbeamertemplate{footline}{%
+  \leavevmode\hbox to\paperwidth{\hspace{8mm}%
+    {\color{muted}\fontsize{6.5}{8}\selectfont CS420 \textperiodcentered{} Diffusion Models: From Adding Noise to Generating Images}%
+    \hfill{\color{muted}\fontsize{6.5}{8}\selectfont\insertframenumber\,/\,\inserttotalframenumber}\hspace{8mm}}%
+  \vskip 2.2mm}
+
+%% ---------- boxes, tags, source line ----------
+\tcbset{base/.style={enhanced,boxrule=0.5pt,arc=1.2mm,left=1.8mm,right=1.8mm,top=0.9mm,bottom=0.9mm,
+  boxsep=0.3mm,fonttitle=\bfseries\footnotesize,toptitle=0.4mm,bottomtitle=0.4mm,lefttitle=1.8mm}}
+\newtcolorbox{tbox}[3][]{base,colback=#3!5!white,colframe=#3,coltitle=white,title={#2},#1}
+\newtcolorbox{nbox}[2][]{base,colback=#2!5!white,colframe=#2,#1}
+\newcommand{\pill}[2]{{\setlength{\fboxsep}{1.2pt}\colorbox{#1}{\color{white}\fontsize{6}{7}\selectfont\bfseries\ #2\ }}}
+\newcommand{\paper}{\pill{hcmusblue}{PAPER REPORTS}}
+\newcommand{\ours}{\pill{rev}{OUR RUN}}
+\newcommand{\oursum}{\pill{ok}{OUR EXAMPLE}}
+\newcommand{\src}[1]{\par\vfill{\color{muted}\fontsize{6.2}{7.4}\selectfont #1\par}}
+\usepackage{adjustbox}
+\newcommand{\sech}[1]{{\color{hcmusblue}\small\bfseries #1}\par\vspace{-0.8mm}{\color{hcmusblue!45}\rule{\linewidth}{0.4pt}}\par\vspace{1.2mm}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\yes}{\textcolor{ok}{\ding{51}}}
+\newcommand{\no}{\textcolor{bad}{\ding{55}}}
+
+\title{Diffusion Models: From Adding Noise to Generating Images}
+\author{CS420 Seminar Team}
+\date{}
+\hypersetup{pdftitle={Diffusion Models: From Adding Noise to Generating Images},
+  pdfauthor={HCMUS CS420 Seminar Team}}
+
+\begin{document}
+
+%% =====================================================================
+%% 1. Title + guiding question + learning objective + paper review  (~45 s)
+%% =====================================================================
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \coordinate (NW) at (current page.north west);
+  \fill[hcmusblue] (NW) rectangle ([yshift=-38mm]current page.north east);
+  \node[anchor=north west,text=white,align=left,inner sep=0] at ([shift={(10mm,-6mm)}]NW)
+    {{\fontsize{22}{26}\selectfont\bfseries Diffusion Models:}\\[1mm]
+     {\fontsize{16}{19}\selectfont\bfseries From Adding Noise to Generating Images}};
+  % presenters: one block per person
+  \foreach \x/\name/\id in {10/{Cao Quang Hung}/24125010,52/{Nguyen Trong Van Viet}/24125023,94/{Huynh Chi Ton}/24125020}{
+    \draw[white!45!hcmusblue,line width=0.8pt] ([shift={(\x mm,-23.6mm)}]NW) -- ([shift={(\x mm,-30.6mm)}]NW);
+    \node[anchor=north west,text=white,inner sep=0] at ([shift={(\x mm+2.2mm,-23.6mm)}]NW)
+      {\fontsize{9.5}{11}\selectfont\bfseries \name};
+    \node[anchor=north west,text=white!75!hcmusblue,inner sep=0] at ([shift={(\x mm+2.2mm,-27.9mm)}]NW)
+      {\fontsize{7.5}{9}\selectfont \id};
+  }
+  \node[anchor=north west,text=white!80!hcmusblue,inner sep=0] at ([shift={(10mm,-33.4mm)}]NW)
+    {\fontsize{7}{8.5}\selectfont University of Science, VNU-HCM \quad\textperiodcentered\quad CS420 -- Artificial Intelligence};
+
+  % guiding question
+  \node[anchor=north west,draw=rev,line width=0.9pt,fill=lightorange,rounded corners=2mm,
+        text width=84mm,inner sep=2.6mm,align=left] (gq) at ([shift={(10mm,-42.5mm)}]NW)
+    {{\fontsize{7.5}{9}\selectfont\bfseries\color{rev}GUIDING QUESTION}\\[1mm]
+     {\hyphenpenalty=10000\fontsize{13}{15.5}\selectfont\bfseries\color{hcmusblue}How can learning to remove noise enable a model to generate new images?}};
+
+  % learning objective
+  \node[anchor=north west,draw=hcmusblue,line width=0.9pt,fill=lightblue,rounded corners=2mm,
+        text width=84mm,inner sep=2.6mm,align=left] (lo) at ([yshift=-2.5mm]gq.south west)
+    {{\fontsize{7.5}{9}\selectfont\bfseries\color{hcmusblue}LEARNING OBJECTIVE}\\[1mm]
+     {\hyphenpenalty=10000\fontsize{10.5}{13}\selectfont\bfseries\color{black!80}Explain
+      {\color{fwd}forward noising} and {\color{rev}reverse denoising}, including why
+      {\color{ok}latent diffusion} reduces computational demands.}};
+
+  % paper review
+  \node[anchor=north west,draw=muted!70,line width=0.7pt,fill=black!2,rounded corners=2mm,
+        text width=44mm,inner sep=2.4mm,align=left] (pr) at ([shift={(102.5mm,-42.5mm)}]NW)
+    {{\fontsize{7.5}{9}\selectfont\bfseries\color{muted}PAPER REVIEW}\\[0.8mm]
+     {\fontsize{6.7}{8}\selectfont
+      {\color{rev}\bfseries 2015 Sohl-Dickstein:} Gaussian forward/reverse chains; net predicts mean \& covariance.\\[0.9mm]
+      {\color{rev}\bfseries 2019 Song \& Ermon:} scores at many noise levels; Langevin sampling.\\[0.9mm]
+      {\color{rev}\bfseries 2020 DDPM (required):} predicts the noise $\eps$ with $L_{\text{simple}}$.\\
+      \paper\ FID 3.17; NLL 3.75 bits/dim, not competitive.\\[0.1mm]
+      {\color{ok}\bfseries 2022 LDM:} same $\eps$-loss in an autoencoder latent + cross-attention.}};
+\end{tikzpicture}
+\note{\textbf{(~40 s)} Hook: a denoiser repairs an image that exists; a generator must produce an image that never existed. What bridges the two? State the guiding question, then the learning objective: by the end we explain forward noising, reverse denoising, and why latent diffusion is cheaper. The paper-review card places the two focus papers (DDPM, LDM) after their predecessors.}
+\end{frame}
+
+%% =====================================================================
+%% 2. Where diffusion fits  (~70 s)
+%% =====================================================================
+\begin{frame}[t]
+\frametitle{Where diffusion fits: three ways to generate images}
+\framesubtitle{Positioning}
+\vspace{1.5mm}
+\begin{columns}[T,onlytextwidth]
+\column{.3\textwidth}
+\tcbset{before skip=0pt,after skip=1mm,left=1.4mm,right=1.4mm,top=0.6mm,bottom=0.6mm}
+\sech{Generative vs.\ discriminative}
+\begin{nbox}[fontupper=\scriptsize]{muted}
+\textbf{Discriminative} learns $p(y\mid x)$: ``is this a cat?'' needs only class-separating features.
+\end{nbox}
+\begin{nbox}[fontupper=\scriptsize]{hcmusblue}
+\textbf{Generative} learns $p(x)$ or $p(x\mid y)$: must capture shape, texture, lighting and layout.
+\end{nbox}
+\vspace{1mm}
+{\scriptsize\color{muted} Diffusion is the generative backbone of today's text-to-image systems, e.g.\ Stable Diffusion (slides 7--10).\par}
+\column{.68\textwidth}
+\sech{Qualitative comparison: GAN vs.\ autoregressive vs.\ diffusion}
+\centering
+\adjustbox{width=\linewidth,trim={0 0 0 {.12\height}},clip}{\includegraphics{figures/qualitative_comparison.png}}
+\end{columns}
+% \src{Project illustration; sources: Goodfellow et al.\ 2014, van den Oord et al.\ 2016, Ho et al.\ 2020. Typical behaviour, not universal guarantees.}
+\note{\textbf{(~60 s)} Walk the figure left to right: GAN = one pass but adversarial training; autoregressive = token by token; diffusion = denoise over many steps. Diffusion does not learn class boundaries; it learns the statistical structure of images by reversing a corruption we already know. Mention the cost: many sampling steps.}
+\end{frame}
+
+%% =====================================================================
+%% 3. Forward noising  (~90 s)
+%% =====================================================================
+\begin{frame}
+\frametitle{Forward noising: a known way to destroy structure}
+\framesubtitle{A \textperiodcentered{} Forward noising}
+\begin{center}
+\begin{tikzpicture}[>=Stealth,font=\footnotesize,
+  st/.style={draw=black!35,fill=white,rounded corners=2pt,minimum width=10mm,minimum height=6.5mm,inner sep=2pt},
+  fl/.style={->,line width=0.9pt,fwd}]
+  \fill[fwd!7,rounded corners=3pt] (0,-0.8) rectangle (14.4,0.75);
+  \node[st] (x0) at (0.9,0) {$x_0$};
+  \node[st] (xp) at (3.4,0) {$x_{t-1}$};
+  \node[draw=fwd,fill=white,rounded corners=3pt,minimum width=5.6cm,minimum height=9mm,align=center,inner sep=3pt] (k) at (7.5,0)
+    {\textbf{Known Gaussian kernel}\\[1pt]$q(x_t\mid x_{t-1})=\Normal(\sqrt{1-\beta_t}\,x_{t-1},\,\beta_t\Id)$};
+  \node[st] (xt) at (11.6,0) {$x_t$};
+  \node[st] (xT) at (13.5,0) {$x_T$};
+  \draw[fl] (x0) -- node[above,font=\small]{$\cdots$} (xp);
+  \draw[fl] (xp) -- (k);
+  \draw[fl] (k) -- (xt);
+  \draw[fl] (xt) -- node[above,font=\small]{$\cdots$} (xT);
+  \node[font=\scriptsize,text=fwd] at (0.9,-0.58) {clean data};
+  \node[font=\scriptsize,text=fwd] at (13.5,-0.58) {nearly noise};
+\end{tikzpicture}
+\end{center}
+\vspace{-2mm}
+\begin{columns}[T,onlytextwidth]
+\column{.6\textwidth}
+\begin{tbox}[fontupper=\small,before skip=0pt,after skip=0pt]{Forward noising equations}{fwd}
+\setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{3pt}
+{\scriptsize\bfseries\color{fwd}(1) ONE STEP}
+{\large\[x_t=\underbrace{\sqrt{1-\beta_t}\,x_{t-1}}_{\text{shrink old signal}}+\underbrace{\sqrt{\beta_t}\,\eps}_{\text{add fresh noise}}\]}
+{\scriptsize\bfseries\color{fwd}(2) JUMP TO ANY $t$ IN ONE SHOT (closed form)}
+{\large\[\boxed{\,x_t=\sqrt{\ab_t}\,x_0+\sqrt{1-\ab_t}\,\eps\,}\]}
+\par{\color{fwd!40}\hrule height 0.4pt}\vspace{0.8mm}
+{\footnotesize\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.15}%
+\begin{tabular}{@{}l@{\ \ }l@{\hspace{2.2mm}}l@{\ \ }l@{}}
+$x_0\in[-1,1]^D$ & clean image, unitless & $\Id$ & identity matrix\\
+$\beta_t\in(0,1)$ & noise schedule & $\alpha_t$ & $=1-\beta_t$\\
+$t\in\{1..T\}$ & step index, not time & $\ab_t$ & $=\alpha_1\cdots\alpha_t\in(0,1]$\\
+$\eps\sim\Normal(0,\Id)$ & Gaussian noise, shape of $x_t$ & $T$ & number of steps\\
+\end{tabular}}
+\end{tbox}
+\column{.38\textwidth}
+\footnotesize
+\begin{itemize}\setlength{\itemsep}{2pt}
+\item \textbf{Why $x_T\approx\Normal(0,\Id)$:} $\Normal(0,\Id)$ is kept, as $(1-\beta_t)\Id+\beta_t\Id=\Id$; and $\ab_T\approx4\times10^{-5}$.
+\item \textbf{Signal traded for noise:} the squared weights in (2) sum to 1; $\ab_t$ shifts weight from $x_0$ to $\eps$ (plot).
+\item \textbf{Assumptions:} Markov; independent $\eps$ per step; small $\beta_t$.
+\end{itemize}
+\vspace{0.5mm}
+{\scriptsize\bfseries\color{hcmusblue}DDPM schedule: $T=1000$, $\beta_t$ linear $10^{-4}\to0.02$}\\[0.6mm]
+\begin{tikzpicture}[x=0.0465mm,y=9.8mm,font=\tiny]
+  \draw[black!30] (0,0) -- (1000,0) (0,0) -- (0,1.05);
+  \foreach \t in {0,500,1000}{\draw[black!30] (\t,0) -- (\t,-0.04) node[below,inner sep=1pt,text=muted]{\scriptsize $\t$};}
+  \node[below,inner sep=1pt,text=muted] at (760,-0.04) {\scriptsize step $t$};
+  \foreach \y in {0,1}{\node[left,inner sep=1.5pt,text=muted] at (0,\y) {\scriptsize $\y$};}
+  \draw[dashed,black!45] (260,0) -- (260,1.02) node[above,inner sep=0.5pt,text=black!60]{\scriptsize SNR$=1$, $t\approx260$};
+  \draw[fwd,line width=1.1pt] plot[smooth] coordinates {(0,1) (50,0.9854) (100,0.9471) (150,0.8879) (200,0.8118) (250,0.7239) (300,0.6296) (350,0.534) (400,0.4418) (450,0.3564) (500,0.2803) (600,0.1609) (700,0.0835) (800,0.0391) (900,0.0166) (1000,0.0064)};
+  \draw[rev,line width=1.1pt] plot[smooth] coordinates {(0,0) (1,0.01) (50,0.1702) (100,0.3209) (150,0.4601) (200,0.5839) (250,0.6899) (300,0.7769) (350,0.8455) (400,0.8971) (450,0.9344) (500,0.9599) (600,0.987) (700,0.9965) (800,0.9992) (900,0.9999) (1000,1)};
+  \node[anchor=west,text=fwd,inner sep=1pt] at (480,0.45) {\scriptsize signal $\sqrt{\ab_t}$};
+  \node[anchor=west,text=rev,inner sep=1pt] at (480,0.8) {\scriptsize noise $\sqrt{1-\ab_t}$};
+\end{tikzpicture}
+\end{columns}
+\src{Sohl-Dickstein et al.\ 2015; Ho et al.\ 2020 (notation $\alpha_t,\ab_t$; schedule). Diagram and plot: ours, computed from the DDPM linear schedule.}
+\note{\textbf{(~85 s)} The forward process is known and needs no learning: it hands us (noisy image, noise) pairs at every level. $t$ is a step index. Read the underbraces of (1), then the boxed closed form (2): one-step corruption to any $t$. The squared weights of (2) sum to 1, so the plot shows signal being traded for noise; they cross at $t\approx260$ (SNR $=1$).}
+\end{frame}
+
+%% =====================================================================
+%% 4. Worked examples  (~80 s)
+%% =====================================================================
+\begin{frame}
+\frametitle{Forward noising by hand and by eye}
+\framesubtitle{A \textperiodcentered{} Forward noising}
+\tcbset{before skip=0pt,after skip=0pt}
+\begin{nbox}[fontupper=\scriptsize\raggedright,colback=lightgreen]{ok}
+\oursum\ \textbf{Chosen values:}\ \
+$x_0=0.8$ (one pixel, rescaled to $[-1,1]$) \textperiodcentered{}
+$\beta_1=0.1,\ \beta_2=0.2$ (schedule, large on purpose) \textperiodcentered{}
+$\eps_1=-0.5,\ \eps_2=-0.4$ (draws from $\Normal(0,1)$) \textperiodcentered{}
+$\alpha_t=1-\beta_t$: $\alpha_1=0.9,\ \alpha_2=0.8$ \textperiodcentered{}
+$\ab_2=\alpha_1\alpha_2=0.72$
+\end{nbox}
+\vspace{1.6mm}
+\begin{tcbraster}[raster columns=2,raster equal height,raster column skip=2.5mm,raster before skip=0pt,raster after skip=0pt,
+  raster every box/.style={base,fontupper=\scriptsize,coltitle=white}]
+\begin{tcolorbox}[colframe=fwd,colback=fwd!5!white,title={Way 1: step by step with the schedule $\beta_1,\beta_2$}]
+\setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{1pt}
+{\color{fwd}\bfseries Step 1:} $x_1=\sqrt{\alpha_1}\,x_0+\sqrt{\beta_1}\,\eps_1$
+\[x_1=\sqrt{0.9}\,(0.8)+\sqrt{0.1}\,(-0.5)=0.7589-0.1581=0.6008\]
+{\color{fwd}\bfseries Step 2:} $x_2=\sqrt{\alpha_2}\,x_1+\sqrt{\beta_2}\,\eps_2$
+\[x_2=\sqrt{0.8}\,(0.6008)+\sqrt{0.2}\,(-0.4)=0.5374-0.1789\]
+\[\boxed{x_2=0.3585}\]
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=hcmusblue,colback=hcmusblue!5!white,title={Way 2: one jump with the shortcut $\ab_2$}]
+\setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{1pt}
+{\color{hcmusblue}\bfseries Shortcut (2):} $x_2=\sqrt{\ab_2}\,x_0+\sqrt{1-\ab_2}\,\bar\eps$
+\[x_2=\sqrt{0.72}\,(0.8)+\sqrt{0.28}\,\bar\eps=0.6788+0.5292\,\bar\eps\]
+One Gaussian $\bar\eps$ replaces both noises (variance $\tfrac{0.08+0.2}{0.28}=1$):
+\[\bar\eps=\frac{\sqrt{\alpha_2\beta_1}\,\eps_1+\sqrt{\beta_2}\,\eps_2}{\sqrt{1-\ab_2}}=-0.6053\]
+\[\boxed{x_2=0.6788-0.3203=0.3585}\ \ \text{\yes\ same as Way 1}\]
+\end{tcolorbox}
+\end{tcbraster}
+\vspace{0.9mm}
+\begin{nbox}[fontupper=\scriptsize]{rev}
+\textbf{Interpreting the stochastic expectation.} As $\E[\eps]=0$: $\E[x_1\mid x_0]=\sqrt{\alpha_1}\,x_0=0.7589$ and $\E[x_2\mid x_0]=\sqrt{\ab_2}\,x_0=0.6788$, with $\mathrm{Var}[x_2\mid x_0]=1-\ab_2=0.28$ (SD $0.53$).
+Both ways describe the \emph{same} distribution $\Normal(0.6788,\,0.28)$. Our $0.3585$ is \emph{one} random draw (about $0.6$ SD below the mean); averaging many draws gives $0.6788$.
+\end{nbox}
+\vspace{0.9mm}
+\begin{columns}[c,onlytextwidth]
+\column{.49\textwidth}
+\includegraphics[width=\linewidth]{figures/noise_sequence.pdf}
+\column{.49\textwidth}
+\scriptsize
+\oursum\ \textbf{By eye: 28$\times$28 house}, DDPM schedule ($T=1000$, $\beta_t$: $10^{-4}\to0.02$), $t=0,50,200,500,1000$.\\[0.8mm]
+$\mathrm{SNR}=\ab_t/(1-\ab_t)$: $33.5$ at $t=50$ (clear), $1.93$ at $t=200$, $0.085$ at $t=500$ (noise dominates), $\approx4\times10^{-5}$ at $t=T$.
+\end{columns}
+\note{\textbf{(~90 s)} Define the chosen values first. Way 1: two steps aloud, 0.7589 - 0.1581 = 0.6008, then 0.5374 - 0.1789 = 0.3585. Way 2: one jump with alpha-bar = 0.72; the two noises merge into one Gaussian epsilon-bar = -0.6053 (variance check 0.08 + 0.2 = 0.28), same 0.3585. Expectation: E[x2|x0] = 0.6788, the draw differs. Then the image: house visible at t=50, gone at t=500. The betas here are larger than DDPM's on purpose.}
+\end{frame}
+
+%% =====================================================================
+%% 5. Reverse denoising: diagram, sampling, why epsilon, one step  (~90 s)
+%% =====================================================================
+\begin{frame}[t,shrink=12]
+\frametitle{Reverse denoising: from noise back to an image}
+\framesubtitle{B \textperiodcentered{} Reverse denoising}
+{\centering
+\begin{tikzpicture}[>=Stealth,font=\footnotesize,
+  st/.style={draw=black!35,fill=white,rounded corners=2pt,minimum width=9mm,minimum height=5.2mm,inner sep=2pt},
+  opr/.style={draw=rev,fill=white,rounded corners=3pt,minimum height=7mm,align=center,inner sep=2pt}]
+  \fill[rev!8,rounded corners=3pt] (0,0) rectangle (14.4,1.2);
+  \node[anchor=west,font=\scriptsize\bfseries,text=rev] at (0.15,1.0) {REVERSE: learned denoising};
+  \node[st] (rx0) at (0.8,0.43) {$x_0$};
+  \node[st] (rxp) at (3.0,0.43) {$x_{t-1}$};
+  \node[opr,minimum width=3.3cm] (rs) at (5.5,0.43) {convert \& sample\\[-1pt]$\mu_\theta+\sigma_t u_t$};
+  \node[opr,minimum width=3.0cm] (rn) at (9.0,0.43) {\textbf{predict noise}\\[-1pt]$\eps_\theta(x_t,t)$};
+  \node[st] (rxt) at (11.5,0.43) {$x_t$};
+  \node[st] (rxT) at (13.6,0.43) {$x_T$};
+  \foreach \a/\b in {rxT/rxt,rxt/rn,rn/rs,rs/rxp,rxp/rx0}{\draw[->,line width=0.9pt,rev] (\a) -- (\b);}
+  \node[font=\scriptsize,text=rev] at (5.5,1.0) {fresh $u_t$};
+  \node[font=\scriptsize,text=rev] at (9.0,1.0) {input: $x_t,t$};
+\end{tikzpicture}\par}
+\vspace{1mm}
+\begin{columns}[T,onlytextwidth]
+\column{.49\textwidth}
+\tcbset{before skip=0pt,after skip=1mm,top=0.4mm,bottom=0.4mm}
+\begin{tbox}[fontupper=\footnotesize]{Option A: predict the reverse mean}{rev}
+\setlength{\abovedisplayskip}{0pt}\setlength{\belowdisplayskip}{0pt}
+\[\mu_\theta(x_t,t)=\E_{p_\theta}[x_{t-1}\mid x_t]\]
+Given $x_t,t$, predict the conditional mean of the \textbf{previous state $x_{t-1}$}, not $x_0$.
+\end{tbox}
+\begin{tbox}[fontupper=\footnotesize,after skip=0pt]{Sampling: use the mean to draw $x_{t-1}$}{rev}
+\setlength{\abovedisplayskip}{0pt}\setlength{\belowdisplayskip}{0pt}
+$p_\theta(x_{t-1}\mid x_t)=\Normal(\mu_\theta,\sigma_t^2\Id)$.
+\[\sigma_t^2=\beta_t\quad\text{or}\quad\tilde\beta_t=\frac{1-\ab_{t-1}}{1-\ab_t}\beta_t\]
+{\scriptsize Fixed, not learned; similar sample quality (Sec.~3.2).}
+\[x_{t-1}=\mu_\theta(x_t,t)+\sigma_t u_t\]
+Start with $x_T\sim\Normal(0,\Id)$; repeat to $t=1$. Fresh $u_t\sim\Normal(0,\Id)$ for $t>1$ ($u_1=0$), distinct from $\eps_\theta$.
+\end{tbox}
+\column{.49\textwidth}
+\tcbset{before skip=0pt,after skip=1mm,top=0.4mm,bottom=0.4mm}
+\begin{tbox}[fontupper=\footnotesize]{Option B: predict the forward noise (DDPM)}{hcmusblue}
+\setlength{\abovedisplayskip}{0pt}\setlength{\belowdisplayskip}{0pt}
+\[x_t=\sqrt{\ab_t}\,x_0+\sqrt{1-\ab_t}\,{\color{hcmusblue}\boldsymbol{\eps}}\]
+$\eps_\theta(x_t,t)$ predicts the \textbf{aggregate noise $\eps$ from $x_0$ to $x_t$}, not just noise at step $t$.
+\end{tbox}
+\begin{tbox}[fontupper=\scriptsize,after skip=0pt]{Why predict noise? DDPM experiments}{hcmusblue}
+$\eps\sim\Normal(0,\Id)$ has unit scale at every $t$; plain MSE on $\eps$ performed best here (slide~6).\par\vspace{0.3mm}
+{\centering\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{0.95}%
+\begin{tabular}{@{}lcc@{}}
+\toprule
+CIFAR-10 FID$\downarrow$ & weighted bound & plain MSE\\
+\midrule
+Mean & 13.22 & unstable\\
+Noise & 13.51 & \textbf{3.17}\\
+\bottomrule
+\end{tabular}\par}
+\end{tbox}
+\end{columns}
+\vspace{1mm}
+\begin{tbox}[fontupper=\footnotesize,before skip=0pt,after skip=0pt,top=0.4mm,bottom=0.4mm]{Equivalent parameterizations: noise prediction $\leftrightarrow$ reverse mean}{rev}
+\setlength{\abovedisplayskip}{0pt}\setlength{\belowdisplayskip}{0pt}
+\[\boxed{\mu_\theta(x_t,t)=\frac{1}{\sqrt{\alpha_t}}\left(x_t-\frac{\beta_t}{\sqrt{1-\ab_t}}\eps_\theta(x_t,t)\right)}\quad\Longleftrightarrow\quad
+\boxed{\eps_\theta(x_t,t)=\frac{\sqrt{1-\ab_t}}{\beta_t}\left(x_t-\sqrt{\alpha_t}\mu_\theta(x_t,t)\right)}\]
+Only the network output is learned; $\alpha_t=1-\beta_t$, $\ab_t=\alpha_1\cdots\alpha_t$ are fixed. {\color{muted}\scriptsize Ho et al.\ 2020, Eq.~(11), Alg.~2, Table~2.}
+\end{tbox}
+\note{\textbf{(~100 s; derivation for reference)} Read the reverse diagram from right to left. The network gets the current noisy image $x_t$ and timestep $t$, not a clean image.
+\par\textbf{Mean prediction:} $\mu_\theta(x_t,t)=\E_{p_\theta}[x_{t-1}\mid x_t]$ is the conditional mean of the previous state, not a particular sample and not $x_0$. During training, $\tilde\mu_t(x_t,x_0)=\E_q[x_{t-1}\mid x_t,x_0]$ is the analytic target.
+\par\textbf{Noise prediction:} $\eps_\theta(x_t,t)$ estimates the normalized aggregate noise $\eps$ in $x_t=\sqrt{\ab_t}x_0+\sqrt{1-\ab_t}\eps$. It is not the noise added only at step $t$, nor a prediction-error residual.
+\par\textbf{Derivation (Ho et al., Eqs.~7, 11):} Rearrange the forward equation:
+$\hat x_0=(x_t-\sqrt{1-\ab_t}\eps_\theta)/\sqrt{\ab_t}$.
+Substitute this into the analytic Gaussian posterior mean
+$\tilde\mu_t(x_t,x_0)=\frac{\sqrt{\ab_{t-1}}\beta_t}{1-\ab_t}x_0+\frac{\sqrt{\alpha_t}(1-\ab_{t-1})}{1-\ab_t}x_t$.
+Using $\ab_t=\alpha_t\ab_{t-1}$ and $\alpha_t+\beta_t=1$ gives
+$\mu_\theta=\frac{1}{\sqrt{\alpha_t}}(x_t-\frac{\beta_t}{\sqrt{1-\ab_t}}\eps_\theta)$.
+Reverse the algebra: $\sqrt{\alpha_t}\mu_\theta=x_t-\frac{\beta_t}{\sqrt{1-\ab_t}}\eps_\theta$, hence $\eps_\theta=\frac{\sqrt{1-\ab_t}}{\beta_t}(x_t-\sqrt{\alpha_t}\mu_\theta)$. Both parameterizations describe the same step, but their training losses weight timesteps differently. The FID table is empirical evidence, not a universal guarantee.
+\par\textbf{Sampling:} Start from random $x_T$. After predicting $\eps_\theta$, compute $\mu_\theta$, then draw $x_{t-1}=\mu_\theta+\sigma_t u_t$. The independent $u_t\sim\Normal(0,\Id)$ for $t>1$ is fresh sampling noise; set $u_1=0$. The variance is fixed, not predicted: $\sigma_t^2=\beta_t$ or $\tilde\beta_t=\frac{1-\ab_{t-1}}{1-\ab_t}\beta_t$ for $t>1$. The latter is the exact posterior variance given $x_t,x_0$. Ho et al.\ (2020), Sec.~3.2, found similar results with either choice, not necessarily identical samples. No real $x_0$ is used during generation.}
+\end{frame}
+
+%% =====================================================================
+%% 6. Training, score, answer to the guiding question  (~110 s)
+%% =====================================================================
+\begin{frame}
+\frametitle{Training the noise predictor, and why it works}
+\framesubtitle{B \textperiodcentered{} Reverse denoising}
+\begin{columns}[T,onlytextwidth]
+\column{.42\textwidth}
+\tcbset{before skip=0pt,after skip=2mm}
+\begin{tbox}[fontupper=\footnotesize]{Training: learn to predict the noise}{hcmusblue}
+\setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{2pt}
+\[L_{\text{simple}}=\E_{t,x_0,\eps}\big[\|\eps-\eps_\theta(x_t,t)\|^2\big]\]
+\textbf{1.}~draw $x_0\sim$ data, $t\sim\mathrm{U}\{1..T\}$, $\eps\sim\Normal(0,\Id)$\\
+\textbf{2.}~build $x_t=\sqrt{\ab_t}\,x_0+\sqrt{1-\ab_t}\,\eps$\\
+\textbf{3.}~predict $\eps_\theta(x_t,t)$; gradient step on the error\\[0.5mm]
+{\scriptsize\color{muted}Uses real images (Ho et al.\ 2020, Alg.~1).}
+\end{tbox}
+\begin{tbox}[fontupper=\footnotesize,after skip=0pt]{Connection to the score (Song \& Ermon 2019)}{fwd}
+\setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{1pt}
+The score $\nabla_x\log q_t(x)$ points uphill in noisy-data density. At the optimum of $L_{\text{simple}}$, \mbox{$\eps_\theta\approx\E[\eps\mid x_t]$}, so
+\[s_\theta:=-\frac{\eps_\theta}{\sqrt{1-\ab_t}}\approx\nabla_{x_t}\log q_t(x_t)\]
+\[\mu_\theta=\frac{x_t+\beta_t\,s_\theta}{\sqrt{\alpha_t}}\]
+Each step moves \emph{uphill in density}, then adds noise: like annealed Langevin dynamics.
+\end{tbox}
+\column{.56\textwidth}
+\begin{tbox}[fontupper=\footnotesize,before skip=0pt,after skip=0pt]{Why removing noise generates new images}{ok}
+\setlength{\abovedisplayskip}{1pt}\setlength{\belowdisplayskip}{1pt}
+\textbf{Core idea: know the noise $\Rightarrow$ know the clean image.}
+\begin{itemize}\setlength{\itemsep}{2.2pt}
+\item \textbf{Noise and image: same information.} Invert the closed form:
+\[\hat x_0=\big(x_t-\sqrt{1-\ab_t}\,\eps_\theta(x_t,t)\big)/\sqrt{\ab_t}\]
+\item \textbf{Remove a little at a time.} From pure noise $x_T$, each step removes a small part of the predicted noise (plus fresh noise for diversity): many easy corrections, unlike a one-pass VAE decoder.
+\item \textbf{Why a \emph{real} image, not any image.} To guess the noise, the net must know what real images look like; $\eps_\theta\propto-$score, so removing it climbs toward regions dense with real images.
+\item \textbf{Coarse to fine.} Large $t$: layout, shape, colour; small $t$: edges, texture. Sampling goes in this order (Ho et al.\ 2020, Sec.~4.3).
+\item \textbf{Why $\eps$, not $x_0$?} $\eps\sim\Normal(0,\Id)$ has one scale at every $t$; $x_0$ is nearly unguessable at large $t$ (DDPM Sec.~3.2; slide~5).
+\end{itemize}
+\vspace{0.5mm}
+{\color{ok!70!black}\itshape Like a sculptor: learn what is \emph{not} the statue, then chip it away layer by layer.}
+\end{tbox}
+\end{columns}
+\note{\textbf{(~100 s)} Training in 3 lines (real image, closed form, regress the noise). Score box: the MSE optimum makes the noise prediction a scaled score, so each step climbs the noisy-data density, like annealed Langevin dynamics. Green box is our answer to the guiding question: know the noise, know the image; remove a little at a time; removing noise climbs toward real images; coarse to fine; why epsilon. Inside-a-step figure from our run: backup slide 15.}
+\end{frame}
+
+%% =====================================================================
+%% 7. From DDPM to LDM  (~60 s)
+%% =====================================================================
+\begin{frame}
+\frametitle{From DDPM to LDM: the cost of pixels, and three ideas}
+\framesubtitle{C \textperiodcentered{} Latent diffusion}
+\begin{columns}[T,onlytextwidth]
+\column{.5\textwidth}
+\tcbset{before skip=0pt,after skip=1.8mm}
+\begin{tbox}[fontupper=\footnotesize]{Limitation 1: cost (every step, every pixel)}{bad}
+\setlength{\abovedisplayskip}{2pt}\setlength{\belowdisplayskip}{2pt}
+Most pixels hold fine detail we barely perceive, yet the network re-processes \emph{all} of them at \emph{every} step:
+\[\text{cost}\approx\underbrace{\#\text{steps}}_{25\text{--}1000}\times\underbrace{\text{one pass on all pixels}}_{256^2\times3\,=\,196{,}608\text{ values}}\]
+\begin{itemize}\setlength{\itemsep}{1pt}
+\item \paper\ Training: 150--1000 V100 GPU-days; 50k samples: $\approx$5 days on one A100\textsuperscript{*}.
+\item \paper\ Under the same compute budget, pixel-space LDM-1 needs far longer training than latent models (Rombach et al.\ 2022, Fig.~6).
+\end{itemize}
+{\scriptsize\color{muted}\textsuperscript{*}Dhariwal \& Nichol 2021, via Rombach et al.\ 2022, Sec.~1}\hfill\mbox{\color{ok!75!black}\bfseries$\rightarrow$ ideas 1, 2}
+\end{tbox}
+\begin{tbox}[fontupper=\footnotesize,after skip=0pt]{Limitation 2: no control (unconditional)}{rev}
+DDPM learns $p(x)$ only: it returns \emph{some} image, and we cannot ask for ``a red bus''. \hfill\mbox{\color{ok!75!black}\bfseries$\rightarrow$ idea 3}
+\end{tbox}
+\column{.48\textwidth}
+{\small\bfseries\color{ok!75!black}LDM (Rombach et al.\ 2022): three ideas}\par\vspace{1.2mm}
+\tcbset{before skip=0pt,after skip=1.6mm}
+\begin{nbox}[fontupper=\footnotesize,colback=lightgreen]{ok}
+\textbf{1. Diffusion in latent space, two-stage training.} Stage 1: an autoencoder compresses images once, then is frozen and reused. Stage 2: diffusion on the small latents. {\color{muted}$\rightarrow$ slides 8--9}
+\end{nbox}
+\begin{nbox}[fontupper=\footnotesize,colback=lightgreen]{ok}
+\textbf{2. 2-D latent, mild compression ($f=4$--$8$).} A U-Net still works on it and reconstructions stay faithful; earlier two-stage models used 1-D token sequences and stronger compression. {\color{muted}$\rightarrow$ slide 8}
+\end{nbox}
+\begin{nbox}[fontupper=\footnotesize,colback=lightgreen,after skip=0pt]{ok}
+\textbf{3. General conditioning: cross-attention.} Text, a class or a layout is encoded into tokens and injected into the U-Net. {\color{muted}$\rightarrow$ slide 10}
+\end{nbox}
+\end{columns}
+\note{\textbf{(~60 s)} Two independent limitations. (1) Cost: number of steps times one network pass over all pixels, both large, while most pixels are imperceptible detail; evidence: the paper's GPU-days (cited from Dhariwal and Nichol) and the LDM paper's own training comparison; fixed by ideas 1 and 2. (2) Control: DDPM learns p(x) only, so a prompt cannot steer it; fixed by idea 3. Right: LDM's three ideas, each with the slide where we unpack it.}
+\end{frame}
+
+%% =====================================================================
+%% 8. Latent space and the autoencoder  (~65 s)
+%% =====================================================================
+\begin{frame}
+\frametitle{Latent space: what it is, and why it helps}
+\framesubtitle{C \textperiodcentered{} Latent diffusion}
+{\centering
+\begin{tikzpicture}[>=Stealth,font=\footnotesize,
+  box/.style={draw=ok,fill=lightgreen,rounded corners=2pt,minimum height=9mm,inner sep=3pt,align=center},
+  io/.style={draw=black!35,fill=white,rounded corners=2pt,minimum height=9mm,inner sep=3pt,align=center},
+  fl/.style={->,line width=1pt,ok!80!black}]
+  \draw[dashed,ok!70!black,rounded corners=4pt] (2.75,-1.3) rectangle (11.85,0.95);
+  \node[anchor=north,font=\scriptsize\bfseries,text=ok!70!black,fill=white,inner sep=1.5pt] at (7.3,1.08) {stage 1: trained once, then frozen};
+  \node[io,minimum width=2.4cm] (x) at (1.2,0) {image $x_0$\\[-1pt]\scriptsize $256{\times}256{\times}3$};
+  \node[font=\scriptsize,text=muted] at (1.2,-0.72) {196,608 values};
+  \node[box,minimum width=2.3cm] (enc) at (4.25,0) {\textbf{VAE encoder}\\[-1pt]\scriptsize mean $\mu$, spread $\sigma$};
+  \begin{scope}[shift={(6.8,-0.42)}]
+    \foreach \k in {0.24,0.12,0}{\fill[white,draw=hcmusblue!70] (\k,\k) rectangle ++(0.9,0.9);}
+    \draw[step=0.18,hcmusblue!45,very thin] (0,0) grid (0.9,0.9);
+  \end{scope}
+  \node[font=\scriptsize,text=hcmusblue] at (7.37,-0.72) {latent $z$: $32{\times}32{\times}4$};
+  \node[font=\scriptsize,text=hcmusblue] at (7.37,-1.05) {4,096 values};
+  \node[box,minimum width=2.3cm] (dec) at (10.35,0) {\textbf{VAE decoder}\\[-1pt]\scriptsize latent $\to$ image};
+  \node[io,minimum width=2.4cm] (xh) at (13.2,0) {reconstruction\\[-1pt]\scriptsize $\hat x_0\approx x_0$};
+  \draw[fl] (x)--(enc); \draw[fl] (enc.east)--node[above,font=\scriptsize,text=ok!70!black]{sample $z$}(6.7,0); \draw[fl] (8.05,0)--(dec.west); \draw[fl] (dec)--(xh);
+  \node[font=\scriptsize,inner sep=0,text=ok!70!black] at (10.35,-0.88) {\textbf{48$\times$ fewer values} ($f=8$, 4 channels)};
+\end{tikzpicture}\par}
+\vspace{2.2mm}
+\begin{tcbraster}[raster columns=2,raster equal height=rows,raster column skip=2.5mm,raster row skip=1.8mm,raster before skip=0pt,raster after skip=0pt,
+  raster every box/.style={base,fontupper=\footnotesize\raggedright,coltitle=white,top=0.6mm,bottom=0.6mm}]
+\begin{tcolorbox}[colframe=hcmusblue,colback=hcmusblue!5!white,title={1. What is a latent?}]
+In general, a \textbf{hidden, compressed representation} from which the data can be rebuilt (a textbook VAE uses a short flat vector). \textbf{In LDM}: a small image-shaped grid (e.g.\ $32{\times}32{\times}4$ for a $256^2$ image) that keeps layout, shapes and colours.
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=hcmusblue!70!black,colback=hcmusblue!5!white,title={2. VAE encoder and decoder}]
+The \textbf{encoder} maps an image to a small cloud of latents (mean, spread) and we sample $z$; the \textbf{decoder} maps $z$ back to an image. 
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=ok,colback=ok!5!white,title={3. Why does it cut the cost?}]
+Cost $\approx$ \#steps $\times$ one pass (slide~7): LDM keeps the steps, but every pass sees \textbf{48$\times$ fewer values}; the VAE runs only \textbf{once} per image.
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=rev,colback=rev!5!white,title={4. Why still need diffusion?}]
+The VAE only restores images we \emph{already have}. A new image needs a new latent, and a random one decodes to garbage: diffusion learns to \textbf{create realistic latents}. $\rightarrow$ next slide
+\end{tcolorbox}
+\end{tcbraster}
+\src{Rombach et al.\ 2022, Secs.~3.1--3.2. How the autoencoder is trained (perceptual and adversarial losses) and its formulas: backup slide 16.}
+\note{\textbf{(~65 s)} Diagram first: image (196,608 values) -> encoder -> latent grid (4,096 values, 48x fewer) -> decoder -> reconstruction; the dashed frame = stage 1, trained once then frozen. Then four boxes in reading order: what a latent is (in general a hidden compressed representation; in LDM an image-shaped grid); how the VAE encoder and decoder produce it (mean and spread, sample, decode back); why it cuts cost (same steps, each pass 48x smaller); why diffusion is still needed (the VAE only restores existing images; diffusion creates new latents).}
+\end{frame}
+
+%% =====================================================================
+%% 9. Operations in latent space: the whole pipeline  (~75 s)
+%% =====================================================================
+\begin{frame}
+\frametitle{Operations in latent space: the whole LDM pipeline}
+\framesubtitle{C \textperiodcentered{} Latent diffusion}
+{\centering
+\begin{tikzpicture}[>=Stealth,font=\footnotesize,
+  io/.style={draw=black!35,fill=white,rounded corners=2pt,minimum height=8.5mm,inner sep=2.5pt,align=center},
+  ae/.style={draw=ok,fill=lightgreen,rounded corners=2pt,minimum height=8.5mm,inner sep=2.5pt,align=center},
+  lat/.style={draw=hcmusblue,fill=white,rounded corners=2pt,minimum height=8.5mm,inner sep=2.5pt,align=center},
+  net/.style={draw=rev,fill=lightorange,rounded corners=2pt,minimum height=8.5mm,inner sep=2.5pt,align=center},
+  cnd/.style={draw=fwd,fill=fwd!8,rounded corners=2pt,minimum height=8.5mm,inner sep=2.5pt,align=center},
+  fl/.style={->,line width=0.9pt,black!65}]
+  % latent-space region
+  \fill[hcmusblue!7,rounded corners=4pt] (3.25,-0.75) rectangle (10.35,4.0);
+  \node[anchor=north west,font=\scriptsize\bfseries,text=hcmusblue] at (3.35,3.95) {LATENT SPACE: every diffusion operation runs on the small $z$};
+  % training lane
+  \node[anchor=west,font=\scriptsize\bfseries,text=black!70] at (0.0,3.75) {TRAINING (stage 2)};
+  \node[io,minimum width=1.5cm] (x) at (0.8,2.85) {real\\[-1pt]image $x_0$};
+  \node[ae,minimum width=1.6cm] (e) at (2.45,2.85) {Encoder\\[-1pt]\scriptsize frozen};
+  \node[lat,minimum width=1.1cm] (z0) at (4.15,2.85) {$z_0$};
+  \node[lat,minimum width=2.4cm] (n) at (6.15,2.85) {add noise\\[-1pt]\scriptsize $z_t$, as in slide 3};
+  \node[net,minimum width=2.3cm] (u) at (8.95,2.85) {U-Net\\[-1pt]\scriptsize predict the noise};
+  \draw[fl] (x)--(e); \draw[fl] (e)--(z0); \draw[fl] (z0)--(n); \draw[fl] (n)--(u);
+  % generation lane
+  \node[anchor=west,font=\scriptsize\bfseries,text=black!70] at (0.0,0.95) {GENERATION};
+  \node[anchor=west,font=\scriptsize,text=muted,align=left] at (0.0,0.25) {no real image,\\[-1pt]no encoder};
+  \node[lat,minimum width=1.5cm] (zT) at (4.35,0.25) {$z_T$\\[-1pt]\scriptsize noise};
+  \node[net,minimum width=3.4cm] (s) at (7.65,0.25) {U-Net + sampler, $T$ steps\\[-1pt]\scriptsize $z_T\to z_{T-1}\to\cdots\to z_0$};
+  \node[ae,minimum width=1.8cm] (d) at (11.6,0.25) {Decoder\\[-1pt]\scriptsize frozen, \textbf{once}};
+  \node[io,minimum width=1.4cm] (xo) at (13.7,0.25) {new\\[-1pt]image};
+  \draw[fl] (zT)--(s); \draw[fl] (s)--(d); \draw[fl] (d)--(xo);
+  \draw[->,line width=0.8pt,rev] ([xshift=-6mm]s.south) .. controls +(0,-0.5) and +(0,-0.5) .. ([xshift=6mm]s.south) node[pos=0.5,below,font=\tiny,text=rev]{repeat};
+  % condition
+  \node[cnd,minimum width=2.0cm] (tau) at (11.9,1.55) {condition\\[-1pt]encoder $\tau_\eta$};
+  \node[io,minimum width=1.4cm] (y) at (13.7,1.55) {prompt $y$\\[-1pt]\scriptsize ``red bus''};
+  \draw[fl] (y)--(tau);
+  \draw[->,line width=0.9pt,fwd] (tau.north) |- (u.east) node[pos=0.75,above,font=\tiny,text=fwd]{cross-attn};
+  \draw[->,line width=0.9pt,fwd] (tau.west) -| (s.north) node[pos=0.25,above,font=\tiny,text=fwd]{cross-attn};
+\end{tikzpicture}\par}
+\vspace{2.5mm}
+\begin{tcbraster}[raster columns=3,raster equal height,raster column skip=2.5mm,raster before skip=0pt,raster after skip=0pt,
+  raster every box/.style={base,fontupper=\footnotesize}]
+\begin{nbox}[colback=lightblue]{hcmusblue}
+\textbf{Same DDPM operations, now on $z$}: add noise with the closed form, predict the noise, denoise step by step.
+\end{nbox}
+\begin{nbox}[colback=lightgreen]{ok}
+\textbf{Encoder only for training.} Generation starts from latent noise and calls the decoder \textbf{once} at the end.
+\end{nbox}
+\begin{nbox}[colback=lightorange]{rev}
+\textbf{Cheaper per step}: the U-Net sees $\approx$48$\times$ fewer values ($f=8$), at every one of the many steps. Measured cost: slide~11.
+\end{nbox}
+\end{tcbraster}
+\src{Pipeline: ours, after Rombach et al.\ 2022, Fig.~3 and Secs.~3.1--3.3.}
+\note{\textbf{(~75 s)} This is the whole pipeline. Shaded area = latent space: everything diffusion does (add noise, predict noise, denoise) happens there. Top lane: training encodes a real image once, then trains the U-Net exactly as in DDPM. Bottom lane: generation starts from latent noise, loops T steps, decodes once. The prompt enters both U-Nets through cross-attention (next slide). Do not claim 48x faster: it is 48x fewer values per step.}
+\end{frame}
+
+%% =====================================================================
+%% 10. Cross-attention + prompt control  (~80 s)
+%% =====================================================================
+\begin{frame}
+\frametitle{Cross-attention: steering the denoiser with a prompt}
+\framesubtitle{C \textperiodcentered{} Latent diffusion}
+\begin{columns}[T,onlytextwidth]
+\column{.47\textwidth}
+\tcbset{before skip=0pt,after skip=1.8mm}
+\begin{tbox}[fontupper=\footnotesize\raggedright]{The formula behind the picture}{rev}
+\setlength{\abovedisplayskip}{0pt}\setlength{\belowdisplayskip}{1pt}
+\[O=\underbrace{\softmax\big({\color{hcmusblue}Q}{\color{fwd}K}^{\top}/\sqrt{d}\big)}_{\text{\scriptsize\color{rev}line thickness}}\;{\color{fwd}V}\]
+{\color{hcmusblue}$Q$}: latent regions \textperiodcentered{} {\color{fwd}$K,V$}: prompt tokens \textperiodcentered{} $O$: a \textbf{weighted mix} of token values for each region.
+\end{tbox}
+\begin{tbox}[fontupper=\footnotesize,after skip=0pt]{Image regions ask, prompt words answer}{ok}
+{\centering
+\begin{tikzpicture}[font=\scriptsize]
+  \fill[lightblue,draw=hcmusblue!60] (0,0) rectangle (1.4,1.4);
+  \draw[step=0.35,hcmusblue!40] (0,0) grid (1.4,1.4);
+  \fill[rev!70] (0.35,0.7) rectangle (0.7,1.05);
+  \node[text=hcmusblue] at (0.7,-0.22) {latent regions ($Q$)};
+  \foreach \w/\y/\lw/\c in {a/1.66/0.3/black!30,red/1.3/2.2/rev,bus/0.94/2.2/rev,left/0.58/0.6/black!40,blue/0.22/0.3/black!30,car/-0.14/0.6/black!40}{
+    \node[draw=fwd,fill=white,rounded corners=1.5pt,minimum width=0.95cm,minimum height=2.8mm,inner sep=0.6pt] (t\w) at (4.0,\y) {\w};
+    \draw[line width=\lw pt,\c] (0.7,0.88) -- (t\w.west);
+  }
+  \node[text=fwd] at (4.0,-0.48) {prompt tokens ($K$, $V$)};
+  \node[text=rev,font=\scriptsize\bfseries] at (2.25,1.62) {softmax weights};
+\end{tikzpicture}\par}
+\vspace{0.3mm}
+Thick lines = high attention: the region becoming a bus pulls from \emph{red} and \emph{bus}.
+\end{tbox}
+\column{.51\textwidth}
+{\footnotesize
+\begin{itemize}\setlength{\itemsep}{1.5pt}
+\item Repeated at every U-Net layer and step: the prompt steers each noise prediction, not the final pixels.
+\item Any condition works: only the encoder $\tau_\eta$ changes (text, class, layout).
+\item The weights are \textbf{soft}: no word is forced onto one object, so colours and positions can go wrong (Chefer et al.\ 2023).
+\end{itemize}}
+\vspace{1mm}
+{\footnotesize \ours\ \textbf{Stable Diffusion v1.4, same seed and initial latent}}\\[0.5mm]
+\setlength{\tabcolsep}{1.5pt}
+\begin{tabular}{@{}p{2.05cm}p{2.05cm}p{2.05cm}@{}}
+\includegraphics[width=2.05cm]{figures/prompt/2027_reference.png} &
+\includegraphics[width=2.05cm]{figures/prompt/2027_change_color.png} &
+\includegraphics[width=2.05cm]{figures/prompt/2027_change_side.png}\\[-0.5mm]
+\raggedright\scriptsize\textbf{Reference}\newline{\fontsize{5.6}{6.4}\selectfont``a red bus to the left of a blue car''} &
+\raggedright\scriptsize\textbf{red $\to$ green}\newline{\fontsize{5.6}{6.4}\selectfont``a green bus to the left of a blue car''} &
+\raggedright\scriptsize\textbf{left $\to$ right}\newline{\fontsize{5.6}{6.4}\selectfont``a red bus to the right of a blue car''}
+\end{tabular}\\[0.5mm]
+{\footnotesize Colour edit works at all 4 seeds \yes{} (but no clear blue car \no); side edit fails, the bus stays left \no.\par}
+\end{columns}
+\src{Rombach et al.\ 2022, Sec.~3.3; Vaswani et al.\ 2017; Chefer et al.\ 2023. Images: our run (50 DDIM steps), an illustration only.}
+\note{\textbf{(~80 s)} Formula first (top left), then the picture below it: Q = latent regions, K and V = prompt tokens, softmax weights = line thickness, O = weighted mix of token values. Then the three bullets on the right, ending with soft weights (Chefer et al.); the bus images below illustrate it: the colour edit works, the side edit fails.}
+\end{frame}
+
+%% =====================================================================
+%% 11. Pixel vs latent on LSUN Churches  (~70 s)
+%% =====================================================================
+\begin{frame}
+\frametitle{Pixel vs.\ latent diffusion: what the LDM paper measured}
+\framesubtitle{D \textperiodcentered{} Evidence and limits}
+{\footnotesize \paper\ Rombach et al.\ 2022, Table~6: inpainting on Places, same setup for both, one A100. Pixel = LDM-1 (no autoencoder); latent = LDM-4 (KL, $f=4$).\par}
+\vspace{1.5mm}
+\begin{columns}[T,onlytextwidth]
+\column{.55\textwidth}
+{\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\bfseries}p{3.35cm}ccY@{}}
+\toprule
+\rowcolor{hcmusblue!12}Criterion & Pixel & Latent & Ratio\\
+\midrule
+Training (samples/s) & 0.11 & 0.32 & 2.9$\times$\\
+Sampling @$256^2$ (samples/s) & 0.26 & 0.97 & \textbf{3.7$\times$}\\
+Sampling @$512^2$ (samples/s) & 0.07 & 0.34 & \textbf{4.9$\times$}\\
+Time per epoch (h) & 20.66 & 7.66 & 2.7$\times$ less\\
+FID@2k, epoch 6 $\downarrow$ & 24.74 & \textbf{15.21} & lower\\
+\bottomrule
+\end{tabularx}}
+\vspace{1mm}
+{\scriptsize\color{muted}Fixed number of epochs; the autoencoder's own pre-training is not included. A lower FID is a better score, not ``38\% better looking''.\par}
+\column{.42\textwidth}
+\centering
+\setlength{\tabcolsep}{1pt}
+\begin{tabular}{@{}rcccc@{}}
+ & \scriptsize 2026 & \scriptsize 2027 & \scriptsize 2028 & \scriptsize 2029\\
+\raisebox{4mm}{\scriptsize DDPM} &
+\includegraphics[width=1.22cm]{figures/churches/ddpm_2026.png} &
+\includegraphics[width=1.22cm]{figures/churches/ddpm_2027.png} &
+\includegraphics[width=1.22cm]{figures/churches/ddpm_2028.png} &
+\includegraphics[width=1.22cm]{figures/churches/ddpm_2029.png}\\
+\raisebox{4mm}{\scriptsize LDM} &
+\includegraphics[width=1.22cm]{figures/churches/ldm_2026.png} &
+\includegraphics[width=1.22cm]{figures/churches/ldm_2027.png} &
+\includegraphics[width=1.22cm]{figures/churches/ldm_2028.png} &
+\includegraphics[width=1.22cm]{figures/churches/ldm_2029.png}
+\end{tabular}\\[0.8mm]
+{\scriptsize\raggedright \ours\ Pretrained pixel (DDPM) and latent (LDM-KL-8) samples, LSUN Churches, 50 DDIM steps. \emph{Illustration only}: both look plausible.\par}
+\end{columns}
+\vspace{1.2mm}
+\begin{nbox}[fontupper=\footnotesize]{hcmusblue}
+\textbf{Takeaway:} on a $4{\times}$-downsampled latent, the same diffusion samples \textbf{3.7--4.9$\times$ faster} and trains \textbf{2.7$\times$ faster per epoch}, at equal or better FID; too much compression ($f=32$) costs quality (Sec.~4.1).
+\end{nbox}
+\src{Rombach et al.\ 2022, Table~6 and Sec.~4.1. Images: our run with pretrained checkpoints; its timing and memory are in backup slide 17.}
+\note{\textbf{(~70 s)} All numbers here are from the LDM paper, not from us. Read the table row by row: training throughput, sampling throughput at two resolutions, epoch time, FID. The church grid on the right is only an illustration that both models produce plausible images. Caveats: fixed epochs, autoencoder pre-training not counted, an inpainting task; too much compression (f = 32) hurts quality.}
+\end{frame}
+
+%% =====================================================================
+%% 12. Limitations and when to use  (~40 s)
+%% =====================================================================
+\begin{frame}
+\frametitle{Limitations, and when to use diffusion}
+\framesubtitle{D \textperiodcentered{} Evidence and limits}
+\begin{columns}[T,onlytextwidth]
+\column{.56\textwidth}
+\sech{Limitations and why}
+\begin{nbox}[fontupper=\small\raggedright,colback=bad!4!white,before skip=0pt,after skip=0pt]{bad}
+\begin{itemize}\setlength{\itemsep}{3.5pt}
+\item \textbf{Slow sampling}: many small steps, run one after another.
+\item \textbf{Quality ceiling}: the decoder only restores what the latent kept.
+\item \textbf{Soft prompt control}: words can be dropped or bound to the wrong object.
+\item \textbf{Data bias}: the model copies the gaps and stereotypes of its data.
+\item \textbf{Weak likelihood}: $L_{\text{simple}}$ favours sample quality over NLL.
+\end{itemize}
+\end{nbox}
+\column{.42\textwidth}
+\sech{When to use which}
+\tcbset{before skip=0pt,after skip=1.6mm}
+\begin{nbox}[fontupper=\small\raggedright,colback=lightgreen]{ok}
+\textbf{Latent diffusion}: high resolution or text-to-image, when losing tiny details is acceptable.
+\end{nbox}
+\begin{nbox}[fontupper=\small\raggedright,colback=lightblue]{hcmusblue}
+\textbf{Pixel diffusion}: small images, or when exact fine detail matters.
+\end{nbox}
+\begin{nbox}[fontupper=\small\raggedright,colback=lightorange,after skip=0pt]{rev}
+\textbf{Neither}: real-time use, unless a faster sampler cuts the number of steps.
+\end{nbox}
+\end{columns}
+\src{Ho et al.\ 2020, Table~1; Rombach et al.\ 2022, Sec.~4.1; Chefer et al.\ 2023; Bianchi et al.\ 2023. ``When to use which'': our reading of these results.}
+\note{\textbf{(~40 s)} Left: one line per limitation, each with its cause. Right: when each option fits; this is our reading of the papers, not a paper's conclusion.}
+\end{frame}
+
+%% =====================================================================
+%% 13. Conclusion  (~35 s)
+%% =====================================================================
+\begin{frame}
+\frametitle{Conclusion: the recipe behind today's image generators}
+\framesubtitle{Take-home}
+\begin{nbox}[colframe=hcmusblue,colback=lightblue,fontupper=\small]{hcmusblue}
+\textbf{The big picture.} Diffusion turns generation into \textbf{many small, easy denoising steps} (DDPM). LDM makes each step \textbf{cheap} by working in a compact latent, and cross-attention makes it \textbf{controllable} by a prompt. Together they form the recipe behind text-to-image systems such as Stable Diffusion.
+\end{nbox}
+\vspace{1.5mm}
+\begin{tcbraster}[raster columns=3,raster equal height,raster column skip=2.5mm,raster before skip=0pt,raster after skip=0pt,
+  raster every box/.style={base,fontupper=\footnotesize\raggedright,coltitle=white}]
+\begin{tcolorbox}[colframe=fwd,colback=fwd!5!white,title={1. Forward noising}]
+A known Gaussian chain trades signal for noise until $x_T\approx\Normal(0,\Id)$; the closed form jumps to any $t$ in one shot.
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=rev,colback=rev!5!white,title={2. Reverse denoising}]
+A network learns to predict the noise ($L_{\text{simple}}$); knowing the noise gives the image, so repeating small steps from pure noise creates a new one.
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=ok,colback=ok!5!white,title={3. Latent diffusion}]
+The same loop on a compact VAE latent: \textbf{48$\times$ fewer values} per step ($f=8$); the paper samples 3.7--4.9$\times$ faster at equal or better FID. Cost: a reconstruction ceiling.
+\end{tcolorbox}
+\end{tcbraster}
+\vspace{1.5mm}
+\begin{center}
+{\small\itshape Every stage is bounded by its training data and by what the latent can keep.}\\[1.5mm]
+{\large\bfseries\color{hcmusblue}Thank you \textperiodcentered{} Questions?}\\[0.5mm]{\scriptsize\color{muted}Notation, a denoising trace, LDM formulas, references and figure sources: backup slides}
+\end{center}
+\note{\textbf{(~35 s)} Do not re-answer the guiding question (slide 6 did that). Give the big picture in one breath: many easy steps (DDPM), cheap steps (latent), controllable steps (cross-attention), which is the recipe behind Stable Diffusion. Latent card: paper numbers only. The three cards mirror the learning objective. Hand over to Q\&A; every member answers at least one question.}
+\end{frame}
+
+%% =====================================================================
+%% Backup slides (not counted as content slides)
+%% =====================================================================
+\appendix
+\setbeamertemplate{footline}{%
+  \leavevmode\hbox to\paperwidth{\hspace{8mm}%
+    {\color{muted}\fontsize{6.5}{8}\selectfont CS420 \textperiodcentered{} Diffusion Models: From Adding Noise to Generating Images}%
+    \hfill{\color{muted}\fontsize{6.5}{8}\selectfont Backup}\hspace{8mm}}%
+  \vskip 2.2mm}
+
+\begin{frame}
+\frametitle{Notation, value ranges and modelling assumptions}
+\framesubtitle{Backup}
+\fontsize{6.6}{7.9}\selectfont
+\renewcommand{\arraystretch}{1.08}
+\begin{columns}[T,onlytextwidth]
+\column{.49\textwidth}\fontsize{6.4}{7.6}\selectfont
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{1.62cm}Y@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning, range, units}\\
+\midrule
+$x_0,x_t,\hat x_0$ & clean / noisy / reconstructed image in $\R^D$; clean pixels in $[-1,1]$, unitless\\
+$t,\ T$ & integer step, $1\le t\le T$ ($T=1000$); not physical time\\
+$\beta_t,\alpha_t,\ab_t$ & $\beta_t\in(0,1)$, $\alpha_t=1-\beta_t$, $\ab_t=\alpha_1\cdots\alpha_t$; unitless\\
+$\eps,u_t,\xi,\eps_z$ & independent $\Normal(0,\Id)$: forward, sampling, encoder, latent noise\\
+$q,\ p_\theta$ & fixed forward / learned reverse transition\\
+$\theta,\ \eps_\theta(x_t,t)$ & U-Net weights; predicted noise, shape of $x_t$\\
+$\mu_\theta,\ \sigma_t$ & reverse mean; fixed SD, $\sigma_t^2=\beta_t$ (or $\tilde\beta_t$)\\
+$q_t,\ \nabla\log q_t$ & noisy marginal at step $t$; its score\\
+$L_{\text{simple}}$, SNR & squared noise error, $t\sim\mathrm U\{1..T\}$; SNR $=\ab_t/(1-\ab_t)$\\
+\bottomrule
+\end{tabularx}
+\column{.49\textwidth}\fontsize{6.4}{7.6}\selectfont
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{1.62cm}Y@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning, range, units}\\
+\midrule
+$\mathcal E_\phi,\ D_\psi$ & encoder / decoder (weights $\phi,\psi$), frozen after training\\
+$\mu_\phi,\sigma_\phi,\tilde z$ & VAE posterior mean and SD ($>0$); sampled latent\\
+$z_0,\ z_t$ & $z_0=a\tilde z$ (fixed $a>0$); noisy latent; $\R^{h\times w\times c}$\\
+$f$ & $h=H/f$, $w=W/f$; typically $f=4$--$8$\\
+$y,\ C$ & condition; $C=\tau_\eta(y)$ its token embeddings (weights $\eta$)\\
+$F,\ W_{Q,K,V}$ & U-Net features (one row per position); learned projections\\
+$Q,K,V,O,\ d$ & query, key, value, output matrices; key width $d$\\
+$\eps_u,\ \eps_c,\ s$ & prediction without / with condition; CFG scale $s\ge0$\\
+$L_{\text{LDM}}$ & $L_{\text{simple}}$ on $z_t$, given $\tau_\eta(y)$\\
+\bottomrule
+\end{tabularx}
+\end{columns}
+\vspace{1mm}
+\begin{nbox}[fontupper=\fontsize{6.6}{7.9}\selectfont]{hcmusblue}
+\textbf{Assumptions.} \emph{Forward:} Markov, Gaussian kernel, fresh independent noise, small $\beta_t$ (reverse steps nearly Gaussian); $x_T\approx\Normal(0,\Id)$ only approximately.
+\emph{Reverse (DDPM):} Gaussian with fixed isotropic variance; $-\eps_\theta/\sqrt{1-\ab_t}$ equals the true score only at the ideal MSE optimum.
+\emph{Latent (LDM):} autoencoder trained first, then frozen; clean latents are not $\Normal(0,\Id)$.
+\end{nbox}
+\src{Notation follows Ho et al.\ 2020 and Rombach et al.\ 2022; full table in the report, Appendix C.}
+\end{frame}
+
+\newcommand{\refitem}[1]{\par\noindent\hangindent=1.2em\hangafter=1 \textbullet\ #1\par\vspace{1pt}}
+
+\begin{frame}
+\frametitle{Inside one denoising step: our run}
+\framesubtitle{Backup}
+\begin{columns}[c,onlytextwidth]
+\column{.6\textwidth}
+\includegraphics[width=\linewidth]{figures/retriever_step25.png}
+\column{.38\textwidth}
+\footnotesize
+\ours\ ImageNet class ``golden retriever'', 50 DDIM steps ($\eta=0$), one sample. Top: pixel ADM; bottom: latent LDM (CompVis cin256-v2). Snapshot inside update 25.
+\begin{enumerate}\setlength{\itemsep}{1.5pt}
+\item \textbf{Noisy input} $x_t$: still looks like noise.
+\item \textbf{Predicted noise} $\eps_\theta(x_t,t)$ (LDM: per-position size of the latent noise).
+\item \textbf{Clean estimate} $\hat x_0=\big(x_t-\sqrt{1-\ab_t}\,\eps_\theta\big)/\sqrt{\ab_t}$: the dog is already there.
+\item \textbf{Updated state} $x_{t-1}$: only a small step toward $\hat x_0$.
+\end{enumerate}
+\vspace{1mm}
+Supports slide~6: knowing the noise gives the image; each step is a small correction.
+\end{columns}
+\end{frame}
+
+\begin{frame}
+\frametitle{LDM details: objectives and attention}
+\framesubtitle{Backup}
+\begin{tcbraster}[raster columns=3,raster equal height,raster column skip=2.5mm,raster before skip=0pt,raster after skip=0pt,
+  raster every box/.style={base,fontupper=\scriptsize,coltitle=white}]
+\begin{tcolorbox}[colframe=ok,colback=ok!5!white,title={Stage 1: autoencoder (KL variant)}]
+\setlength{\abovedisplayskip}{2pt}\setlength{\belowdisplayskip}{2pt}
+Encoder outputs $\mu_\phi(x_0),\sigma_\phi(x_0)$; sample with the reparameterization
+\[\tilde z=\mu_\phi+\sigma_\phi\odot\xi,\quad \xi\sim\Normal(0,\Id)\]
+Textbook VAE objective:
+\[\begin{gathered}\E\big[-\log p_\psi(x_0\mid\tilde z)\big]\\+\KL\big(q_\phi\,\|\,\Normal(0,\Id)\big)\end{gathered}\]
+LDM swaps the pixel likelihood for perceptual + patch-adversarial losses and keeps only a \emph{weak} KL. VQ variant: each latent vector snaps to its nearest codebook entry inside the decoder.\\[0.6mm]
+Encoder noise $\xi$ $\neq$ diffusion noise $\eps_z$.
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=hcmusblue,colback=hcmusblue!5!white,title={Stage 2: diffusion on latents}]
+\setlength{\abovedisplayskip}{2pt}\setlength{\belowdisplayskip}{2pt}
+Scaled latent $z_0=a\,\tilde z$ (fixed $a>0$), then the DDPM closed form:
+\[z_t=\sqrt{\ab_t}\,z_0+\sqrt{1-\ab_t}\,\eps_z\]
+Conditional noise-prediction loss:
+\[L_{\text{LDM}}=\E\big[\|\eps_z-\eps_\theta(z_t,t,\tau_\eta(y))\|^2\big]\]
+Generation: sample $z_T\sim\Normal(0,\Id)$, run the sampler, decode once with $D_\psi(z_0/a)$.
+\end{tcolorbox}
+\begin{tcolorbox}[colframe=fwd,colback=fwd!5!white,title={Cross-attention and guidance}]
+\setlength{\abovedisplayskip}{2pt}\setlength{\belowdisplayskip}{2pt}
+$F$: U-Net features (one row per position); $C=\tau_\eta(y)$: condition tokens.
+\[Q=FW_Q,\ \ K=CW_K,\ \ V=CW_V\]
+\[O=\softmax\big(QK^{\top}/\sqrt{d}\big)\,V\]
+$W_Q,W_K,W_V$: learned projections; $d$: key width.\\[0.6mm]
+Classifier-free guidance:
+\[\hat\eps=\eps_u+s\,(\eps_c-\eps_u)\]
+$\eps_u,\eps_c$: prediction without/with the condition; $s=1$ is plain conditional sampling; two U-Net calls per step.
+\end{tcolorbox}
+\end{tcbraster}
+\src{Kingma \& Welling 2014; Rombach et al.\ 2022, Secs.~3.1--3.3, Eq.~3; Zhang et al.\ 2018; Isola et al.\ 2017; Esser et al.\ 2021; Vaswani et al.\ 2017; Ho \& Salimans 2022.}
+\end{frame}
+
+\begin{frame}
+\frametitle{Supplementary: our pixel vs.\ latent run on LSUN Churches}
+\framesubtitle{Backup}
+{\footnotesize \ours\ Pretrained checkpoints (no training by us) \textperiodcentered{} Tesla T4 \textperiodcentered{} batch 1 \textperiodcentered{} 50 DDIM steps ($\eta=0$) \textperiodcentered{} 4 seeds (2026--2029) \textperiodcentered{} warm-up excluded, GPU-synchronized timing\par}
+\vspace{1mm}
+\begin{columns}[T,onlytextwidth]
+\column{.55\textwidth}
+{\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{2.65cm}p{1.45cm}Y@{}}
+\toprule
+\rowcolor{hcmusblue!12}Criterion & Pixel DDPM & LDM-KL-8\\
+\midrule
+Sampling steps & 50 & 50\\
+Values per step & $196{,}608$ & $4{,}096$ (\textbf{48$\times$ fewer})\\
+Median latency (s/img) & 6.10 & \textbf{2.44} ($2.5\times$ faster)\\
+Peak GPU alloc.\ (GiB) & \textbf{0.75} & 1.68\\
+Quality (by eye, 4 imgs) & plausible & plausible\\
+\bottomrule
+\end{tabularx}}
+\vspace{1.5mm}
+
+\column{.43\textwidth}
+\centering
+\setlength{\tabcolsep}{1pt}
+\begin{tabular}{@{}rcccc@{}}
+ & \scriptsize 2026 & \scriptsize 2027 & \scriptsize 2028 & \scriptsize 2029\\
+\raisebox{4mm}{\scriptsize DDPM} &
+\includegraphics[width=1.32cm]{figures/churches/ddpm_2026.png} &
+\includegraphics[width=1.32cm]{figures/churches/ddpm_2027.png} &
+\includegraphics[width=1.32cm]{figures/churches/ddpm_2028.png} &
+\includegraphics[width=1.32cm]{figures/churches/ddpm_2029.png}\\
+\raisebox{4mm}{\scriptsize LDM} &
+\includegraphics[width=1.32cm]{figures/churches/ldm_2026.png} &
+\includegraphics[width=1.32cm]{figures/churches/ldm_2027.png} &
+\includegraphics[width=1.32cm]{figures/churches/ldm_2028.png} &
+\includegraphics[width=1.32cm]{figures/churches/ldm_2029.png}
+\end{tabular}\\[0.5mm]
+{\scriptsize\raggedright Pixel: clear steeple (2028), dark 2029 hides detail. Latent: clear facades (2027--2029), 2026 is a distant complex. Each model draws noise in its own state space.\par}
+\end{columns}
+\vspace{1.5mm}
+\begin{nbox}[fontupper=\footnotesize]{rev}
+\textbf{Takeaway:} 48$\times$ fewer values per step gave a 2.5$\times$ speed-up, not 48$\times$, and \emph{more} peak memory: real cost depends on more than state size. Four images per model, one checkpoint pair, no FID: an illustration, not a benchmark.
+\end{nbox}
+\src{Our run: ddpm-ema-church-256 vs.\ CompVis LDM-KL-8 (FP32); latency includes the decoder. Supplementary only; the main comparison (slide 11) uses the paper's numbers.}
+\end{frame}
+
+\begin{frame}
+\frametitle{Supplementary: our prompt-control test with Stable Diffusion}
+\framesubtitle{Backup}
+\begin{center}
+\begin{minipage}{.62\textwidth}
+
+{\footnotesize \ours\ \textbf{Stable Diffusion v1.4, seed 2027, same initial latent}}\\[1mm]
+\setlength{\tabcolsep}{1.5pt}
+\begin{tabular}{@{}p{2.2cm}p{2.2cm}p{2.2cm}@{}}
+\includegraphics[width=2.2cm]{figures/prompt/2027_reference.png} &
+\includegraphics[width=2.2cm]{figures/prompt/2027_change_color.png} &
+\includegraphics[width=2.2cm]{figures/prompt/2027_change_side.png}\\[-0.5mm]
+\raggedright\scriptsize\textbf{Reference}\newline\tiny``a red bus to the left of a blue car'' &
+\raggedright\scriptsize\textbf{red $\to$ green}\newline\tiny``a green bus to the left of a blue car'' &
+\raggedright\scriptsize\textbf{left $\to$ right}\newline\tiny``a red bus to the right of a blue car''
+\end{tabular}\\[1mm]
+\footnotesize
+\begin{itemize}\setlength{\itemsep}{1pt}
+\item Colour edit: green bus at \textbf{all 4 seeds} \yes, but no clear blue car; seed 2027 shows two green buses \no.
+\item Side edit: no clear left-to-right swap; the red bus stays on the left \no.
+\item Cross-attention is \emph{soft}: attributes can bind to the wrong object, or a token can be ignored.
+\end{itemize}
+\end{minipage}
+\end{center}
+\src{Our run: Stable Diffusion v1.4, CFG 7.5, 50 DDIM steps, 4 seeds $\times$ 4 prompts, checked by eye. An illustration, not a general conclusion.}
+\end{frame}
+
+\begin{frame}
+\frametitle{References (1/2)}
+\framesubtitle{Backup}
+\fontsize{7}{8.4}\selectfont
+\begin{columns}[T,onlytextwidth]
+\column{.49\textwidth}
+\refitem{J.~Ho, A.~Jain, P.~Abbeel. Denoising Diffusion Probabilistic Models. \emph{NeurIPS}, 2020.}
+\refitem{R.~Rombach, A.~Blattmann, D.~Lorenz, P.~Esser, B.~Ommer. High-Resolution Image Synthesis with Latent Diffusion Models. \emph{CVPR}, 2022.}
+\refitem{J.~Sohl-Dickstein, E.~Weiss, N.~Maheswaranathan, S.~Ganguli. Deep Unsupervised Learning using Nonequilibrium Thermodynamics. \emph{ICML}, 2015.}
+\refitem{Y.~Song, S.~Ermon. Generative Modeling by Estimating Gradients of the Data Distribution. \emph{NeurIPS}, 2019.}
+\refitem{J.~Song, C.~Meng, S.~Ermon. Denoising Diffusion Implicit Models. \emph{ICLR}, 2021.}
+\refitem{D.~P.~Kingma, M.~Welling. Auto-Encoding Variational Bayes. \emph{ICLR}, 2014.}
+\column{.49\textwidth}
+\refitem{I.~Goodfellow et al. Generative Adversarial Nets. \emph{NeurIPS}, 2014.}
+\refitem{A.~van den Oord, N.~Kalchbrenner, K.~Kavukcuoglu. Pixel Recurrent Neural Networks. \emph{ICML}, 2016.}
+\refitem{A.~van den Oord, O.~Vinyals, K.~Kavukcuoglu. Neural Discrete Representation Learning. \emph{NeurIPS}, 2017.}
+\refitem{P.~Esser, R.~Rombach, B.~Ommer. Taming Transformers for High-Resolution Image Synthesis. \emph{CVPR}, 2021.}
+\refitem{R.~Zhang et al. The Unreasonable Effectiveness of Deep Features as a Perceptual Metric. \emph{CVPR}, 2018.}
+\refitem{P.~Isola, J.-Y.~Zhu, T.~Zhou, A.~A.~Efros. Image-to-Image Translation with Conditional Adversarial Networks. \emph{CVPR}, 2017.}
+\end{columns}
+\end{frame}
+
+\begin{frame}
+\frametitle{References (2/2) and figure sources}
+\framesubtitle{Backup}
+\fontsize{7}{8.4}\selectfont
+\begin{columns}[T,onlytextwidth]
+\column{.49\textwidth}
+\refitem{A.~Vaswani et al. Attention Is All You Need. \emph{NeurIPS}, 2017.}
+\refitem{J.~Ho, T.~Salimans. Classifier-Free Diffusion Guidance. arXiv:2207.12598, 2022.}
+\refitem{A.~Radford et al. Learning Transferable Visual Models From Natural Language Supervision (CLIP). \emph{ICML}, 2021.}
+\refitem{H.~Chefer et al. Attend-and-Excite: Attention-Based Semantic Guidance for Text-to-Image Diffusion Models. \emph{ACM TOG}, 2023.}
+\column{.49\textwidth}
+\refitem{R.~Rombach, P.~Esser. Stable Diffusion v1.4 Model Card (CompVis). Hugging Face, 2022.}
+\refitem{F.~Bianchi et al. Easily Accessible Text-to-Image Generation Amplifies Demographic Stereotypes at Large Scale. \emph{FAccT}, 2023.}
+\end{columns}
+\vspace{2mm}
+\begin{nbox}[fontupper=\fontsize{7}{8.4}\selectfont]{muted}
+\textbf{Figures and results.} The schematics (slides 3, 5, 8, 9, 10) are original drawings of the cited methods. The 1-D calculation and the 28$\times$28 noising sequence are our own examples. All evidence on the main slides comes from the cited papers (Ho et al.\ 2020; Rombach et al.\ 2022). Our small runs with pretrained checkpoints appear only as illustrations: the Stable Diffusion bus images on slide 10, the LSUN Churches samples on slide 11, and the denoising trace, timing and full prompt test in backup slides 15, 17 and 18.\\[1mm]
+\textbf{AI assistance.} OpenAI Codex (report drafting, code, checks); Claude (slide drafting and Beamer preparation).
+\end{nbox}
+\end{frame}
+
+\end{document}
