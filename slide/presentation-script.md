@@ -353,7 +353,7 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 **👉 [3 thẻ dưới: trái → giữa → phải]**
 
-> So: the same DDPM operations, now on $z$; the encoder only for training and the decoder once; and each U-Net call is cheaper because it sees about 48 times fewer values. DDIM's fewer steps are a separate speedup. The paper's measured cost is on slide 11.
+> So: the same DDPM operations, now on $z$; the encoder only for training and the decoder once; and each U-Net call is cheaper because it sees about 48 times fewer values, at every one of the many steps. The paper's measured cost is on slide 11.
 
 ⚠️ **Đừng nói** "LDM nhanh hơn 48×". Đó là 48× ít giá trị hơn mỗi bước, không phải tốc độ đo được (paper đo được: sampling nhanh 3.7–4.9×, slide 11).
 
@@ -431,7 +431,7 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 
 **👉 [3 khung bên phải, lần lượt] ✋**
 
-> So when should you use what? **Latent** diffusion for high resolution or text-to-image, when losing tiny details is acceptable. **Pixel** diffusion for small images, or when exact fine detail matters. And **neither** for real-time use, unless a fast sampler such as DDIM cuts the number of steps.
+> So when should you use what? **Latent** diffusion for high resolution or text-to-image, when losing tiny details is acceptable. **Pixel** diffusion for small images, or when exact fine detail matters. And **neither** for real-time use, unless a faster sampler cuts the number of steps.
 
 ⚠️ Phần "When to use which" là cách hiểu của nhóm dựa trên các paper, không phải kết luận của một paper cụ thể. Nói rõ nếu bị hỏi.
 
@@ -477,7 +477,7 @@ Mỗi khi đọc một con số, **chỉ vào nhãn PAPER REPORTS / OUR RUN / OU
 | Ảnh bus có phải bằng chứng không? | 10; đủ 4 seed ở backup 18 | C | Không: chỉ là minh họa 16 ảnh (4 seed × 4 prompt) kiểm bằng mắt; bằng chứng là Chefer et al. 2023, và kết quả của nhóm khớp với lỗi họ mô tả. |
 | Nhóm có tự kiểm chứng tốc độ không? | Backup 17 | C | Run LSUN Churches: nhanh 2.5× nhưng bộ nhớ đỉnh cao hơn (1.68 so với 0.75 GiB); chỉ 4 ảnh, 1 cặp checkpoint, không FID; lý do bộ nhớ cao hơn chưa được phân tích. |
 | Guidance có đánh đổi gì? | 10 | C | LDM Table 3: guidance s = 1.5 giảm FID 10.56 → 3.60, tăng precision, nhưng recall giảm 0.62 → 0.48 (kém đa dạng hơn). |
-| Vì sao sampling chậm, và có cách nào nhanh hơn? | 12 (dòng 1 và khung "Neither") | C | Bước ngược phải nhỏ để gần Gaussian nên cần nhiều lượt gọi mạng tuần tự; DDIM giảm số bước, đổi lại chất lượng giảm phần nào. |
+| Vì sao sampling chậm, và có cách nào nhanh hơn? | 12 (dòng 1 và khung "Neither") | C | Bước ngược phải nhỏ để gần Gaussian nên cần nhiều lượt gọi mạng tuần tự; các sampler nhanh hơn có thể giảm số bước, đổi lại chất lượng giảm phần nào. |
 | Một ký hiệu nghĩa là gì / miền giá trị? | Backup 14 | ai cũng được | Bảng Notation, value ranges and modelling assumptions. |
 | Có bằng chứng nào mạng "thấy" ảnh khi trạng thái còn đầy nhiễu? | Backup 15 | B | Run của nhóm: ở bước DDIM 25/50, clean estimate $\hat x_0$ đã thấy con chó (cả pixel ADM và latent LDM); updated state chỉ nhích một bước nhỏ. |
 | Nguồn hình/số liệu? | Backup 19–20 | ai cũng được | Sơ đồ là hình tự vẽ; run dùng checkpoint pretrained; số paper ghi rõ nguồn. |
